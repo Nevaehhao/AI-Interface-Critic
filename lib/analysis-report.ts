@@ -1,11 +1,21 @@
 import { z } from "zod";
 
+export const analysisIssueHighlightSchema = z.object({
+  id: z.string(),
+  x: z.number().min(0).max(100),
+  y: z.number().min(0).max(100),
+  width: z.number().min(1).max(100),
+  height: z.number().min(1).max(100),
+  label: z.string(),
+});
+
 export const analysisIssueSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string(),
   recommendation: z.string(),
   severity: z.enum(["low", "medium", "high"]),
+  highlights: z.array(analysisIssueHighlightSchema).default([]),
 });
 
 export const analysisSectionSchema = z.object({
@@ -37,6 +47,7 @@ export const analysisReportSchema = z.object({
 });
 
 export type AnalysisIssue = z.infer<typeof analysisIssueSchema>;
+export type AnalysisIssueHighlight = z.infer<typeof analysisIssueHighlightSchema>;
 export type AnalysisSection = z.infer<typeof analysisSectionSchema>;
 export type AnalysisSummary = z.infer<typeof analysisSummarySchema>;
 export type AnalysisReportContent = z.infer<typeof analysisReportContentSchema>;
@@ -86,6 +97,16 @@ export function createMockAnalysisReport(
             recommendation:
               "Increase CTA contrast, simplify nearby supporting UI, and create more separation around the key action.",
             severity: "high",
+            highlights: [
+              {
+                id: "vh-primary-action-cta",
+                x: 56,
+                y: 61,
+                width: 24,
+                height: 11,
+                label: "Primary CTA",
+              },
+            ],
           },
           {
             id: "vh-equal-weight",
@@ -95,6 +116,16 @@ export function createMockAnalysisReport(
             recommendation:
               "Introduce a stronger type scale and reserve brighter treatments for the most important content.",
             severity: "medium",
+            highlights: [
+              {
+                id: "vh-equal-weight-supporting-card",
+                x: 18,
+                y: 48,
+                width: 28,
+                height: 16,
+                label: "Secondary card cluster",
+              },
+            ],
           },
         ],
       },
@@ -109,10 +140,20 @@ export function createMockAnalysisReport(
             id: "a11y-muted-copy",
             title: "Muted supporting text may be too low contrast",
             description:
-              "Subdued labels match the visual style, but some text appears at risk of insufficient contrast on darker surfaces.",
+              "Subdued labels match the visual style, but some text appears at risk of insufficient contrast against low-emphasis surfaces.",
             recommendation:
               "Raise contrast on supporting copy and validate critical text against WCAG contrast ratios.",
             severity: "high",
+            highlights: [
+              {
+                id: "a11y-muted-copy-supporting-text",
+                x: 16,
+                y: 28,
+                width: 36,
+                height: 12,
+                label: "Muted supporting copy",
+              },
+            ],
           },
           {
             id: "a11y-small-meta",
@@ -122,6 +163,16 @@ export function createMockAnalysisReport(
             recommendation:
               "Increase font size or reduce frequency of dense uppercase microcopy in key areas.",
             severity: "low",
+            highlights: [
+              {
+                id: "a11y-small-meta-labels",
+                x: 15,
+                y: 12,
+                width: 24,
+                height: 8,
+                label: "Compact labels",
+              },
+            ],
           },
         ],
       },
@@ -140,6 +191,16 @@ export function createMockAnalysisReport(
             recommendation:
               "Pair the main action with clearer helper text or stronger positional emphasis.",
             severity: "medium",
+            highlights: [
+              {
+                id: "interaction-cta-priority-actions",
+                x: 52,
+                y: 57,
+                width: 31,
+                height: 17,
+                label: "Competing actions",
+              },
+            ],
           },
         ],
       },
@@ -158,6 +219,16 @@ export function createMockAnalysisReport(
             recommendation:
               "Add more vertical spacing between stacked regions and reduce repeated border treatments where possible.",
             severity: "medium",
+            highlights: [
+              {
+                id: "layout-density-cluster",
+                x: 14,
+                y: 44,
+                width: 72,
+                height: 28,
+                label: "Dense content cluster",
+              },
+            ],
           },
         ],
       },
