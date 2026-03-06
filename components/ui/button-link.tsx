@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 type ButtonLinkProps = LinkProps & {
   children: ReactNode;
   className?: string;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "text";
 };
 
 export function ButtonLink({
@@ -19,10 +19,12 @@ export function ButtonLink({
     <Link
       {...props}
       className={cn(
-        "inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium transition",
+        "material-button",
         variant === "primary"
-          ? "bg-[var(--color-accent)] text-slate-950 hover:bg-[#ff9d57]"
-          : "border border-[var(--color-line)] bg-white/5 text-white hover:bg-white/10",
+          ? "material-button-primary"
+          : variant === "secondary"
+            ? "material-button-secondary"
+            : "material-button-text",
         className,
       )}
     >

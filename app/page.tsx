@@ -4,18 +4,18 @@ import { ButtonLink } from "@/components/ui/button-link";
 const productPillars = [
   {
     label: "Input",
-    title: "A single UI screenshot",
-    copy: "No project setup, no lengthy onboarding, and no design file import required for the MVP.",
+    title: "One screenshot, no setup ceremony",
+    copy: "Upload a UI image from a landing page, dashboard, checkout flow, or onboarding screen and start the review immediately.",
   },
   {
-    label: "Processing",
-    title: "Structured AI UX analysis",
-    copy: "The model critiques hierarchy, accessibility, layout, and interaction clarity instead of returning unshaped text.",
+    label: "Analysis",
+    title: "A structured critique, not model rambling",
+    copy: "The system evaluates hierarchy, accessibility, layout, and interaction clarity as separate UX concerns.",
   },
   {
     label: "Output",
-    title: "A report a designer can actually scan",
-    copy: "Each issue becomes a readable card with impact, explanation, and next-step guidance.",
+    title: "Readable cards for a real review session",
+    copy: "Every issue includes impact, explanation, and a practical next step so the report feels product-ready.",
   },
 ];
 
@@ -23,84 +23,112 @@ const workflowSteps = [
   {
     step: "01",
     title: "Upload screenshot",
-    copy: "Drop in a single interface image from a landing page, dashboard, checkout, or onboarding flow.",
+    copy: "Bring a single interface image into the flow with drag-and-drop or the file picker.",
   },
   {
     step: "02",
-    title: "Wait through an intentional loading state",
-    copy: "The app explains what it is checking so the delay feels like review, not dead air.",
+    title: "Watch the critique progress",
+    copy: "The loading page explains what the model is checking, so the wait feels like a review in progress.",
   },
   {
     step: "03",
-    title: "Review a structured critique",
-    copy: "The result groups findings into predictable sections that match a UX review workflow.",
+    title: "Read a sectioned report",
+    copy: "Results are grouped into predictable categories that map to an actual UX review workflow.",
   },
 ];
 
 const reportSections = [
-  "Visual hierarchy",
-  "Accessibility",
-  "Interaction clarity",
-  "Layout issues",
+  {
+    title: "Visual hierarchy",
+    copy: "Spot competing CTAs, weak entry points, and missing emphasis.",
+    tone: "status-badge-primary",
+  },
+  {
+    title: "Accessibility",
+    copy: "Call out contrast, scanability, and readability risks.",
+    tone: "status-badge-success",
+  },
+  {
+    title: "Interaction clarity",
+    copy: "Find unclear next steps and weak signals around intended actions.",
+    tone: "status-badge-warning",
+  },
+  {
+    title: "Layout issues",
+    copy: "Surface density, spacing, and structure problems before review.",
+    tone: "status-badge-error",
+  },
 ];
 
 const sampleIssues = [
   {
     category: "Hierarchy",
-    title: "Primary action lacks contrast",
-    copy: "The main CTA blends into surrounding content and loses urgency during first scan.",
+    title: "Primary action is visually equal to secondary content",
+    copy: "The CTA blends into neighboring blocks, so first-scan attention is diffused instead of directed.",
   },
   {
     category: "Accessibility",
-    title: "Secondary text may fail readability",
-    copy: "Muted labels are visually elegant, but some pairings risk insufficient contrast on smaller screens.",
+    title: "Muted text risks low readability",
+    copy: "Subtle body copy looks refined, but some pairings are close to failing comfortable contrast.",
   },
   {
     category: "Interaction",
-    title: "Decision points feel visually equal",
-    copy: "The interface does not clearly signal the preferred next action, which slows confident progression.",
+    title: "The next best step is not explicit",
+    copy: "Users can act, but the interface does not strongly guide the preferred path forward.",
   },
+];
+
+const systemSteps = [
+  "Upload screenshot",
+  "Route through Next.js API",
+  "Analyze with Ollama",
+  "Persist with Supabase",
+  "Render structured report",
 ];
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,143,61,0.18),_transparent_28%),radial-gradient(circle_at_90%_10%,_rgba(99,179,237,0.14),_transparent_24%),linear-gradient(180deg,#0b1020_0%,#090d18_54%,#070b14_100%)] text-[var(--color-foreground)]">
+    <div className="page-shell">
       <SiteHeader />
 
-      <main>
-        <section className="mx-auto grid w-full max-w-7xl gap-12 px-6 pb-16 pt-14 sm:px-10 lg:grid-cols-[1.15fr_0.85fr] lg:px-12 lg:pb-24 lg:pt-20">
-          <div className="space-y-8">
-            <div className="inline-flex items-center rounded-full border border-[var(--color-line)] bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.24em] text-[var(--color-muted)]">
-              Built for junior designers before review
+      <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-6 pb-18 pt-10 sm:px-10 lg:px-12 lg:pb-24 lg:pt-14">
+        <section className="grid gap-8 lg:grid-cols-[1.12fr_0.88fr]">
+          <div className="surface-card overflow-hidden p-8 sm:p-10">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="app-chip">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#4285f4]" />
+                Google-inspired Material refresh
+              </span>
+              <span className="status-badge status-badge-neutral">
+                Portfolio-ready UX critique
+              </span>
             </div>
 
-            <div className="space-y-6">
-              <h1 className="max-w-4xl font-display text-5xl tracking-[-0.04em] sm:text-6xl lg:text-7xl">
-                Turn a raw interface screenshot into a structured UX critique.
+            <div className="mt-8 space-y-5">
+              <h1 className="max-w-4xl text-5xl leading-[1.02] tracking-[-0.05em] sm:text-6xl lg:text-7xl">
+                Review interface screenshots with a calm, structured Google-style flow.
               </h1>
               <p className="max-w-2xl text-lg leading-8 text-[var(--color-muted)] sm:text-xl">
-                AI Interface Critic analyzes a UI screenshot and returns a
-                readable review covering visual hierarchy, accessibility,
-                interaction clarity, and layout issues.
+                AI Interface Critic turns a single UI screenshot into a readable
+                UX review covering visual hierarchy, accessibility, interaction
+                clarity, and layout quality.
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <ButtonLink href="/upload">Start with a screenshot</ButtonLink>
-              <ButtonLink href="#workflow" variant="secondary">
+            <div className="mt-8 flex flex-wrap gap-3">
+              <ButtonLink href="/upload">Start analysis</ButtonLink>
+              <ButtonLink href="/#workflow" variant="secondary">
                 See the workflow
+              </ButtonLink>
+              <ButtonLink href="/report/demo" variant="text">
+                Open demo report
               </ButtonLink>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
               {productPillars.map((pillar) => (
-                <article
-                  key={pillar.title}
-                  className="rounded-[1.75rem] border border-[var(--color-line)] bg-white/5 p-5 backdrop-blur"
-                >
-                  <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-accent)]">
-                    {pillar.label}
-                  </p>
+                <article key={pillar.title} className="surface-muted p-5">
+                  <p className="eyebrow text-[var(--color-accent)]">{pillar.label}</p>
                   <h2 className="mt-3 text-xl leading-7">{pillar.title}</h2>
                   <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
                     {pillar.copy}
@@ -110,96 +138,85 @@ export default function Home() {
             </div>
           </div>
 
-          <aside className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.1),rgba(255,255,255,0.03))] p-6 shadow-[0_30px_120px_rgba(0,0,0,0.45)]">
-            <div className="absolute inset-x-0 top-0 h-28 bg-[radial-gradient(circle_at_top,_rgba(255,143,61,0.28),_transparent_62%)]" />
-            <div className="relative space-y-6">
-              <div className="flex items-center justify-between">
+          <aside className="surface-tonal p-6 sm:p-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="eyebrow">Preview</p>
+                <h2 className="mt-3 text-3xl tracking-tight sm:text-4xl">
+                  Clear report framing before the first prompt ever appears.
+                </h2>
+              </div>
+              <span className="status-badge status-badge-success">Report ready</span>
+            </div>
+
+            <div className="mt-8 grid gap-4">
+              <div className="metric-card grid gap-4 p-5 sm:grid-cols-[0.7fr_1fr]">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.32em] text-[var(--color-muted)]">
-                    Review snapshot
+                  <p className="eyebrow">Overall score</p>
+                  <p className="mt-3 text-6xl font-medium tracking-tight text-[var(--color-accent)]">
+                    78
                   </p>
-                  <h2 className="mt-2 font-display text-3xl tracking-tight">
-                    Portfolio-grade output, not raw model text.
-                  </h2>
+                  <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
+                    A strong baseline with noticeable room to improve first-scan emphasis.
+                  </p>
                 </div>
-                <div className="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-200">
-                  Report ready
+                <div className="surface-muted p-4">
+                  <p className="eyebrow">Main finding</p>
+                  <p className="mt-3 text-base leading-7">
+                    The primary CTA loses emphasis because nearby elements compete
+                    for the same visual weight.
+                  </p>
                 </div>
               </div>
 
-              <div className="rounded-[1.6rem] border border-white/8 bg-[#070b14]/80 p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-muted)]">
-                      Overall UX signal
-                    </p>
-                    <p className="mt-2 text-5xl font-semibold text-white">78</p>
-                  </div>
-                  <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-right">
-                    <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-muted)]">
-                      Main finding
-                    </p>
-                    <p className="mt-2 max-w-36 text-sm leading-6 text-white/85">
-                      Primary action loses emphasis during first scan.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-3">
-                  {sampleIssues.map((issue) => (
-                    <div
-                      key={issue.title}
-                      className="rounded-2xl border border-white/8 bg-white/[0.03] p-4"
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <p className="text-sm uppercase tracking-[0.22em] text-[var(--color-accent)]">
-                          {issue.category}
-                        </p>
-                        <span className="rounded-full border border-white/8 px-2.5 py-1 text-xs text-[var(--color-muted)]">
-                          Medium impact
-                        </span>
-                      </div>
-                      <p className="mt-3 text-base text-white">{issue.title}</p>
-                      <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
-                        {issue.copy}
-                      </p>
+              <div className="grid gap-3">
+                {sampleIssues.map((issue, index) => (
+                  <article key={issue.title} className="metric-card p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <span className="status-badge status-badge-neutral">
+                        {issue.category}
+                      </span>
+                      <span
+                        className={`status-badge ${
+                          index === 0
+                            ? "status-badge-primary"
+                            : index === 1
+                              ? "status-badge-warning"
+                              : "status-badge-success"
+                        }`}
+                      >
+                        {index === 0 ? "High impact" : "Medium impact"}
+                      </span>
                     </div>
-                  ))}
-                </div>
+                    <h3 className="mt-4 text-lg leading-7">{issue.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
+                      {issue.copy}
+                    </p>
+                  </article>
+                ))}
               </div>
             </div>
           </aside>
         </section>
 
-        <section
-          id="workflow"
-          className="mx-auto w-full max-w-7xl px-6 py-12 sm:px-10 lg:px-12 lg:py-16"
-        >
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <section id="workflow" className="grid gap-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.32em] text-[var(--color-muted)]">
-                Workflow
-              </p>
-              <h2 className="mt-3 font-display text-4xl tracking-tight sm:text-5xl">
-                A clear product loop from screenshot to critique.
+              <p className="eyebrow">Workflow</p>
+              <h2 className="mt-3 text-4xl tracking-tight sm:text-5xl">
+                One clear loop from screenshot to critique.
               </h2>
             </div>
             <p className="max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-              The MVP is intentionally narrow: one screenshot in, one
-              structured UX review out. That keeps the experience focused and
-              portfolio-ready.
+              The MVP stays narrow on purpose. That is what keeps the product from
+              collapsing into a generic AI demo.
             </p>
           </div>
 
-          <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-4 lg:grid-cols-3">
             {workflowSteps.map((step) => (
-              <article
-                key={step.step}
-                className="rounded-[1.75rem] border border-[var(--color-line)] bg-white/5 p-6"
-              >
-                <p className="font-mono text-sm text-[var(--color-accent)]">
-                  {step.step}
-                </p>
+              <article key={step.step} className="surface-card p-6">
+                <p className="font-mono text-sm text-[var(--color-accent)]">{step.step}</p>
                 <h3 className="mt-4 text-2xl tracking-tight">{step.title}</h3>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
                   {step.copy}
@@ -211,114 +228,118 @@ export default function Home() {
 
         <section
           id="report-preview"
-          className="mx-auto grid w-full max-w-7xl gap-8 px-6 py-12 sm:px-10 lg:grid-cols-[0.9fr_1.1fr] lg:px-12 lg:py-16"
+          className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]"
         >
-          <div className="space-y-5">
-            <p className="text-xs uppercase tracking-[0.32em] text-[var(--color-muted)]">
-              Report architecture
-            </p>
-            <h2 className="font-display text-4xl tracking-tight sm:text-5xl">
-              The analysis output is shaped like a UX review, not a chat reply.
+          <div className="surface-card p-8">
+            <p className="eyebrow">Report structure</p>
+            <h2 className="mt-3 text-4xl tracking-tight sm:text-5xl">
+              The output looks like a product review, not a chat transcript.
             </h2>
-            <p className="max-w-xl text-base leading-7 text-[var(--color-muted)]">
-              Hiring managers and teammates need structured reasoning. The
-              report page will group findings by category and make each issue
-              readable at a glance.
+            <p className="mt-5 max-w-xl text-base leading-7 text-[var(--color-muted)]">
+              Hiring managers and teammates need structured reasoning. The report
+              page groups findings into stable categories with score, evidence,
+              and a clear recommendation.
             </p>
-            <div className="grid gap-3">
+
+            <div className="mt-8 grid gap-3">
               {reportSections.map((section) => (
-                <div
-                  key={section}
-                  className="rounded-2xl border border-[var(--color-line)] bg-white/5 px-4 py-4 text-sm text-white/90"
-                >
-                  {section}
-                </div>
+                <article key={section.title} className="surface-muted p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-lg">{section.title}</h3>
+                    <span className={`status-badge ${section.tone}`}>Live section</span>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-[var(--color-muted)]">
+                    {section.copy}
+                  </p>
+                </article>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6">
+          <div className="surface-card p-6 sm:p-8">
             <div className="grid gap-4 md:grid-cols-2">
-              {sampleIssues.map((issue) => (
-                <article
-                  key={`${issue.category}-${issue.title}`}
-                  className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-5"
-                >
-                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-accent)]">
+              {sampleIssues.map((issue, index) => (
+                <article key={`${issue.category}-${issue.title}`} className="surface-muted p-5">
+                  <span
+                    className={`status-badge ${
+                      index === 0
+                        ? "status-badge-primary"
+                        : index === 1
+                          ? "status-badge-warning"
+                          : "status-badge-success"
+                    }`}
+                  >
                     {issue.category}
-                  </p>
-                  <h3 className="mt-3 text-lg leading-7">{issue.title}</h3>
+                  </span>
+                  <h3 className="mt-4 text-lg leading-7">{issue.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
                     {issue.copy}
                   </p>
-                  <p className="mt-4 text-sm text-white/85">
-                    Suggestion: Increase the visual distinction of the most
-                    important action and simplify competing emphasis.
+                  <p className="mt-4 text-sm leading-6 text-[var(--color-foreground)]">
+                    Suggestion: increase contrast for the main action and reduce
+                    competing emphasis around it.
                   </p>
                 </article>
               ))}
-              <article className="rounded-[1.5rem] border border-dashed border-white/12 bg-white/[0.02] p-5">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-muted)]">
-                  Coming next
-                </p>
-                <h3 className="mt-3 text-lg leading-7">Upload, loading, and report pages</h3>
-                <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
-                  The next branches will replace this static preview with a real
-                  end-to-end screenshot analysis flow.
-                </p>
+
+              <article className="surface-tonal flex flex-col justify-between p-5">
+                <div>
+                  <p className="eyebrow">Loading experience</p>
+                  <h3 className="mt-4 text-2xl tracking-tight">
+                    Explain what the AI is checking while the model works.
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-[var(--color-muted)]">
+                    Analyzing visual hierarchy, checking accessibility, and evaluating
+                    layout structure makes the delay feel intentional.
+                  </p>
+                </div>
+                <ButtonLink href="/loading" variant="text" className="mt-5 w-fit px-0">
+                  Preview loading state
+                </ButtonLink>
               </article>
             </div>
           </div>
         </section>
 
-        <section
-          id="system"
-          className="mx-auto w-full max-w-7xl px-6 py-12 sm:px-10 lg:px-12 lg:py-16"
-        >
-          <div className="rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6 lg:p-8">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.32em] text-[var(--color-muted)]">
-                  System
-                </p>
-                <h2 className="mt-3 font-display text-4xl tracking-tight">
-                  Problem, UX, and architecture stay connected.
-                </h2>
-              </div>
-              <p className="max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-                The product starts with one user and one job to be done. From
-                there, the system stays intentionally simple: Next.js for the
-                interface, Ollama for critique generation, and Supabase for auth
-                plus persistence.
-              </p>
+        <section id="system" className="surface-card p-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="eyebrow">System</p>
+              <h2 className="mt-3 text-4xl tracking-tight sm:text-5xl">
+                Problem, UX, system, and code stay connected.
+              </h2>
             </div>
+            <p className="max-w-2xl text-base leading-7 text-[var(--color-muted)]">
+              The stack stays intentionally simple: Next.js App Router, Tailwind,
+              Ollama for analysis, and Supabase for auth, storage, and persistence.
+            </p>
+          </div>
 
-            <div className="mt-8 grid gap-4 md:grid-cols-4">
-              <article className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-5">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-accent)]">
-                  User
-                </p>
-                <p className="mt-3 text-base">Junior designer</p>
-              </article>
-              <article className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-5">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-accent)]">
-                  Frontend
-                </p>
-                <p className="mt-3 text-base">Next.js App Router + Tailwind</p>
-              </article>
-              <article className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-5">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-accent)]">
-                  AI
-                </p>
-                <p className="mt-3 text-base">Ollama structured screenshot analysis</p>
-              </article>
-              <article className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-5">
-                <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-accent)]">
-                  Platform
-                </p>
-                <p className="mt-3 text-base">Supabase auth, storage, and persistence</p>
-              </article>
-            </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-4">
+            <article className="surface-muted p-5">
+              <p className="eyebrow text-[var(--color-accent)]">User</p>
+              <p className="mt-3 text-lg">Junior designers</p>
+            </article>
+            <article className="surface-muted p-5">
+              <p className="eyebrow text-[var(--color-accent)]">Frontend</p>
+              <p className="mt-3 text-lg">Next.js App Router + Tailwind</p>
+            </article>
+            <article className="surface-muted p-5">
+              <p className="eyebrow text-[var(--color-accent)]">AI</p>
+              <p className="mt-3 text-lg">Local Ollama screenshot analysis</p>
+            </article>
+            <article className="surface-muted p-5">
+              <p className="eyebrow text-[var(--color-accent)]">Platform</p>
+              <p className="mt-3 text-lg">Supabase auth, storage, history</p>
+            </article>
+          </div>
+
+          <div className="mt-8 grid gap-3 lg:grid-cols-5">
+            {systemSteps.map((step) => (
+              <div key={step} className="surface-muted p-4 text-sm text-[var(--color-muted)]">
+                {step}
+              </div>
+            ))}
           </div>
         </section>
       </main>
