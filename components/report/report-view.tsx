@@ -1,9 +1,18 @@
-import Link from "next/link";
+"use client";
 
-import type { AnalysisReport, AnalysisSection } from "@/lib/analysis-report";
+import Link from "next/link";
+import { useState } from "react";
+
+import type {
+  AnalysisReport,
+  AnalysisSection,
+} from "@/lib/analysis-report";
 import type { AnalysisSource } from "@/lib/analysis-result";
 import { SiteHeader } from "@/components/layout/site-header";
-import { ReportScreenshotPreview } from "@/components/report/report-screenshot-preview";
+import {
+  ReportScreenshotPreview,
+  type HighlightableIssue,
+} from "@/components/report/report-screenshot-preview";
 
 function scoreTone(score: number) {
   if (score >= 85) {
@@ -29,62 +38,99 @@ function severityTone(severity: string) {
   return "status-badge status-badge-neutral";
 }
 
-function SectionCard({ section }: { section: AnalysisSection }) {
+function flattenHighlightableIssues(report: AnalysisReport): HighlightableIssue[] {
+  return report.sections.flatMap((section) =>
+    section.issues
+      .filter((issue) => issue.highlights.length > 0)
+      .map((issue) => ({
+        description: issue.description,
+        highlights: issue.highlights,
+        id: issue.id,
+        sectionTitle: section.title,
+        severity: issue.severity,
+        title: issue.title,
+      })),
+  );
+}
+
+function SectionCard({
+  section,
+  selectedIssueId,
+  onSelectIssue,
+}: {
+  section: AnalysisSection;
+  selectedIssueId: string | null;
+  onSelectIssue: (issueId: string) => void;
+}) {
   return (
-    <section
-      id={section.id}
-      className="surface-card p-6 sm:p-8"
-    >
+    <section id={section.id} className="surface-card p-6 sm:p-8">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="eyebrow">
-            Section
-          </p>
-          <h2 className="mt-3 text-3xl tracking-tight">
-            {section.title}
-          </h2>
+          <p className="eyebrow">Section</p>
+          <h2 className="mt-3 text-3xl tracking-tight">{section.title}</h2>
           <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-muted)]">
             {section.summary}
           </p>
         </div>
 
-        <div className={scoreTone(section.score)}>
-          Score {section.score}
-        </div>
+        <div className={scoreTone(section.score)}>Score {section.score}</div>
       </div>
 
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        {section.issues.map((issue) => (
-          <article
-            key={issue.id}
-            className="surface-muted p-5"
-          >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="eyebrow text-[var(--color-accent)]">
-                  {section.title}
-                </p>
-                <h3 className="mt-3 text-xl tracking-tight">{issue.title}</h3>
+        {section.issues.map((issue) => {
+          const isSelected = selectedIssueId === issue.id;
+          const hasHighlights = issue.highlights.length > 0;
+
+          return (
+            <article
+              key={issue.id}
+              className={`surface-muted p-5 transition ${
+                isSelected ? "ring-2 ring-[var(--color-accent)]" : ""
+              }`}
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="eyebrow text-[var(--color-accent)]">
+                    {section.title}
+                  </p>
+                  <h3 className="mt-3 text-xl tracking-tight">{issue.title}</h3>
+                </div>
+                <span className={severityTone(issue.severity)}>
+                  {issue.severity} impact
+                </span>
               </div>
-              <span className={severityTone(issue.severity)}>
-                {issue.severity} impact
-              </span>
-            </div>
 
-            <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-              {issue.description}
-            </p>
+              <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+                {issue.description}
+              </p>
 
-            <div className="mt-5 rounded-[1.25rem] bg-white p-4 shadow-sm">
-              <p className="eyebrow">
-                Recommendation
-              </p>
-              <p className="mt-2 text-sm leading-7">
-                {issue.recommendation}
-              </p>
-            </div>
-          </article>
-        ))}
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                {hasHighlights ? (
+                  <>
+                    <span className="app-chip">
+                      {issue.highlights.length} highlight
+                      {issue.highlights.length > 1 ? "s" : ""}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onSelectIssue(issue.id)}
+                      className="material-button material-button-secondary px-4 py-2 text-sm"
+                    >
+                      {isSelected ? "Highlighted on screenshot" : "Show on screenshot"}
+                    </button>
+                  </>
+                ) : (
+                  <span className="app-chip">No mapped region</span>
+                )}
+              </div>
+
+              <div className="mt-5 rounded-[1.25rem] bg-white p-4 shadow-sm">
+                <p className="eyebrow">Recommendation</p>
+                <p className="mt-2 text-sm leading-7">{issue.recommendation}</p>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
@@ -101,6 +147,16 @@ export function ReportView({
   screenshotUrl?: string | null;
   source?: AnalysisSource;
 }) {
+  const highlightableIssues = flattenHighlightableIssues(report);
+  const [selectedIssueId, setSelectedIssueId] = useState<string | null>(
+    highlightableIssues[0]?.id ?? null,
+  );
+
+  const selectedIssue =
+    highlightableIssues.find((issue) => issue.id === selectedIssueId) ?? null;
+  const activeSelectedIssue = selectedIssue ?? highlightableIssues[0] ?? null;
+  const activeSelectedIssueId = activeSelectedIssue?.id ?? null;
+
   return (
     <div className="page-shell">
       <SiteHeader />
@@ -125,6 +181,10 @@ export function ReportView({
               </span>
               <span className="app-chip">
                 {new Date(report.createdAt).toLocaleString()}
+              </span>
+              <span className="app-chip">
+                {highlightableIssues.length} mapped issue
+                {highlightableIssues.length === 1 ? "" : "s"}
               </span>
             </div>
 
@@ -167,11 +227,41 @@ export function ReportView({
             <div>
               <p className="eyebrow">Screenshot context</p>
               <h2 className="mt-3 text-3xl tracking-tight">
-                Input and section map
+                Highlighted issue map
               </h2>
+              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                Select an issue card to focus the screenshot on the affected region.
+              </p>
             </div>
 
-            <ReportScreenshotPreview fallbackImageUrl={screenshotUrl} />
+            <ReportScreenshotPreview
+              fallbackImageUrl={screenshotUrl}
+              issues={highlightableIssues}
+              selectedIssueId={activeSelectedIssueId}
+              onSelectIssue={setSelectedIssueId}
+            />
+
+            <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+              <p className="eyebrow">Selected issue</p>
+              {activeSelectedIssue ? (
+                <div className="mt-4 space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="app-chip">{activeSelectedIssue.sectionTitle}</span>
+                    <span className={severityTone(activeSelectedIssue.severity)}>
+                      {activeSelectedIssue.severity} impact
+                    </span>
+                  </div>
+                  <h3 className="text-xl tracking-tight">{activeSelectedIssue.title}</h3>
+                  <p className="text-sm leading-7 text-[var(--color-muted)]">
+                    {activeSelectedIssue.description}
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+                  This report does not include mapped screenshot regions yet.
+                </p>
+              )}
+            </div>
 
             <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
               <p className="eyebrow">Jump to section</p>
@@ -192,7 +282,12 @@ export function ReportView({
 
         <div className="grid gap-6">
           {report.sections.map((section) => (
-            <SectionCard key={section.id} section={section} />
+            <SectionCard
+              key={section.id}
+              section={section}
+              selectedIssueId={activeSelectedIssueId}
+              onSelectIssue={setSelectedIssueId}
+            />
           ))}
         </div>
       </main>

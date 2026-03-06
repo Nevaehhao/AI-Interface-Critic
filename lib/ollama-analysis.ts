@@ -20,6 +20,9 @@ Instructions:
 - Use 1 to 2 issues per section when relevant.
 - Keep recommendations actionable.
 - Use a 0 to 100 score for the overall summary and each section.
+- Add screenshot highlight boxes for each issue when a visible region can be identified.
+- Highlight coordinates must use percentages from 0 to 100 for x, y, width, and height.
+- Always return a highlights array for every issue. Use an empty array if no region is clear.
 - Return valid JSON matching the required schema exactly.
 `.trim();
 
@@ -74,6 +77,7 @@ export const analysisReportContentJsonSchema = {
                 "description",
                 "recommendation",
                 "severity",
+                "highlights",
               ],
               properties: {
                 id: { type: "string" },
@@ -83,6 +87,22 @@ export const analysisReportContentJsonSchema = {
                 severity: {
                   type: "string",
                   enum: ["low", "medium", "high"],
+                },
+                highlights: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    additionalProperties: false,
+                    required: ["id", "x", "y", "width", "height", "label"],
+                    properties: {
+                      id: { type: "string" },
+                      x: { type: "number" },
+                      y: { type: "number" },
+                      width: { type: "number" },
+                      height: { type: "number" },
+                      label: { type: "string" },
+                    },
+                  },
                 },
               },
             },

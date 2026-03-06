@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import type { AnalysisIssue, AnalysisIssueHighlight } from "@/lib/analysis-report";
 import {
   clearPendingAnalysisDraft,
   loadPendingAnalysisDraft,
@@ -9,10 +10,24 @@ import {
 } from "@/lib/analysis-draft";
 import { formatBytes } from "@/lib/uploads";
 
+export type HighlightableIssue = Pick<
+  AnalysisIssue,
+  "description" | "id" | "severity" | "title"
+> & {
+  highlights: AnalysisIssueHighlight[];
+  sectionTitle: string;
+};
+
 export function ReportScreenshotPreview({
   fallbackImageUrl = null,
+  issues = [],
+  selectedIssueId = null,
+  onSelectIssue,
 }: {
   fallbackImageUrl?: string | null;
+  issues?: HighlightableIssue[];
+  selectedIssueId?: string | null;
+  onSelectIssue?: (issueId: string) => void;
 }) {
   const [draft, setDraft] = useState<PendingAnalysisDraft | null>(null);
 
@@ -37,26 +52,94 @@ export function ReportScreenshotPreview({
     );
   }
 
+  const backgroundImage = draft?.dataUrl ?? fallbackImageUrl ?? "";
+  const selectedIssue =
+    issues.find((issue) => issue.id === selectedIssueId) ?? issues[0] ?? null;
+
   return (
     <div className="space-y-4">
-      <div
-        aria-label="Analyzed screenshot preview"
-        className="aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-[var(--color-line)] bg-white bg-cover bg-center"
-        role="img"
-        style={{
-          backgroundImage: `url("${draft?.dataUrl ?? fallbackImageUrl ?? ""}")`,
-        }}
-      >
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-[var(--color-line)] bg-white">
+        <div
+          aria-label="Analyzed screenshot preview"
+          className="absolute inset-0 bg-cover bg-center"
+          role="img"
+          style={{
+            backgroundImage: `url("${backgroundImage}")`,
+          }}
+        />
+
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(255,255,255,0.1)]" />
+
+        {issues.flatMap((issue, issueIndex) =>
+          issue.highlights.map((highlight, highlightIndex) => {
+            const isSelected = issue.id === selectedIssue?.id;
+
+            return (
+              <button
+                key={`${issue.id}-${highlight.id}`}
+                type="button"
+                aria-label={`Highlight ${issue.title}`}
+                onClick={() => onSelectIssue?.(issue.id)}
+                className={`absolute overflow-visible rounded-xl border-2 transition ${
+                  isSelected
+                    ? "border-[var(--color-accent)] bg-[rgba(26,115,232,0.14)] shadow-[0_0_0_9999px_rgba(255,255,255,0.12)]"
+                    : "border-[rgba(24,128,56,0.6)] bg-[rgba(24,128,56,0.12)] hover:border-[var(--color-accent)] hover:bg-[rgba(26,115,232,0.1)]"
+                }`}
+                style={{
+                  height: `${highlight.height}%`,
+                  left: `${highlight.x}%`,
+                  top: `${highlight.y}%`,
+                  width: `${highlight.width}%`,
+                  zIndex: isSelected ? 2 : 1,
+                }}
+              >
+                <span
+                  className={`absolute -top-3 left-3 rounded-full px-2 py-1 text-[10px] font-medium tracking-[0.04em] ${
+                    isSelected
+                      ? "bg-[var(--color-accent)] text-white"
+                      : "bg-white text-[var(--color-foreground)]"
+                  }`}
+                >
+                  {issueIndex + 1}.{highlightIndex + 1} {highlight.label}
+                </span>
+              </button>
+            );
+          }),
+        )}
       </div>
+
+      {issues.length > 0 ? (
+        <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
+          <p className="eyebrow">Mapped issues</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {issues.map((issue) => {
+              const isSelected = issue.id === selectedIssue?.id;
+
+              return (
+                <button
+                  key={issue.id}
+                  type="button"
+                  onClick={() => onSelectIssue?.(issue.id)}
+                  className={`material-button px-4 py-2 text-sm ${
+                    isSelected
+                      ? "material-button-primary"
+                      : "material-button-secondary"
+                  }`}
+                >
+                  {issue.title}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
         {draft ? (
           <>
             <p className="text-sm">{draft.name}</p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-              <span className="app-chip px-3 py-1 text-xs">
-                {draft.type}
-              </span>
+              <span className="app-chip px-3 py-1 text-xs">{draft.type}</span>
               <span className="app-chip px-3 py-1 text-xs">
                 {formatBytes(draft.size)}
               </span>
