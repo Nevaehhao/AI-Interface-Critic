@@ -1,5 +1,6 @@
 import type { AnalysisReport } from "@/lib/analysis-report";
 import { analysisReportSchema } from "@/lib/analysis-report";
+import type { AnalysisSource } from "@/lib/analysis-result";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getServerEnv } from "@/lib/env";
@@ -7,11 +8,11 @@ import { getServerEnv } from "@/lib/env";
 type PersistAnalysisInput = {
   file: File;
   report: AnalysisReport;
-  source: "mock" | "openai";
+  source: AnalysisSource;
   userId: string | null;
 };
 
-type StoredAnalysisRow = {
+export type StoredAnalysisRow = {
   id: string;
   created_at: string;
   main_finding: string;
@@ -19,8 +20,14 @@ type StoredAnalysisRow = {
   product_type: string;
   report: AnalysisReport;
   screenshot_url: string | null;
-  source: "mock" | "openai";
+  source: AnalysisSource;
   user_id: string | null;
+};
+
+export type PersistedAnalysisRecord = {
+  report: AnalysisReport;
+  screenshotUrl: string | null;
+  source: AnalysisSource;
 };
 
 function sanitizeFileName(fileName: string) {
@@ -33,6 +40,10 @@ export async function persistAnalysis({
   source,
   userId,
 }: PersistAnalysisInput) {
+  if (!userId) {
+    return null;
+  }
+
   const supabaseAdmin = createSupabaseAdminClient();
 
   if (!supabaseAdmin) {
@@ -82,7 +93,9 @@ export async function persistAnalysis({
   };
 }
 
-export async function getPersistedAnalysisById(analysisId: string) {
+export async function getPersistedAnalysisById(
+  analysisId: string,
+): Promise<PersistedAnalysisRecord | null> {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
@@ -99,7 +112,7 @@ export async function getPersistedAnalysisById(analysisId: string) {
 
   const { data, error } = await supabase
     .from("analyses")
-    .select("report")
+    .select("report, screenshot_url, source")
     .eq("id", analysisId)
     .single();
 
@@ -107,7 +120,11 @@ export async function getPersistedAnalysisById(analysisId: string) {
     return null;
   }
 
-  return analysisReportSchema.parse(data.report);
+  return {
+    report: analysisReportSchema.parse(data.report),
+    screenshotUrl: data.screenshot_url,
+    source: data.source,
+  };
 }
 
 export async function listPersistedAnalyses() {

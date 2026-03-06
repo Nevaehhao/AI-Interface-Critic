@@ -4,6 +4,10 @@ import { listPersistedAnalyses } from "@/lib/supabase/analysis-store";
 
 export const dynamic = "force-dynamic";
 
+function formatAnalysisSource(source: "mock" | "ollama") {
+  return source === "ollama" ? "Local Ollama" : "Mock fallback";
+}
+
 export default async function HistoryPage() {
   const { analyses, user } = await listPersistedAnalyses();
 
@@ -18,8 +22,23 @@ export default async function HistoryPage() {
             <h1 className="mt-3 font-display text-4xl tracking-tight sm:text-5xl">
               Review past critiques.
             </h1>
+            {user?.email ? (
+              <p className="mt-3 text-sm text-[var(--color-muted)]">
+                Signed in as {user.email}
+              </p>
+            ) : null}
           </div>
           <div className="flex flex-wrap gap-3">
+            {user ? (
+              <form action="/auth/signout" method="post">
+                <button
+                  type="submit"
+                  className="inline-flex items-center rounded-full border border-[var(--color-line)] bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+                >
+                  Sign out
+                </button>
+              </form>
+            ) : null}
             <Link
               href="/upload"
               className="inline-flex items-center rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-[#ff9d57]"
@@ -70,10 +89,21 @@ export default async function HistoryPage() {
                 className="rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6"
               >
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
+                  {analysis.screenshot_url ? (
+                    <div
+                      aria-label="Saved analysis screenshot"
+                      className="aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#090d18] bg-cover bg-center lg:w-64"
+                      role="img"
+                      style={{
+                        backgroundImage: `url("${analysis.screenshot_url}")`,
+                      }}
+                    >
+                    </div>
+                  ) : null}
+                  <div className="flex-1">
                     <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.24em] text-[var(--color-muted)]">
                       <span>{analysis.product_type}</span>
-                      <span>{analysis.source}</span>
+                      <span>{formatAnalysisSource(analysis.source)}</span>
                       <span>{new Date(analysis.created_at).toLocaleString()}</span>
                     </div>
                     <h2 className="mt-3 text-2xl tracking-tight">

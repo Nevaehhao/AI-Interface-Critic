@@ -201,12 +201,11 @@ export function AnalysisLoadingView() {
 
         <div className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-5">
           <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-accent)]">
-            UX review model
+            Analysis engine
           </p>
           <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-            The report will be grouped into hierarchy, accessibility,
-            interaction, and layout so the output reads like a critique rather
-            than a chat transcript.
+            The app prefers a local Ollama model for screenshot critique and
+            falls back to typed mock output when the local model is unavailable.
           </p>
         </div>
       </aside>

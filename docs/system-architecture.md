@@ -11,7 +11,7 @@ The implementation should follow that order so the app behaves like a product in
 - Frontend: Next.js App Router
 - Styling: Tailwind CSS v4
 - Backend: Next.js Route Handlers
-- AI: OpenAI image analysis
+- AI: Ollama image analysis
 - Platform: Supabase Auth, Database, and Storage
 
 ## Core request flow
@@ -19,7 +19,7 @@ The implementation should follow that order so the app behaves like a product in
 1. The user uploads a screenshot from the web client
 2. The browser sends the image to `POST /api/analyze`
 3. The server validates the file and prepares analysis input
-4. The server calls OpenAI to generate structured UX feedback
+4. The server calls Ollama to generate structured UX feedback
 5. The server optionally uploads the screenshot to Supabase Storage
 6. The server optionally persists the analysis to Supabase Database
 7. The client renders the returned report
@@ -35,7 +35,7 @@ The implementation should follow that order so the app behaves like a product in
 
 ## Integration constraints
 
-- The app must still build locally when OpenAI or Supabase keys are missing
+- The app must still build locally when Ollama or Supabase are unavailable
 - Mock analysis should remain available for local UI development
 - Shared TypeScript schemas should define the API contract before model output is rendered
 

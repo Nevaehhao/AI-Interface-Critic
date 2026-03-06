@@ -14,7 +14,7 @@ Use short, readable names:
 - `feature/loading-state`
 - `feature/report-ui`
 - `feature/analyze-api`
-- `feature/openai-integration`
+- `feature/ollama-platform`
 - `feature/supabase-platform`
 
 ## Standard flow
@@ -89,7 +89,7 @@ Build the app in this branch order:
 4. `feature/loading-state`
 5. `feature/report-ui`
 6. `feature/analyze-api`
-7. `feature/openai-integration`
+7. `feature/ollama-platform`
 8. `feature/supabase-platform`
 
 ## Quality gate before merge

@@ -7,8 +7,15 @@ export default async function ReportPage({
   params: Promise<{ analysisId: string }>;
 }) {
   const { analysisId } = await params;
-  const initialReport =
+  const initialRecord =
     analysisId === "demo" ? null : await getPersistedAnalysisById(analysisId);
 
-  return <ReportPageClient analysisId={analysisId} initialReport={initialReport} />;
+  return (
+    <ReportPageClient
+      analysisId={analysisId}
+      initialReport={initialRecord?.report ?? null}
+      initialScreenshotUrl={initialRecord?.screenshotUrl ?? null}
+      initialSource={initialRecord?.source ?? "mock"}
+    />
+  );
 }
