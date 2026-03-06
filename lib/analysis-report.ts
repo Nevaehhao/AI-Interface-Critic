@@ -34,9 +34,20 @@ export const analysisSummarySchema = z.object({
   nextAction: z.string(),
 });
 
+export const analysisRedesignSuggestionSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  rationale: z.string(),
+  priority: z.enum(["now", "next", "later"]),
+  actions: z.array(z.string()).min(2),
+  expectedImpact: z.string(),
+});
+
 export const analysisReportContentSchema = z.object({
   summary: analysisSummarySchema,
   sections: z.array(analysisSectionSchema).min(1),
+  redesignSuggestions: z.array(analysisRedesignSuggestionSchema).default([]),
 });
 
 export const analysisReportSchema = z.object({
@@ -44,12 +55,14 @@ export const analysisReportSchema = z.object({
   createdAt: z.string(),
   summary: analysisReportContentSchema.shape.summary,
   sections: analysisReportContentSchema.shape.sections,
+  redesignSuggestions: analysisReportContentSchema.shape.redesignSuggestions,
 });
 
 export type AnalysisIssue = z.infer<typeof analysisIssueSchema>;
 export type AnalysisIssueHighlight = z.infer<typeof analysisIssueHighlightSchema>;
 export type AnalysisSection = z.infer<typeof analysisSectionSchema>;
 export type AnalysisSummary = z.infer<typeof analysisSummarySchema>;
+export type AnalysisRedesignSuggestion = z.infer<typeof analysisRedesignSuggestionSchema>;
 export type AnalysisReportContent = z.infer<typeof analysisReportContentSchema>;
 export type AnalysisReport = z.infer<typeof analysisReportSchema>;
 
@@ -231,6 +244,56 @@ export function createMockAnalysisReport(
             ],
           },
         ],
+      },
+    ],
+    redesignSuggestions: [
+      {
+        id: "redesign-cta-stack",
+        title: "Restructure the primary action stack",
+        summary:
+          "Make one action visually dominant and reduce the emphasis of nearby supporting elements.",
+        rationale:
+          "The current layout asks users to compare equally weighted options before they understand which action matters most.",
+        priority: "now",
+        actions: [
+          "Promote the primary CTA with stronger color contrast and more whitespace.",
+          "Demote secondary actions to tonal or text treatments instead of matching fill intensity.",
+          "Move supporting badges and helper text away from the CTA cluster.",
+        ],
+        expectedImpact:
+          "Users should identify the intended next step faster during first scan.",
+      },
+      {
+        id: "redesign-reading-rhythm",
+        title: "Improve reading rhythm with stronger type hierarchy",
+        summary:
+          "Create clearer separation between headline, metadata, and support copy.",
+        rationale:
+          "Several text blocks currently feel similar in scale and contrast, which weakens scan order and increases effort.",
+        priority: "next",
+        actions: [
+          "Increase contrast for critical labels and body copy.",
+          "Reserve uppercase microcopy for a smaller number of orientation moments.",
+          "Expand spacing between summary text and dense content clusters.",
+        ],
+        expectedImpact:
+          "The interface should feel easier to scan and more accessible for repeated review.",
+      },
+      {
+        id: "redesign-section-density",
+        title: "Reduce density in repeated card groups",
+        summary:
+          "Introduce more vertical spacing and simplify repeated surfaces so the layout can breathe.",
+        rationale:
+          "Dense stacks of cards and chips create unnecessary visual competition, especially when multiple sections are reviewed quickly.",
+        priority: "later",
+        actions: [
+          "Increase vertical spacing between grouped sections.",
+          "Collapse repeated borders or chip treatments that do not add meaning.",
+          "Use one container rhythm consistently instead of mixing equally strong surfaces.",
+        ],
+        expectedImpact:
+          "The interface should feel calmer and better organized without losing content depth.",
       },
     ],
   };
