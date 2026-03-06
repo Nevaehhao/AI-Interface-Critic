@@ -13,6 +13,7 @@ Analyze the provided UI screenshot and return structured UX feedback in these ca
 - Accessibility
 - Interaction clarity
 - Layout issues
+- Redesign suggestions
 
 Instructions:
 - Be specific and practical.
@@ -29,7 +30,7 @@ Instructions:
 export const analysisReportContentJsonSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["summary", "sections"],
+  required: ["summary", "sections", "redesignSuggestions"],
   properties: {
     summary: {
       type: "object",
@@ -107,6 +108,39 @@ export const analysisReportContentJsonSchema = {
               },
             },
           },
+        },
+      },
+    },
+    redesignSuggestions: {
+      type: "array",
+      minItems: 1,
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: [
+          "id",
+          "title",
+          "summary",
+          "rationale",
+          "priority",
+          "actions",
+          "expectedImpact",
+        ],
+        properties: {
+          id: { type: "string" },
+          title: { type: "string" },
+          summary: { type: "string" },
+          rationale: { type: "string" },
+          priority: {
+            type: "string",
+            enum: ["now", "next", "later"],
+          },
+          actions: {
+            type: "array",
+            minItems: 2,
+            items: { type: "string" },
+          },
+          expectedImpact: { type: "string" },
         },
       },
     },

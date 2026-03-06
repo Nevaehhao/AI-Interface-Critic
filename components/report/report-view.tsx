@@ -38,6 +38,18 @@ function severityTone(severity: string) {
   return "status-badge status-badge-neutral";
 }
 
+function suggestionPriorityTone(priority: string) {
+  if (priority === "now") {
+    return "status-badge status-badge-primary";
+  }
+
+  if (priority === "next") {
+    return "status-badge status-badge-warning";
+  }
+
+  return "status-badge status-badge-neutral";
+}
+
 function flattenHighlightableIssues(report: AnalysisReport): HighlightableIssue[] {
   return report.sections.flatMap((section) =>
     section.issues
@@ -186,6 +198,10 @@ export function ReportView({
                 {highlightableIssues.length} mapped issue
                 {highlightableIssues.length === 1 ? "" : "s"}
               </span>
+              <span className="app-chip">
+                {report.redesignSuggestions.length} redesign suggestion
+                {report.redesignSuggestions.length === 1 ? "" : "s"}
+              </span>
             </div>
 
             <h1 className="mt-5 text-4xl tracking-tight sm:text-5xl">
@@ -266,6 +282,12 @@ export function ReportView({
             <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
               <p className="eyebrow">Jump to section</p>
               <div className="mt-4 flex flex-wrap gap-2">
+                <a
+                  href="#redesign-suggestions"
+                  className="material-button material-button-secondary px-4 py-2 text-sm"
+                >
+                  Redesign suggestions
+                </a>
                 {report.sections.map((section) => (
                   <a
                     key={section.id}
@@ -278,6 +300,68 @@ export function ReportView({
               </div>
             </div>
           </aside>
+        </section>
+
+        <section id="redesign-suggestions" className="surface-card p-6 sm:p-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="eyebrow">Redesign suggestions</p>
+              <h2 className="mt-3 text-3xl tracking-tight sm:text-4xl">
+                A clearer plan for what to redesign next.
+              </h2>
+              <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-muted)]">
+                These suggestions roll multiple issue-level observations into broader design moves
+                you can take back into a real iteration cycle.
+              </p>
+            </div>
+            <span className="app-chip">
+              Suggested improvements module
+            </span>
+          </div>
+
+          {report.redesignSuggestions.length > 0 ? (
+            <div className="mt-8 grid gap-4 lg:grid-cols-3">
+              {report.redesignSuggestions.map((suggestion) => (
+                <article key={suggestion.id} className="surface-muted p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <span className={suggestionPriorityTone(suggestion.priority)}>
+                      {suggestion.priority}
+                    </span>
+                    <span className="app-chip">Redesign direction</span>
+                  </div>
+                  <h3 className="mt-4 text-xl tracking-tight">{suggestion.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                    {suggestion.summary}
+                  </p>
+
+                  <div className="mt-4 rounded-[1.25rem] bg-white p-4 shadow-sm">
+                    <p className="eyebrow">Why this matters</p>
+                    <p className="mt-2 text-sm leading-7">{suggestion.rationale}</p>
+                  </div>
+
+                  <div className="mt-4">
+                    <p className="eyebrow">Actions</p>
+                    <ul className="mt-3 space-y-2 text-sm leading-7 text-[var(--color-muted)]">
+                      {suggestion.actions.map((action) => (
+                        <li key={action}>{action}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="mt-4 rounded-[1.25rem] bg-[var(--color-accent-soft)] p-4">
+                    <p className="eyebrow text-[var(--color-accent)]">Expected impact</p>
+                    <p className="mt-2 text-sm leading-7">{suggestion.expectedImpact}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="surface-muted mt-8 p-5">
+              <p className="text-sm leading-7 text-[var(--color-muted)]">
+                This older report does not include dedicated redesign suggestions yet.
+              </p>
+            </div>
+          )}
         </section>
 
         <div className="grid gap-6">
