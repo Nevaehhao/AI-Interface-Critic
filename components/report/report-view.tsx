@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import type { AnalysisReport, AnalysisSection } from "@/lib/analysis-report";
+import type { AnalysisSource } from "@/lib/analysis-result";
 import { ReportScreenshotPreview } from "@/components/report/report-screenshot-preview";
 
 function scoreTone(score: number) {
@@ -79,9 +80,13 @@ function SectionCard({ section }: { section: AnalysisSection }) {
 export function ReportView({
   analysisId,
   report,
+  screenshotUrl = null,
+  source = "mock",
 }: {
   analysisId: string;
   report: AnalysisReport;
+  screenshotUrl?: string | null;
+  source?: AnalysisSource;
 }) {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,143,61,0.16),_transparent_32%),linear-gradient(180deg,#0b1020_0%,#090d18_54%,#070b14_100%)] px-6 py-16 text-[var(--color-foreground)] sm:px-10 lg:px-12">
@@ -96,8 +101,17 @@ export function ReportView({
               <span className="rounded-full border border-[var(--color-line)] bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.24em] text-[var(--color-muted)]">
                 Analysis {analysisId}
               </span>
-              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs uppercase tracking-[0.24em] text-emerald-200">
-                Mock report
+              <span
+                className={`rounded-full border px-4 py-2 text-xs uppercase tracking-[0.24em] ${
+                  source === "ollama"
+                    ? "border-sky-400/20 bg-sky-400/10 text-sky-100"
+                    : "border-emerald-400/20 bg-emerald-400/10 text-emerald-200"
+                }`}
+              >
+                {source === "ollama" ? "Ollama analysis" : "Mock fallback"}
+              </span>
+              <span className="rounded-full border border-white/8 px-4 py-2 text-xs uppercase tracking-[0.24em] text-[var(--color-muted)]">
+                {new Date(report.createdAt).toLocaleString()}
               </span>
             </div>
 
@@ -153,7 +167,7 @@ export function ReportView({
               </h2>
             </div>
 
-            <ReportScreenshotPreview />
+            <ReportScreenshotPreview fallbackImageUrl={screenshotUrl} />
 
             <div className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-5">
               <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-muted)]">

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createMockAnalyzeResponse } from "@/lib/analysis-result";
 import { createMockAnalysisReport } from "@/lib/analysis-report";
-import { analyzeScreenshotWithOpenAI } from "@/lib/openai-analysis";
+import { analyzeScreenshotWithOllama } from "@/lib/ollama-analysis";
 import { persistAnalysis } from "@/lib/supabase/analysis-store";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { validateImageFile } from "@/lib/uploads";
@@ -25,30 +25,28 @@ export async function POST(request: Request) {
   }
 
   try {
-    const openAIAnalysis = await analyzeScreenshotWithOpenAI(file);
+    const ollamaAnalysis = await analyzeScreenshotWithOllama(file);
 
-    if (openAIAnalysis) {
-      const supabase = await createSupabaseServerClient();
-      const {
-        data: { user },
-      } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
 
-      await persistAnalysis({
-        file,
-        report: openAIAnalysis,
-        source: "openai",
-        userId: user?.id ?? null,
-      }).catch((error) => {
-        console.error("Supabase persistence failed.", error);
-      });
+    await persistAnalysis({
+      file,
+      report: ollamaAnalysis,
+      source: "ollama",
+      userId: user?.id ?? null,
+    }).catch((error) => {
+      console.error("Supabase persistence failed.", error);
+    });
 
-      return NextResponse.json({
-        analysis: openAIAnalysis,
-        source: "openai",
-      });
-    }
+    return NextResponse.json({
+      analysis: ollamaAnalysis,
+      source: "ollama",
+    });
   } catch (error) {
-    console.error("OpenAI analysis failed, falling back to mock output.", error);
+    console.error("Ollama analysis failed, falling back to mock output.", error);
   }
 
   const mockResponse = createMockAnalyzeResponse();

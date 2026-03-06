@@ -3,7 +3,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.analyses (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users (id) on delete set null,
-  source text not null check (source in ('mock', 'openai')),
+  source text not null check (source in ('mock', 'ollama')),
   product_type text not null,
   overall_score integer not null check (overall_score between 0 and 100),
   main_finding text not null,

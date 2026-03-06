@@ -7,10 +7,12 @@ import {
 } from "@/lib/analysis-report";
 
 export const STORED_ANALYSIS_KEY = "ai-interface-critic.latest-analysis";
+export const ANALYSIS_SOURCE_VALUES = ["mock", "ollama"] as const;
+export type AnalysisSource = (typeof ANALYSIS_SOURCE_VALUES)[number];
 
 export const analyzeResponseSchema = z.object({
   analysis: analysisReportSchema,
-  source: z.enum(["mock", "openai"]),
+  source: z.enum(ANALYSIS_SOURCE_VALUES),
 });
 
 export type AnalyzeResponse = z.infer<typeof analyzeResponseSchema>;
@@ -44,4 +46,14 @@ export function getAnalysisForId(analysisId: string): AnalysisReport | null {
   }
 
   return latestAnalysis.analysis.id === analysisId ? latestAnalysis.analysis : null;
+}
+
+export function getAnalysisResultForId(analysisId: string) {
+  const latestAnalysis = loadLatestAnalysisResult();
+
+  if (!latestAnalysis) {
+    return null;
+  }
+
+  return latestAnalysis.analysis.id === analysisId ? latestAnalysis : null;
 }

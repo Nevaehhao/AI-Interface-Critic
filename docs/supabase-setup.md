@@ -10,6 +10,8 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 SUPABASE_STORAGE_BUCKET=ui-screenshots
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=gemma3
 ```
 
 Use the publishable key when available. The app also accepts the legacy anon key for compatibility.
@@ -48,6 +50,6 @@ The server uploads screenshots with the service role key so no client-side stora
 ## 5. Deployment notes
 
 - Deploy the Next.js app to Vercel
-- Add the same Supabase and OpenAI environment variables in Vercel
+- Add the same Supabase and Ollama environment variables in Vercel
 - Add the Vercel domain to Supabase Auth redirect URLs
 - Keep `SUPABASE_SERVICE_ROLE_KEY` server-only

@@ -8,7 +8,7 @@ AI Interface Critic is a web application that analyzes UI screenshots and return
 - TypeScript
 - Tailwind CSS v4
 - Supabase for auth, storage, and persistence
-- OpenAI for screenshot analysis
+- Ollama for screenshot analysis
 
 ## Current status
 
@@ -29,7 +29,7 @@ This repository is being built in feature-sized branches and merged into `main` 
 4. Loading experience
 5. Report UI
 6. Analyze API
-7. OpenAI integration
+7. Ollama integration
 8. Supabase platform integration
 
 ## Environment variables
@@ -53,4 +53,5 @@ npm run typecheck
 - [Product brief](./docs/product-brief.md)
 - [UX blueprint](./docs/ux-blueprint.md)
 - [System architecture](./docs/system-architecture.md)
+- [Ollama setup](./docs/ollama-setup.md)
 - [Supabase setup](./docs/supabase-setup.md)

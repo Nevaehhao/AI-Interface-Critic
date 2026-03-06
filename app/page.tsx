@@ -288,7 +288,7 @@ export default function Home() {
               <p className="max-w-2xl text-base leading-7 text-[var(--color-muted)]">
                 The product starts with one user and one job to be done. From
                 there, the system stays intentionally simple: Next.js for the
-                interface, OpenAI for critique generation, and Supabase for auth
+                interface, Ollama for critique generation, and Supabase for auth
                 plus persistence.
               </p>
             </div>
@@ -310,7 +310,7 @@ export default function Home() {
                 <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-accent)]">
                   AI
                 </p>
-                <p className="mt-3 text-base">OpenAI structured screenshot analysis</p>
+                <p className="mt-3 text-base">Ollama structured screenshot analysis</p>
               </article>
               <article className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-5">
                 <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-accent)]">

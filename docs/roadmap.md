@@ -149,7 +149,7 @@ Definition of done:
 - API returns mocked structured JSON
 - Front end consumes typed response cleanly
 
-### Feature 7: OpenAI integration
+### Feature 7: Ollama integration
 
 Goal:
 Replace mocked analysis with real model output.
@@ -158,7 +158,7 @@ Deliverables:
 
 - Prompt for UX critique
 - Image upload handling on server
-- OpenAI API call
+- Ollama API call
 - JSON response parsing with fallback handling
 
 Definition of done:
@@ -203,7 +203,7 @@ This is the implementation order I recommend:
 4. Feature 4: Loading experience
 5. Feature 5: Report UI with mocked data
 6. Feature 6: Analysis API contract
-7. Feature 7: OpenAI integration
+7. Feature 7: Ollama integration
 8. Feature 8: Supabase platform
 
 This order keeps UX structure ahead of model integration and avoids building an AI demo without product shape.
