@@ -7,7 +7,9 @@ AI Interface Critic is a web application that analyzes UI screenshots and return
 - Next.js App Router
 - TypeScript
 - Tailwind CSS v4
-- Supabase for auth, storage, and persistence
+- Neon Auth for sign-in
+- Neon Postgres for persistence
+- Cloudflare R2 for screenshot storage
 - Ollama for screenshot analysis
 
 ## Current status
@@ -30,7 +32,7 @@ This repository is being built in feature-sized branches and merged into `main` 
 5. Report UI
 6. Analyze API
 7. Ollama integration
-8. Supabase platform integration
+8. Platform integration and setup checks
 
 ## Environment variables
 
@@ -54,4 +56,5 @@ npm run typecheck
 - [UX blueprint](./docs/ux-blueprint.md)
 - [System architecture](./docs/system-architecture.md)
 - [Ollama setup](./docs/ollama-setup.md)
-- [Supabase setup](./docs/supabase-setup.md)
+- [Neon + R2 setup](./docs/neon-r2-setup.md)
+- [Deployment guide](./docs/deployment.md)

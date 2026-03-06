@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { SiteHeader } from "@/components/layout/site-header";
-import { listPersistedAnalyses } from "@/lib/supabase/analysis-store";
-import { listWorkspaces } from "@/lib/supabase/workspace-store";
+import { listPersistedAnalyses } from "@/lib/data/analysis-store";
+import { listWorkspaces } from "@/lib/data/workspace-store";
+import { hasDatabaseConfig, hasNeonAuthConfig } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,7 @@ export default async function HistoryPage({
     listWorkspaces(),
   ]);
 
+  const persistenceConfigured = hasDatabaseConfig() && hasNeonAuthConfig();
   const workspaceMap = new Map(
     (workspaces ?? []).map((workspace) => [workspace.id, workspace]),
   );
@@ -53,13 +56,7 @@ export default async function HistoryPage({
             ) : null}
           </div>
           <div className="flex flex-wrap gap-3">
-            {user ? (
-              <form action="/auth/signout" method="post">
-                <button type="submit" className="material-button material-button-secondary">
-                  Sign out
-                </button>
-              </form>
-            ) : null}
+            {user ? <SignOutButton /> : null}
             <Link
               href={selectedWorkspaceId ? `/upload?workspaceId=${selectedWorkspaceId}` : "/upload"}
               className="material-button material-button-primary"
@@ -112,19 +109,21 @@ export default async function HistoryPage({
           </div>
         ) : null}
 
-        {analyses === null ? (
+        {!persistenceConfigured || analyses === null ? (
           <div className="surface-card p-6 sm:p-8">
             <p className="eyebrow text-[var(--color-accent)]">
-              Supabase not configured
+              Platform setup required
             </p>
             <h2 className="mt-3 text-3xl tracking-tight">
-              Add Supabase keys to enable saved history.
+              Add Neon Auth and Neon Postgres to enable saved history.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-              The app can analyze screenshots without Supabase, but history,
-              auth, persistence, and workspace grouping stay inactive until project credentials are
-              available.
+              The app can analyze screenshots without persistence, but history, auth, and workspace
+              grouping stay inactive until `DATABASE_URL` and `NEON_AUTH_BASE_URL` are configured.
             </p>
+            <Link href="/setup" className="material-button material-button-secondary mt-6">
+              Open setup checklist
+            </Link>
           </div>
         ) : !user ? (
           <div className="surface-card p-6 sm:p-8">
@@ -135,8 +134,8 @@ export default async function HistoryPage({
               Sign in to unlock persistence.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-              Saved analyses and workspaces are tied to your Supabase account. Use Google,
-              Apple, or email sign-in to keep a history of critiques.
+              Saved analyses and workspaces are tied to your Neon Auth account. Use Google or
+              email sign-in to keep a history of critiques.
             </p>
           </div>
         ) : analyses && analyses.length > 0 ? (
@@ -200,7 +199,7 @@ export default async function HistoryPage({
               No saved analyses
             </p>
             <h2 className="mt-3 text-3xl tracking-tight">
-              Persistence is ready once Supabase is configured.
+              Persistence is ready once Neon is configured.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
               Run one analysis while signed in and it will appear here with its

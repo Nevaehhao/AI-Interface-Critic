@@ -1,0 +1,41 @@
+import { NextRequest, NextResponse } from "next/server";
+
+import { getStoredScreenshotKeyForAnalysis } from "@/lib/data/analysis-store";
+import { getScreenshotObject } from "@/lib/storage/r2";
+
+export async function GET(
+  _request: NextRequest,
+  {
+    params,
+  }: {
+    params: Promise<unknown>;
+  },
+) {
+  const { analysisId } = (await params) as { analysisId: string };
+  const screenshotKey = await getStoredScreenshotKeyForAnalysis(analysisId);
+
+  if (!screenshotKey) {
+    return NextResponse.json({ error: "Screenshot not found." }, { status: 404 });
+  }
+
+  const object = await getScreenshotObject(screenshotKey);
+
+  if (!object?.body) {
+    return NextResponse.json({ error: "Screenshot storage is not configured." }, { status: 404 });
+  }
+
+  const headers = new Headers({
+    "Cache-Control": "private, max-age=3600",
+    "Content-Type": object.contentType ?? "application/octet-stream",
+  });
+
+  if (object.contentLength) {
+    headers.set("Content-Length", String(object.contentLength));
+  }
+
+  if (object.etag) {
+    headers.set("ETag", object.etag);
+  }
+
+  return new NextResponse(object.body.transformToWebStream(), { headers });
+}

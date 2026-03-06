@@ -1,9 +1,11 @@
 import Link from "next/link";
 
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { WorkspaceCreateForm } from "@/components/workspaces/workspace-create-form";
-import { listPersistedAnalyses } from "@/lib/supabase/analysis-store";
-import { listWorkspaces } from "@/lib/supabase/workspace-store";
+import { listPersistedAnalyses } from "@/lib/data/analysis-store";
+import { listWorkspaces } from "@/lib/data/workspace-store";
+import { hasDatabaseConfig, hasNeonAuthConfig } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +13,7 @@ export default async function WorkspacesPage() {
   const [{ analyses, user: analysisUser }, { workspaces, user: workspaceUser }] =
     await Promise.all([listPersistedAnalyses(), listWorkspaces()]);
 
+  const persistenceConfigured = hasDatabaseConfig() && hasNeonAuthConfig();
   const user = workspaceUser ?? analysisUser;
   const analysisCounts = new Map<string, number>();
 
@@ -41,21 +44,27 @@ export default async function WorkspacesPage() {
               right bucket before analysis begins.
             </p>
           </div>
-          <Link href="/upload" className="material-button material-button-primary">
-            New analysis
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            {user ? <SignOutButton /> : null}
+            <Link href="/upload" className="material-button material-button-primary">
+              New analysis
+            </Link>
+          </div>
         </div>
 
-        {workspaces === null ? (
+        {!persistenceConfigured || workspaces === null ? (
           <div className="surface-card p-6 sm:p-8">
-            <p className="eyebrow text-[var(--color-accent)]">Supabase not configured</p>
+            <p className="eyebrow text-[var(--color-accent)]">Platform setup required</p>
             <h2 className="mt-3 text-3xl tracking-tight">
-              Add Supabase keys to enable workspace persistence.
+              Add Neon Auth and Neon Postgres to enable workspace persistence.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-              Workspaces are stored with Supabase, so this feature stays inactive until project
-              credentials are configured.
+              Workspaces are stored in Neon and tied to the signed-in account. They stay inactive
+              until the app has `DATABASE_URL` and `NEON_AUTH_BASE_URL`.
             </p>
+            <Link href="/setup" className="material-button material-button-secondary mt-6">
+              Open setup checklist
+            </Link>
           </div>
         ) : !user ? (
           <div className="surface-card p-6 sm:p-8">
@@ -64,8 +73,8 @@ export default async function WorkspacesPage() {
               Sign in to create shared project buckets.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-              Workspaces are attached to your Supabase account so your history, uploads, and reports
-              stay grouped correctly.
+              Workspaces are attached to your Neon Auth account so your history, uploads, and
+              reports stay grouped correctly.
             </p>
             <Link href="/auth/sign-in" className="material-button material-button-secondary mt-6">
               Open sign-in
@@ -82,7 +91,10 @@ export default async function WorkspacesPage() {
               {workspaces.length > 0 ? (
                 <div className="mt-6 grid gap-4">
                   {workspaces.map((workspace) => (
-                    <article key={workspace.id} className="surface-card rounded-[1.5rem] p-5 shadow-none">
+                    <article
+                      key={workspace.id}
+                      className="surface-card rounded-[1.5rem] p-5 shadow-none"
+                    >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <h3 className="text-xl tracking-tight">{workspace.name}</h3>

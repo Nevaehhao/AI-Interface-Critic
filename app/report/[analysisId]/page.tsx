@@ -1,5 +1,5 @@
-import { getPersistedAnalysisById } from "@/lib/supabase/analysis-store";
 import { ReportPageClient } from "@/components/report/report-page-client";
+import { getPersistedAnalysisById } from "@/lib/data/analysis-store";
 
 export default async function ReportPage({
   params,

@@ -12,7 +12,7 @@ The implementation should follow that order so the app behaves like a product in
 - Styling: Tailwind CSS v4
 - Backend: Next.js Route Handlers
 - AI: Ollama image analysis
-- Platform: Supabase Auth, Database, and Storage
+- Platform: Neon Auth, Neon Postgres, and Cloudflare R2
 
 ## Core request flow
 
@@ -20,8 +20,8 @@ The implementation should follow that order so the app behaves like a product in
 2. The browser sends the image to `POST /api/analyze`
 3. The server validates the file and prepares analysis input
 4. The server calls Ollama to generate structured UX feedback
-5. The server optionally uploads the screenshot to Supabase Storage
-6. The server optionally persists the analysis to Supabase Database
+5. The server optionally uploads the screenshot to Cloudflare R2
+6. The server optionally persists the analysis to Neon Postgres
 7. The client renders the returned report
 
 ## Initial route map
@@ -35,11 +35,13 @@ The implementation should follow that order so the app behaves like a product in
 
 ## Integration constraints
 
-- The app must still build locally when Ollama or Supabase are unavailable
+- The app must still build locally when Ollama, Neon, or R2 are unavailable
 - Mock analysis should remain available for local UI development
 - Shared TypeScript schemas should define the API contract before model output is rendered
 
 ## Deployment target
 
 - Vercel for application hosting
-- Supabase for auth, storage, and persistence
+- Neon Auth for Google and email sign-in
+- Neon Postgres for report and workspace persistence
+- Cloudflare R2 for screenshot storage

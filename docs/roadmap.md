@@ -166,22 +166,22 @@ Definition of done:
 - Real screenshot produces a valid report
 - Errors and malformed responses are handled
 
-### Feature 8: Supabase platform
+### Feature 8: Platform layer
 
 Goal:
-Integrate Supabase auth, storage, persistence, and platform setup for deployment.
+Integrate Neon Auth, Neon Postgres, Cloudflare R2, and platform setup for deployment.
 
 Deliverables:
 
-- Supabase project setup
-- Email, Google, and Apple authentication
-- Screenshot storage configuration
+- Neon Auth setup
+- Google and email/password authentication
+- Screenshot storage configuration with Cloudflare R2
 - Analysis metadata and result persistence
 - Deployment and environment setup notes
 
 Definition of done:
 
-- Users can authenticate through configured Supabase providers
+- Users can authenticate through configured Neon Auth providers
 - Uploaded screenshots and completed analyses are persisted
 - Setup and deployment steps are documented
 
@@ -204,7 +204,7 @@ This is the implementation order I recommend:
 5. Feature 5: Report UI with mocked data
 6. Feature 6: Analysis API contract
 7. Feature 7: Ollama integration
-8. Feature 8: Supabase platform
+8. Feature 8: Platform layer
 
 This order keeps UX structure ahead of model integration and avoids building an AI demo without product shape.
 
