@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createMockAnalyzeResponse } from "@/lib/analysis-result";
 import { createMockAnalysisReport } from "@/lib/analysis-report";
+import { analyzeScreenshotWithOpenAI } from "@/lib/openai-analysis";
 import { validateImageFile } from "@/lib/uploads";
 
 export async function POST(request: Request) {
@@ -19,6 +20,19 @@ export async function POST(request: Request) {
 
   if (validationError) {
     return NextResponse.json({ error: validationError }, { status: 400 });
+  }
+
+  try {
+    const openAIAnalysis = await analyzeScreenshotWithOpenAI(file);
+
+    if (openAIAnalysis) {
+      return NextResponse.json({
+        analysis: openAIAnalysis,
+        source: "openai",
+      });
+    }
+  } catch (error) {
+    console.error("OpenAI analysis failed, falling back to mock output.", error);
   }
 
   const mockResponse = createMockAnalyzeResponse();
