@@ -1,0 +1,147 @@
+import type { AnalysisReport } from "@/lib/analysis-report";
+import { analysisReportSchema } from "@/lib/analysis-report";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getServerEnv } from "@/lib/env";
+
+type PersistAnalysisInput = {
+  file: File;
+  report: AnalysisReport;
+  source: "mock" | "openai";
+  userId: string | null;
+};
+
+type StoredAnalysisRow = {
+  id: string;
+  created_at: string;
+  main_finding: string;
+  overall_score: number;
+  product_type: string;
+  report: AnalysisReport;
+  screenshot_url: string | null;
+  source: "mock" | "openai";
+  user_id: string | null;
+};
+
+function sanitizeFileName(fileName: string) {
+  return fileName.replace(/[^a-zA-Z0-9.-]/g, "-").toLowerCase();
+}
+
+export async function persistAnalysis({
+  file,
+  report,
+  source,
+  userId,
+}: PersistAnalysisInput) {
+  const supabaseAdmin = createSupabaseAdminClient();
+
+  if (!supabaseAdmin) {
+    return null;
+  }
+
+  const storageBucket = getServerEnv().SUPABASE_STORAGE_BUCKET;
+  const extension = file.name.includes(".") ? file.name.split(".").pop() : "png";
+  const sanitizedName = sanitizeFileName(file.name);
+  const storagePath = `${userId ?? "anonymous"}/${report.id}-${sanitizedName || `screenshot.${extension}`}`;
+
+  const uploadResult = await supabaseAdmin.storage
+    .from(storageBucket)
+    .upload(storagePath, file, {
+      cacheControl: "3600",
+      contentType: file.type,
+      upsert: true,
+    });
+
+  if (uploadResult.error) {
+    throw uploadResult.error;
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabaseAdmin.storage.from(storageBucket).getPublicUrl(storagePath);
+
+  const insertResult = await supabaseAdmin.from("analyses").upsert({
+    created_at: report.createdAt,
+    id: report.id,
+    main_finding: report.summary.mainFinding,
+    overall_score: report.summary.overallScore,
+    product_type: report.summary.productType,
+    report,
+    screenshot_url: publicUrl,
+    source,
+    user_id: userId,
+  });
+
+  if (insertResult.error) {
+    throw insertResult.error;
+  }
+
+  return {
+    id: report.id,
+    screenshotUrl: publicUrl,
+  };
+}
+
+export async function getPersistedAnalysisById(analysisId: string) {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("analyses")
+    .select("report")
+    .eq("id", analysisId)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return analysisReportSchema.parse(data.report);
+}
+
+export async function listPersistedAnalyses() {
+  const supabase = await createSupabaseServerClient();
+
+  if (!supabase) {
+    return { analyses: null, user: null };
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { analyses: [], user: null };
+  }
+
+  const { data, error } = await supabase
+    .from("analyses")
+    .select(
+      "id, created_at, main_finding, overall_score, product_type, report, screenshot_url, source, user_id",
+    )
+    .order("created_at", { ascending: false })
+    .limit(24);
+
+  if (error) {
+    return { analyses: [], user };
+  }
+
+  return {
+    analyses: (data ?? []).map((analysis) => ({
+      ...analysis,
+      report: analysisReportSchema.parse(analysis.report),
+    })) as StoredAnalysisRow[],
+    user,
+  };
+}

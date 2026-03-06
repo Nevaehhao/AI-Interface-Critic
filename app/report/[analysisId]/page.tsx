@@ -1,3 +1,4 @@
+import { getPersistedAnalysisById } from "@/lib/supabase/analysis-store";
 import { ReportPageClient } from "@/components/report/report-page-client";
 
 export default async function ReportPage({
@@ -6,6 +7,8 @@ export default async function ReportPage({
   params: Promise<{ analysisId: string }>;
 }) {
   const { analysisId } = await params;
+  const initialReport =
+    analysisId === "demo" ? null : await getPersistedAnalysisById(analysisId);
 
-  return <ReportPageClient analysisId={analysisId} />;
+  return <ReportPageClient analysisId={analysisId} initialReport={initialReport} />;
 }

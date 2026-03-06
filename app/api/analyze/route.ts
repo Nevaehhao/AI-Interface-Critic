@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { createMockAnalyzeResponse } from "@/lib/analysis-result";
 import { createMockAnalysisReport } from "@/lib/analysis-report";
 import { analyzeScreenshotWithOpenAI } from "@/lib/openai-analysis";
+import { persistAnalysis } from "@/lib/supabase/analysis-store";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { validateImageFile } from "@/lib/uploads";
 
 export async function POST(request: Request) {
@@ -26,6 +28,20 @@ export async function POST(request: Request) {
     const openAIAnalysis = await analyzeScreenshotWithOpenAI(file);
 
     if (openAIAnalysis) {
+      const supabase = await createSupabaseServerClient();
+      const {
+        data: { user },
+      } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+
+      await persistAnalysis({
+        file,
+        report: openAIAnalysis,
+        source: "openai",
+        userId: user?.id ?? null,
+      }).catch((error) => {
+        console.error("Supabase persistence failed.", error);
+      });
+
       return NextResponse.json({
         analysis: openAIAnalysis,
         source: "openai",
@@ -36,12 +52,27 @@ export async function POST(request: Request) {
   }
 
   const mockResponse = createMockAnalyzeResponse();
+  const mockAnalysis = createMockAnalysisReport({
+    createdAt: new Date().toISOString(),
+    id: crypto.randomUUID(),
+  });
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+
+  await persistAnalysis({
+    file,
+    report: mockAnalysis,
+    source: "mock",
+    userId: user?.id ?? null,
+  }).catch((error) => {
+    console.error("Supabase persistence failed.", error);
+  });
 
   return NextResponse.json({
     ...mockResponse,
-    analysis: createMockAnalysisReport({
-      createdAt: new Date().toISOString(),
-      id: crypto.randomUUID(),
-    }),
+    analysis: mockAnalysis,
   });
 }
