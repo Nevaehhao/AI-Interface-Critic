@@ -14,6 +14,13 @@ AI Interface Critic is a web application that analyzes UI screenshots and return
 
 This repository is being built in feature-sized branches and merged into `main` after each milestone.
 
+## Product focus
+
+- Problem: junior designers need fast pre-review UX feedback
+- Input: UI screenshot
+- Processing: AI UX analysis
+- Output: structured critique report
+
 ## Feature roadmap
 
 1. Project scaffold
@@ -43,3 +50,6 @@ npm run typecheck
 
 - [Roadmap](./docs/roadmap.md)
 - [Git workflow](./docs/git-workflow.md)
+- [Product brief](./docs/product-brief.md)
+- [UX blueprint](./docs/ux-blueprint.md)
+- [System architecture](./docs/system-architecture.md)
