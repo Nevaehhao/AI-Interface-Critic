@@ -5,6 +5,8 @@ export type PendingAnalysisDraft = {
   name: string;
   size: number;
   type: string;
+  workspaceId?: string | null;
+  workspaceName?: string | null;
 };
 
 export function fileToDataUrl(file: File) {
@@ -28,13 +30,21 @@ export function fileToDataUrl(file: File) {
   });
 }
 
-export async function savePendingAnalysisDraft(file: File) {
+export async function savePendingAnalysisDraft(
+  file: File,
+  options?: {
+    workspaceId?: string | null;
+    workspaceName?: string | null;
+  },
+) {
   const dataUrl = await fileToDataUrl(file);
   const draft: PendingAnalysisDraft = {
     dataUrl,
     name: file.name,
     size: file.size,
     type: file.type,
+    workspaceId: options?.workspaceId ?? null,
+    workspaceName: options?.workspaceName ?? null,
   };
 
   window.sessionStorage.setItem(PENDING_ANALYSIS_KEY, JSON.stringify(draft));

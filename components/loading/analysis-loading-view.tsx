@@ -57,6 +57,9 @@ export function AnalysisLoadingView() {
         const file = await dataUrlToFile(currentDraft);
         const formData = new FormData();
         formData.append("file", file);
+        if (currentDraft.workspaceId) {
+          formData.append("workspaceId", currentDraft.workspaceId);
+        }
 
         const response = await fetch("/api/analyze", {
           body: formData,
@@ -207,6 +210,11 @@ export function AnalysisLoadingView() {
             The app prefers a local Ollama model for screenshot critique and
             falls back to typed mock output when the local model is unavailable.
           </p>
+          {draft.workspaceName ? (
+            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+              This run will be saved to the workspace <strong>{draft.workspaceName}</strong>.
+            </p>
+          ) : null}
         </div>
       </aside>
     </div>

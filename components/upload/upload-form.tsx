@@ -1,12 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 
 import {
   savePendingAnalysisDraft,
 } from "@/lib/analysis-draft";
+import type { WorkspaceRecord } from "@/lib/supabase/workspace-store";
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_UPLOAD_SIZE_MB,
@@ -14,7 +16,15 @@ import {
   validateImageFile,
 } from "@/lib/uploads";
 
-export function UploadForm() {
+export function UploadForm({
+  initialWorkspaceId = null,
+  isSignedIn,
+  workspaces,
+}: {
+  initialWorkspaceId?: string | null;
+  isSignedIn: boolean;
+  workspaces: WorkspaceRecord[];
+}) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +32,14 @@ export function UploadForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>(
+    workspaces.some((workspace) => workspace.id === initialWorkspaceId)
+      ? initialWorkspaceId ?? ""
+      : workspaces[0]?.id ?? "",
+  );
+
+  const selectedWorkspace =
+    workspaces.find((workspace) => workspace.id === selectedWorkspaceId) ?? null;
 
   useEffect(() => {
     return () => {
@@ -92,7 +110,10 @@ export function UploadForm() {
     try {
       setIsSubmitting(true);
       setError(null);
-      await savePendingAnalysisDraft(selectedFile);
+      await savePendingAnalysisDraft(selectedFile, {
+        workspaceId: selectedWorkspace?.id ?? null,
+        workspaceName: selectedWorkspace?.name ?? null,
+      });
       router.push("/loading");
     } catch (submitError) {
       setError(
@@ -118,6 +139,55 @@ export function UploadForm() {
             Start with a single interface image. The MVP accepts PNG, JPG, and
             WebP files up to {MAX_UPLOAD_SIZE_MB}MB.
           </p>
+        </div>
+
+        <div className="surface-muted p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="eyebrow text-[var(--color-accent)]">Workspace</p>
+              <h2 className="mt-3 text-2xl tracking-tight">
+                Organize this critique before you run it.
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--color-muted)]">
+                Workspaces let you group analyses by product, case study, or client.
+              </p>
+            </div>
+            <Link href="/workspaces" className="material-button material-button-secondary">
+              Manage workspaces
+            </Link>
+          </div>
+
+          {isSignedIn ? (
+            workspaces.length > 0 ? (
+              <label className="mt-5 block space-y-2">
+                <span className="text-sm text-[var(--color-muted)]">Save analysis to</span>
+                <select
+                  value={selectedWorkspaceId}
+                  onChange={(event) => setSelectedWorkspaceId(event.target.value)}
+                  className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
+                >
+                  {workspaces.map((workspace) => (
+                    <option key={workspace.id} value={workspace.id}>
+                      {workspace.name}
+                    </option>
+                  ))}
+                </select>
+                {selectedWorkspace?.description ? (
+                  <p className="text-sm leading-7 text-[var(--color-muted)]">
+                    {selectedWorkspace.description}
+                  </p>
+                ) : null}
+              </label>
+            ) : (
+              <div className="mt-5 rounded-2xl bg-[var(--color-warning-soft)] px-4 py-3 text-sm text-[var(--color-warning)]">
+                Create your first workspace to group analyses by project.
+              </div>
+            )
+          ) : (
+            <div className="mt-5 rounded-2xl bg-[var(--color-accent-soft)] px-4 py-3 text-sm text-[var(--color-accent)]">
+              Sign in to save analyses into reusable workspaces. Anonymous runs still work locally.
+            </div>
+          )}
         </div>
 
         <div
@@ -227,6 +297,9 @@ export function UploadForm() {
             <li>The screenshot is prepared in the browser</li>
             <li>The app transitions into a staged analysis state</li>
             <li>A structured report is rendered after processing</li>
+            {selectedWorkspace ? (
+              <li>The result is assigned to {selectedWorkspace.name}</li>
+            ) : null}
           </ul>
         </div>
 

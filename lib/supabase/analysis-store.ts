@@ -10,6 +10,7 @@ type PersistAnalysisInput = {
   report: AnalysisReport;
   source: AnalysisSource;
   userId: string | null;
+  workspaceId?: string | null;
 };
 
 export type StoredAnalysisRow = {
@@ -22,6 +23,7 @@ export type StoredAnalysisRow = {
   screenshot_url: string | null;
   source: AnalysisSource;
   user_id: string | null;
+  workspace_id: string | null;
 };
 
 export type PersistedAnalysisRecord = {
@@ -39,6 +41,7 @@ export async function persistAnalysis({
   report,
   source,
   userId,
+  workspaceId = null,
 }: PersistAnalysisInput) {
   if (!userId) {
     return null;
@@ -81,6 +84,7 @@ export async function persistAnalysis({
     screenshot_url: publicUrl,
     source,
     user_id: userId,
+    workspace_id: workspaceId,
   });
 
   if (insertResult.error) {
@@ -127,7 +131,7 @@ export async function getPersistedAnalysisById(
   };
 }
 
-export async function listPersistedAnalyses() {
+export async function listPersistedAnalyses(workspaceId?: string | null) {
   const supabase = await createSupabaseServerClient();
 
   if (!supabase) {
@@ -142,13 +146,19 @@ export async function listPersistedAnalyses() {
     return { analyses: [], user: null };
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("analyses")
     .select(
-      "id, created_at, main_finding, overall_score, product_type, report, screenshot_url, source, user_id",
+      "id, created_at, main_finding, overall_score, product_type, report, screenshot_url, source, user_id, workspace_id",
     )
     .order("created_at", { ascending: false })
     .limit(24);
+
+  if (workspaceId) {
+    query = query.eq("workspace_id", workspaceId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return { analyses: [], user };
