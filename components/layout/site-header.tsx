@@ -4,6 +4,8 @@ const navItems = [
   { href: "#workflow", label: "Workflow" },
   { href: "#report-preview", label: "Report Preview" },
   { href: "#system", label: "System" },
+  { href: "/history", label: "History" },
+  { href: "/auth/sign-in", label: "Sign in" },
 ];
 
 export function SiteHeader() {
@@ -34,12 +36,20 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <Link
-          href="/upload"
-          className="inline-flex items-center rounded-full border border-[var(--color-line)] bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
-        >
-          Start analysis
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/history"
+            className="hidden items-center rounded-full border border-[var(--color-line)] bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10 sm:inline-flex"
+          >
+            History
+          </Link>
+          <Link
+            href="/upload"
+            className="inline-flex items-center rounded-full border border-[var(--color-line)] bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+          >
+            Start analysis
+          </Link>
+        </div>
       </div>
     </header>
   );

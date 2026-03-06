@@ -53,3 +53,4 @@ npm run typecheck
 - [Product brief](./docs/product-brief.md)
 - [UX blueprint](./docs/ux-blueprint.md)
 - [System architecture](./docs/system-architecture.md)
+- [Supabase setup](./docs/supabase-setup.md)
