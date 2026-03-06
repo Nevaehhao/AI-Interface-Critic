@@ -1,5 +1,4 @@
-import { mockAnalysisReport } from "@/lib/analysis-report";
-import { ReportView } from "@/components/report/report-view";
+import { ReportPageClient } from "@/components/report/report-page-client";
 
 export default async function ReportPage({
   params,
@@ -8,5 +7,5 @@ export default async function ReportPage({
 }) {
   const { analysisId } = await params;
 
-  return <ReportView analysisId={analysisId} report={mockAnalysisReport} />;
+  return <ReportPageClient analysisId={analysisId} />;
 }
