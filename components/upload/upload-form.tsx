@@ -106,12 +106,12 @@ export function UploadForm() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="space-y-6">
+      <section className="surface-card space-y-6 p-6 sm:p-8">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-[var(--color-muted)]">
+          <p className="eyebrow">
             Step 1
           </p>
-          <h1 className="mt-3 font-display text-4xl tracking-tight sm:text-5xl">
+          <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">
             Upload a screenshot for critique.
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
@@ -127,13 +127,13 @@ export function UploadForm() {
           onDragOver={handleDragOver}
           className={`rounded-[2rem] border border-dashed p-6 transition sm:p-8 ${
             isDragging
-              ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
-              : "border-[var(--color-line)] bg-white/5"
+              ? "border-[var(--color-accent)] bg-[rgba(232,240,254,0.92)]"
+              : "border-[var(--color-line)] bg-[rgba(255,255,255,0.74)]"
           }`}
         >
           <div className="flex flex-col gap-6">
             <div className="space-y-3">
-              <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-accent)]">
+              <p className="eyebrow text-[var(--color-accent)]">
                 Screenshot input
               </p>
               <h2 className="text-2xl tracking-tight">
@@ -149,11 +149,11 @@ export function UploadForm() {
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-slate-950 transition hover:bg-[#ff9d57]"
+                className="material-button material-button-primary"
               >
                 Choose screenshot
               </button>
-              <div className="inline-flex items-center rounded-full border border-[var(--color-line)] px-4 py-3 text-sm text-[var(--color-muted)]">
+              <div className="app-chip">
                 Accepted: PNG, JPG, WebP
               </div>
             </div>
@@ -167,7 +167,7 @@ export function UploadForm() {
             />
 
             {error ? (
-              <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+              <div className="rounded-2xl bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
                 {error}
               </div>
             ) : null}
@@ -175,19 +175,19 @@ export function UploadForm() {
         </div>
       </section>
 
-      <aside className="space-y-5 rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6">
+      <aside className="surface-tonal space-y-5 p-6">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-[var(--color-muted)]">
+          <p className="eyebrow">
             Selected file
           </p>
-          <h2 className="mt-3 font-display text-3xl tracking-tight">
+          <h2 className="mt-3 text-3xl tracking-tight">
             Preview before analysis
           </h2>
         </div>
 
         {selectedFile && previewUrl ? (
           <div className="space-y-5">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a0f1a]">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-[var(--color-line)] bg-white">
               <Image
                 alt="Selected UI screenshot preview"
                 fill
@@ -198,20 +198,20 @@ export function UploadForm() {
               />
             </div>
 
-            <div className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-4">
-              <p className="text-sm text-white">{selectedFile.name}</p>
+            <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
+              <p className="text-sm">{selectedFile.name}</p>
               <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-                <span className="rounded-full border border-white/8 px-3 py-1">
+                <span className="app-chip px-3 py-1 text-xs">
                   {selectedFile.type}
                 </span>
-                <span className="rounded-full border border-white/8 px-3 py-1">
+                <span className="app-chip px-3 py-1 text-xs">
                   {formatBytes(selectedFile.size)}
                 </span>
               </div>
             </div>
           </div>
         ) : (
-          <div className="rounded-[1.5rem] border border-dashed border-[var(--color-line)] bg-[#090d18]/60 p-6">
+          <div className="surface-muted border-dashed p-6">
             <p className="text-sm leading-7 text-[var(--color-muted)]">
               Your screenshot preview will appear here once a valid image is
               selected.
@@ -219,8 +219,8 @@ export function UploadForm() {
           </div>
         )}
 
-        <div className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-5">
-          <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-accent)]">
+        <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+          <p className="eyebrow text-[var(--color-accent)]">
             What happens next
           </p>
           <ul className="mt-4 space-y-3 text-sm leading-7 text-[var(--color-muted)]">
@@ -234,7 +234,7 @@ export function UploadForm() {
           type="button"
           disabled={!selectedFile || isSubmitting}
           onClick={handleSubmit}
-          className="inline-flex w-full items-center justify-center rounded-full bg-[var(--color-accent)] px-5 py-3 text-sm font-medium text-slate-950 transition hover:bg-[#ff9d57] disabled:cursor-not-allowed disabled:opacity-50"
+          className="material-button material-button-primary w-full disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "Preparing analysis..." : "Analyze screenshot"}
         </button>

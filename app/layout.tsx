@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import { Roboto_Flex, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+const robotoFlex = Roboto_Flex({
   variable: "--font-display",
   subsets: ["latin"],
 });
 
-const plexMono = IBM_Plex_Mono({
+const robotoMono = Roboto_Mono({
   variable: "--font-mono",
   weight: ["400", "500"],
   subsets: ["latin"],
@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${spaceGrotesk.variable} ${plexMono.variable} antialiased`}
+        className={`${robotoFlex.variable} ${robotoMono.variable} antialiased`}
       >
         {children}
       </body>

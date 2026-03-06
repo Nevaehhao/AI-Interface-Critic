@@ -94,11 +94,11 @@ export function AnalysisLoadingView() {
 
   if (!draft) {
     return (
-      <div className="rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6 sm:p-8">
-        <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-accent)]">
+      <div className="surface-card p-6 sm:p-8">
+        <p className="eyebrow text-[var(--color-accent)]">
           Missing screenshot
         </p>
-        <h1 className="mt-4 font-display text-3xl tracking-tight sm:text-4xl">
+        <h1 className="mt-4 text-3xl tracking-tight sm:text-4xl">
           There is no pending upload to analyze.
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
@@ -107,7 +107,7 @@ export function AnalysisLoadingView() {
         </p>
         <Link
           href="/upload"
-          className="mt-6 inline-flex items-center rounded-full border border-[var(--color-line)] bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+          className="material-button material-button-secondary mt-6"
         >
           Go to upload
         </Link>
@@ -117,11 +117,11 @@ export function AnalysisLoadingView() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-      <section className="rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6 sm:p-8">
-        <p className="text-xs uppercase tracking-[0.32em] text-[var(--color-muted)]">
+      <section className="surface-card p-6 sm:p-8">
+        <p className="eyebrow">
           Step 2
         </p>
-        <h1 className="mt-3 font-display text-4xl tracking-tight sm:text-5xl">
+        <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">
           The screenshot is being reviewed.
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
@@ -130,7 +130,7 @@ export function AnalysisLoadingView() {
         </p>
 
         {error ? (
-          <div className="mt-6 rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+          <div className="mt-6 rounded-2xl bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
             {error}
           </div>
         ) : null}
@@ -147,36 +147,36 @@ export function AnalysisLoadingView() {
                   isActive
                     ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
                     : isComplete
-                      ? "border-emerald-400/20 bg-emerald-400/10"
-                      : "border-white/8 bg-[#090d18]"
+                      ? "border-[rgba(24,128,56,0.18)] bg-[var(--color-success-soft)]"
+                      : "border-[var(--color-line)] bg-[rgba(255,255,255,0.7)]"
                 }`}
               >
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-muted)]">
                     {isComplete ? "Complete" : isActive ? "In progress" : "Queued"}
                   </p>
-                  <span className="font-mono text-sm text-white/80">
+                  <span className="font-mono text-sm text-[var(--color-muted)]">
                     0{index + 1}
                   </span>
                 </div>
-                <p className="mt-3 text-base text-white">{step}</p>
+                <p className="mt-3 text-base">{step}</p>
               </div>
             );
           })}
         </div>
       </section>
 
-      <aside className="space-y-5 rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6">
+      <aside className="surface-tonal space-y-5 p-6">
         <div>
-          <p className="text-xs uppercase tracking-[0.32em] text-[var(--color-muted)]">
+          <p className="eyebrow">
             Screenshot snapshot
           </p>
-          <h2 className="mt-3 font-display text-3xl tracking-tight">
+          <h2 className="mt-3 text-3xl tracking-tight">
             Current analysis input
           </h2>
         </div>
 
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a0f1a]">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-[var(--color-line)] bg-white">
           <Image
             alt="Screenshot being analyzed"
             fill
@@ -187,20 +187,20 @@ export function AnalysisLoadingView() {
           />
         </div>
 
-        <div className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-4">
-          <p className="text-sm text-white">{draft.name}</p>
+        <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
+          <p className="text-sm">{draft.name}</p>
           <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-            <span className="rounded-full border border-white/8 px-3 py-1">
+            <span className="app-chip px-3 py-1 text-xs">
               {draft.type}
             </span>
-            <span className="rounded-full border border-white/8 px-3 py-1">
+            <span className="app-chip px-3 py-1 text-xs">
               {formatBytes(draft.size)}
             </span>
           </div>
         </div>
 
-        <div className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-5">
-          <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-accent)]">
+        <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+          <p className="eyebrow text-[var(--color-accent)]">
             Analysis engine
           </p>
           <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">

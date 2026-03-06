@@ -28,7 +28,7 @@ export function ReportScreenshotPreview({
 
   if (!draft && !fallbackImageUrl) {
     return (
-      <div className="rounded-[1.75rem] border border-dashed border-[var(--color-line)] bg-[#090d18] p-5">
+      <div className="surface-muted border-dashed p-5">
         <p className="text-sm leading-7 text-[var(--color-muted)]">
           No screenshot preview is available yet. Once the upload flow runs, the
           report will show the analyzed image here.
@@ -41,7 +41,7 @@ export function ReportScreenshotPreview({
     <div className="space-y-4">
       <div
         aria-label="Analyzed screenshot preview"
-        className="aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-white/10 bg-[#090d18] bg-cover bg-center"
+        className="aspect-[4/3] overflow-hidden rounded-[1.75rem] border border-[var(--color-line)] bg-white bg-cover bg-center"
         role="img"
         style={{
           backgroundImage: `url("${draft?.dataUrl ?? fallbackImageUrl ?? ""}")`,
@@ -49,15 +49,15 @@ export function ReportScreenshotPreview({
       >
       </div>
 
-      <div className="rounded-[1.5rem] border border-white/8 bg-[#090d18] p-4">
+      <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
         {draft ? (
           <>
-            <p className="text-sm text-white">{draft.name}</p>
+            <p className="text-sm">{draft.name}</p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-              <span className="rounded-full border border-white/8 px-3 py-1">
+              <span className="app-chip px-3 py-1 text-xs">
                 {draft.type}
               </span>
-              <span className="rounded-full border border-white/8 px-3 py-1">
+              <span className="app-chip px-3 py-1 text-xs">
                 {formatBytes(draft.size)}
               </span>
             </div>
@@ -67,7 +67,7 @@ export function ReportScreenshotPreview({
                 clearPendingAnalysisDraft();
                 setDraft(null);
               }}
-              className="mt-4 text-sm text-[var(--color-muted)] underline-offset-4 hover:underline"
+              className="material-button material-button-text mt-4 px-0 py-0 text-sm"
             >
               Clear preview
             </button>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SiteHeader } from "@/components/layout/site-header";
 import { listPersistedAnalyses } from "@/lib/supabase/analysis-store";
 
 export const dynamic = "force-dynamic";
@@ -12,14 +13,14 @@ export default async function HistoryPage() {
   const { analyses, user } = await listPersistedAnalyses();
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,143,61,0.16),_transparent_32%),linear-gradient(180deg,#0b1020_0%,#090d18_54%,#070b14_100%)] px-6 py-16 text-[var(--color-foreground)] sm:px-10 lg:px-12">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="page-shell">
+      <SiteHeader />
+
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12 lg:py-14">
+        <div className="surface-card flex flex-wrap items-center justify-between gap-4 p-6 sm:p-8">
           <div>
-            <p className="text-xs uppercase tracking-[0.32em] text-[var(--color-muted)]">
-              Saved analyses
-            </p>
-            <h1 className="mt-3 font-display text-4xl tracking-tight sm:text-5xl">
+            <p className="eyebrow">Saved analyses</p>
+            <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">
               Review past critiques.
             </h1>
             {user?.email ? (
@@ -31,23 +32,17 @@ export default async function HistoryPage() {
           <div className="flex flex-wrap gap-3">
             {user ? (
               <form action="/auth/signout" method="post">
-                <button
-                  type="submit"
-                  className="inline-flex items-center rounded-full border border-[var(--color-line)] bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
-                >
+                <button type="submit" className="material-button material-button-secondary">
                   Sign out
                 </button>
               </form>
             ) : null}
-            <Link
-              href="/upload"
-              className="inline-flex items-center rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-[#ff9d57]"
-            >
+            <Link href="/upload" className="material-button material-button-primary">
               New analysis
             </Link>
             <Link
               href="/auth/sign-in"
-              className="inline-flex items-center rounded-full border border-[var(--color-line)] bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+              className="material-button material-button-secondary"
             >
               Auth settings
             </Link>
@@ -55,11 +50,11 @@ export default async function HistoryPage() {
         </div>
 
         {analyses === null ? (
-          <div className="rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6 sm:p-8">
-            <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-accent)]">
+          <div className="surface-card p-6 sm:p-8">
+            <p className="eyebrow text-[var(--color-accent)]">
               Supabase not configured
             </p>
-            <h2 className="mt-3 font-display text-3xl tracking-tight">
+            <h2 className="mt-3 text-3xl tracking-tight">
               Add Supabase keys to enable saved history.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
@@ -69,11 +64,11 @@ export default async function HistoryPage() {
             </p>
           </div>
         ) : !user ? (
-          <div className="rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6 sm:p-8">
-            <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-accent)]">
+          <div className="surface-card p-6 sm:p-8">
+            <p className="eyebrow text-[var(--color-accent)]">
               Sign-in required
             </p>
-            <h2 className="mt-3 font-display text-3xl tracking-tight">
+            <h2 className="mt-3 text-3xl tracking-tight">
               Sign in to unlock persistence.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
@@ -86,13 +81,13 @@ export default async function HistoryPage() {
             {analyses.map((analysis) => (
               <article
                 key={analysis.id}
-                className="rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6"
+                className="surface-card p-6"
               >
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                   {analysis.screenshot_url ? (
                     <div
                       aria-label="Saved analysis screenshot"
-                      className="aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#090d18] bg-cover bg-center lg:w-64"
+                      className="aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-[var(--color-line)] bg-white bg-cover bg-center lg:w-64"
                       role="img"
                       style={{
                         backgroundImage: `url("${analysis.screenshot_url}")`,
@@ -115,12 +110,12 @@ export default async function HistoryPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="rounded-full border border-white/8 px-4 py-2 text-sm text-white/90">
+                    <span className="app-chip">
                       Score {analysis.overall_score}
                     </span>
                     <Link
                       href={`/report/${analysis.id}`}
-                      className="inline-flex items-center rounded-full border border-[var(--color-line)] bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+                      className="material-button material-button-secondary"
                     >
                       Open report
                     </Link>
@@ -130,11 +125,11 @@ export default async function HistoryPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-[2rem] border border-[var(--color-line)] bg-white/5 p-6 sm:p-8">
-            <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-accent)]">
+          <div className="surface-card p-6 sm:p-8">
+            <p className="eyebrow text-[var(--color-accent)]">
               No saved analyses
             </p>
-            <h2 className="mt-3 font-display text-3xl tracking-tight">
+            <h2 className="mt-3 text-3xl tracking-tight">
               Persistence is ready once Supabase is configured.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
@@ -143,7 +138,7 @@ export default async function HistoryPage() {
             </p>
           </div>
         )}
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
