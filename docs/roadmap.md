@@ -166,21 +166,24 @@ Definition of done:
 - Real screenshot produces a valid report
 - Errors and malformed responses are handled
 
-### Feature 8: Persistence
+### Feature 8: Supabase platform
 
 Goal:
-Store uploaded analyses for later review.
+Integrate Supabase auth, storage, persistence, and platform setup for deployment.
 
 Deliverables:
 
 - Supabase project setup
-- Screenshot metadata storage
-- Analysis result storage
-- History or recent analyses view
+- Email, Google, and Apple authentication
+- Screenshot storage configuration
+- Analysis metadata and result persistence
+- Deployment and environment setup notes
 
 Definition of done:
 
-- A completed analysis can be retrieved later
+- Users can authenticate through configured Supabase providers
+- Uploaded screenshots and completed analyses are persisted
+- Setup and deployment steps are documented
 
 ## Post-MVP features
 
@@ -188,7 +191,7 @@ Definition of done:
 - Category scores and overall UX score
 - Redesign suggestions
 - Export report as PDF
-- Authentication and saved workspaces
+- Saved workspaces
 
 ## Suggested build sequence
 
@@ -201,7 +204,7 @@ This is the implementation order I recommend:
 5. Feature 5: Report UI with mocked data
 6. Feature 6: Analysis API contract
 7. Feature 7: OpenAI integration
-8. Feature 8: Persistence
+8. Feature 8: Supabase platform
 
 This order keeps UX structure ahead of model integration and avoids building an AI demo without product shape.
 

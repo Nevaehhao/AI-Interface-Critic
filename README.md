@@ -2,44 +2,44 @@
 
 AI Interface Critic is a web application that analyzes UI screenshots and returns structured UX feedback, including hierarchy, accessibility, layout, and interaction issues.
 
-## Product direction
+## Stack
 
-- Input: UI screenshot
-- Processing: AI-powered UX analysis
-- Output: structured report with actionable recommendations
+- Next.js App Router
+- TypeScript
+- Tailwind CSS v4
+- Supabase for auth, storage, and persistence
+- OpenAI for screenshot analysis
 
-## Target user
+## Current status
 
-- Junior designers
-- Product managers
-- Students learning UX
+This repository is being built in feature-sized branches and merged into `main` after each milestone.
 
-## MVP
+## Feature roadmap
 
-1. Upload a screenshot
-2. Analyze the interface with AI
-3. Generate UX issues in clear categories
-4. Display a report with actionable feedback
+1. Project scaffold
+2. Landing page
+3. Upload flow
+4. Loading experience
+5. Report UI
+6. Analyze API
+7. OpenAI integration
+8. Supabase platform integration
 
-## Recommended stack
+## Environment variables
 
-- Frontend: Next.js App Router
-- Styling: Tailwind CSS
-- Backend: Next.js Route Handlers
-- AI: OpenAI vision-capable model
-- Storage: Supabase
+Create `.env.local` from [`.env.example`](./.env.example).
+
+## Scripts
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+npm run typecheck
+```
 
 ## Docs
 
-- [Project roadmap](./docs/roadmap.md)
+- [Roadmap](./docs/roadmap.md)
 - [Git workflow](./docs/git-workflow.md)
-
-## Build order
-
-1. Product spec and UX structure
-2. Next.js app scaffold
-3. Landing and upload flow
-4. Loading and report UI with mock data
-5. Analysis API contract
-6. OpenAI integration
-7. Persistence, scoring, and deployment

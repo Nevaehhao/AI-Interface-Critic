@@ -15,7 +15,7 @@ Use short, readable names:
 - `feature/report-ui`
 - `feature/analyze-api`
 - `feature/openai-integration`
-- `feature/supabase-storage`
+- `feature/supabase-platform`
 
 ## Standard flow
 
@@ -90,7 +90,7 @@ Build the app in this branch order:
 5. `feature/report-ui`
 6. `feature/analyze-api`
 7. `feature/openai-integration`
-8. `feature/supabase-storage`
+8. `feature/supabase-platform`
 
 ## Quality gate before merge
 
