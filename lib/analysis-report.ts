@@ -24,24 +24,39 @@ export const analysisSummarySchema = z.object({
   nextAction: z.string(),
 });
 
+export const analysisReportContentSchema = z.object({
+  summary: analysisSummarySchema,
+  sections: z.array(analysisSectionSchema).min(1),
+});
+
 export const analysisReportSchema = z.object({
   id: z.string(),
   createdAt: z.string(),
-  summary: analysisSummarySchema,
-  sections: z.array(analysisSectionSchema).min(1),
+  summary: analysisReportContentSchema.shape.summary,
+  sections: analysisReportContentSchema.shape.sections,
 });
 
 export type AnalysisIssue = z.infer<typeof analysisIssueSchema>;
 export type AnalysisSection = z.infer<typeof analysisSectionSchema>;
 export type AnalysisSummary = z.infer<typeof analysisSummarySchema>;
+export type AnalysisReportContent = z.infer<typeof analysisReportContentSchema>;
 export type AnalysisReport = z.infer<typeof analysisReportSchema>;
+
+export function createAnalysisReport(
+  content: AnalysisReportContent,
+  overrides?: Partial<Pick<AnalysisReport, "id" | "createdAt">>,
+) {
+  return analysisReportSchema.parse({
+    id: overrides?.id ?? crypto.randomUUID(),
+    createdAt: overrides?.createdAt ?? new Date().toISOString(),
+    ...content,
+  });
+}
 
 export function createMockAnalysisReport(
   overrides?: Partial<AnalysisReport>,
 ): AnalysisReport {
-  const baseReport = {
-    id: "demo",
-    createdAt: "2026-03-06T11:00:00.000Z",
+  const baseContent: AnalysisReportContent = {
     summary: {
       overallScore: 78,
       productType: "marketing landing page",
@@ -147,7 +162,12 @@ export function createMockAnalysisReport(
         ],
       },
     ],
-  } satisfies AnalysisReport;
+  };
+
+  const baseReport = createAnalysisReport(baseContent, {
+    createdAt: "2026-03-06T11:00:00.000Z",
+    id: "demo",
+  });
 
   return analysisReportSchema.parse({
     ...baseReport,
