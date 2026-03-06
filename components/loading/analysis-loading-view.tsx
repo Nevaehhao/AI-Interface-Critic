@@ -5,7 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { loadPendingAnalysisDraft } from "@/lib/analysis-draft";
+import {
+  dataUrlToFile,
+  loadPendingAnalysisDraft,
+} from "@/lib/analysis-draft";
+import {
+  analyzeResponseSchema,
+  saveLatestAnalysisResult,
+} from "@/lib/analysis-result";
 import { formatBytes } from "@/lib/uploads";
 
 const loadingSteps = [
@@ -19,6 +26,7 @@ export function AnalysisLoadingView() {
   const router = useRouter();
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [draft, setDraft] = useState<ReturnType<typeof loadPendingAnalysisDraft>>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -35,19 +43,52 @@ export function AnalysisLoadingView() {
       return;
     }
 
+    const currentDraft = draft;
     const stepInterval = window.setInterval(() => {
       setActiveStepIndex((currentIndex) =>
         currentIndex >= loadingSteps.length - 1 ? currentIndex : currentIndex + 1,
       );
     }, 1400);
 
-    const redirectTimeout = window.setTimeout(() => {
-      router.push("/report/demo");
-    }, 5600);
+    const controller = new AbortController();
+
+    async function analyzeDraft() {
+      try {
+        const file = await dataUrlToFile(currentDraft);
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch("/api/analyze", {
+          body: formData,
+          method: "POST",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error("Analysis failed. Try uploading the screenshot again.");
+        }
+
+        const payload = analyzeResponseSchema.parse(await response.json());
+        saveLatestAnalysisResult(payload);
+        router.push(`/report/${payload.analysis.id}`);
+      } catch (analyzeError) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setError(
+          analyzeError instanceof Error
+            ? analyzeError.message
+            : "Analysis failed. Try uploading the screenshot again.",
+        );
+      }
+    }
+
+    void analyzeDraft();
 
     return () => {
       window.clearInterval(stepInterval);
-      window.clearTimeout(redirectTimeout);
+      controller.abort();
     };
   }, [draft, router]);
 
@@ -87,6 +128,12 @@ export function AnalysisLoadingView() {
           This loading state explains the critique process so the wait feels
           intentional instead of opaque.
         </p>
+
+        {error ? (
+          <div className="mt-6 rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+            {error}
+          </div>
+        ) : null}
 
         <div className="mt-8 space-y-3">
           {loadingSteps.map((step, index) => {

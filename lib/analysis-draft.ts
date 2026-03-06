@@ -53,3 +53,12 @@ export function loadPendingAnalysisDraft() {
 export function clearPendingAnalysisDraft() {
   window.sessionStorage.removeItem(PENDING_ANALYSIS_KEY);
 }
+
+export async function dataUrlToFile(draft: PendingAnalysisDraft) {
+  const response = await fetch(draft.dataUrl);
+  const blob = await response.blob();
+
+  return new File([blob], draft.name, {
+    type: draft.type,
+  });
+}
