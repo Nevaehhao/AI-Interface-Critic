@@ -8,6 +8,10 @@ import type {
   AnalysisSection,
 } from "@/lib/analysis-report";
 import type { AnalysisSource } from "@/lib/analysis-result";
+import {
+  buildAnalysisReportPdf,
+  createAnalysisPdfFileName,
+} from "@/lib/report-pdf";
 import { SiteHeader } from "@/components/layout/site-header";
 import {
   ReportScreenshotPreview,
@@ -163,20 +167,68 @@ export function ReportView({
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(
     highlightableIssues[0]?.id ?? null,
   );
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const selectedIssue =
     highlightableIssues.find((issue) => issue.id === selectedIssueId) ?? null;
   const activeSelectedIssue = selectedIssue ?? highlightableIssues[0] ?? null;
   const activeSelectedIssueId = activeSelectedIssue?.id ?? null;
 
+  async function handleExportPdf() {
+    try {
+      setIsExportingPdf(true);
+      setExportError(null);
+
+      const pdfBytes = await buildAnalysisReportPdf({
+        analysisId,
+        report,
+        source,
+      });
+      const pdfByteArray = Uint8Array.from(pdfBytes);
+      const pdfBlob = new Blob([pdfByteArray], { type: "application/pdf" });
+      const downloadUrl = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+
+      link.href = downloadUrl;
+      link.download = createAnalysisPdfFileName(report, analysisId);
+      link.click();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      setExportError(
+        error instanceof Error
+          ? error.message
+          : "Unable to export this report as PDF.",
+      );
+    } finally {
+      setIsExportingPdf(false);
+    }
+  }
+
   return (
     <div className="page-shell">
       <SiteHeader />
 
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12 lg:py-14">
-        <Link href="/upload" className="material-button material-button-text w-fit px-0">
-          Back to upload
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link href="/upload" className="material-button material-button-text w-fit px-0">
+            Back to upload
+          </Link>
+          <button
+            type="button"
+            onClick={() => void handleExportPdf()}
+            disabled={isExportingPdf}
+            className="material-button material-button-secondary disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isExportingPdf ? "Exporting PDF..." : "Export report as PDF"}
+          </button>
+        </div>
+
+        {exportError ? (
+          <div className="rounded-2xl bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
+            {exportError}
+          </div>
+        ) : null}
 
         <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="surface-card p-6 sm:p-8">
