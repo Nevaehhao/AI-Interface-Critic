@@ -4,6 +4,7 @@ const navItems = [
   { href: "/#workflow", label: "Workflow" },
   { href: "/#report-preview", label: "Report" },
   { href: "/#system", label: "System" },
+  { href: "/workspaces", label: "Workspaces" },
   { href: "/history", label: "History" },
   { href: "/auth/sign-in", label: "Sign in" },
 ];
@@ -41,6 +42,12 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/workspaces"
+            className="material-button material-button-secondary hidden lg:inline-flex"
+          >
+            Workspaces
+          </Link>
           <Link
             href="/history"
             className="material-button material-button-secondary hidden sm:inline-flex"

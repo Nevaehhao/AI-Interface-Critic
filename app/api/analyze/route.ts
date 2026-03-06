@@ -10,6 +10,11 @@ import { validateImageFile } from "@/lib/uploads";
 export async function POST(request: Request) {
   const formData = await request.formData();
   const file = formData.get("file");
+  const workspaceIdValue = formData.get("workspaceId");
+  const workspaceId =
+    typeof workspaceIdValue === "string" && workspaceIdValue.trim().length > 0
+      ? workspaceIdValue
+      : null;
 
   if (!(file instanceof File)) {
     return NextResponse.json(
@@ -37,6 +42,7 @@ export async function POST(request: Request) {
       report: ollamaAnalysis,
       source: "ollama",
       userId: user?.id ?? null,
+      workspaceId,
     }).catch((error) => {
       console.error("Supabase persistence failed.", error);
     });
@@ -65,6 +71,7 @@ export async function POST(request: Request) {
     report: mockAnalysis,
     source: "mock",
     userId: user?.id ?? null,
+    workspaceId,
   }).catch((error) => {
     console.error("Supabase persistence failed.", error);
   });
