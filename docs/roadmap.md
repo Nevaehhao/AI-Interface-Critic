@@ -19,7 +19,7 @@ AI Interface Critic analyzes UI screenshots and generates structured UX critique
 
 ## Primary user
 
-Choose one user to optimize for first:
+The MVP is optimized for:
 
 - Junior designers needing fast critique before review
 
