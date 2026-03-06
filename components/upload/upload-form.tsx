@@ -8,7 +8,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "r
 import {
   savePendingAnalysisDraft,
 } from "@/lib/analysis-draft";
-import type { WorkspaceRecord } from "@/lib/supabase/workspace-store";
+import type { WorkspaceRecord } from "@/lib/data/workspace-store";
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_UPLOAD_SIZE_MB,

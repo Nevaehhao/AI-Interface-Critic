@@ -4,7 +4,7 @@ import {
   createWorkspace,
   listWorkspaces,
   workspaceInputSchema,
-} from "@/lib/supabase/workspace-store";
+} from "@/lib/data/workspace-store";
 
 export async function GET() {
   const { user, workspaces } = await listWorkspaces();

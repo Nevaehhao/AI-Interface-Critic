@@ -15,7 +15,9 @@ Use short, readable names:
 - `feature/report-ui`
 - `feature/analyze-api`
 - `feature/ollama-platform`
-- `feature/supabase-platform`
+- `feature/platform-status`
+- `feature/deployment-ready`
+- `feature/test-automation`
 
 ## Standard flow
 
@@ -72,13 +74,6 @@ git merge --no-ff feature/<feature-name> -m "Merge feature/<feature-name>"
 git push origin main
 ```
 
-### 7. Delete merged branch
-
-```bash
-git branch -d feature/<feature-name>
-git push origin --delete feature/<feature-name>
-```
-
 ## Recommended feature cadence
 
 Build the app in this branch order:
@@ -90,7 +85,9 @@ Build the app in this branch order:
 5. `feature/report-ui`
 6. `feature/analyze-api`
 7. `feature/ollama-platform`
-8. `feature/supabase-platform`
+8. `feature/platform-status`
+9. `feature/deployment-ready`
+10. `feature/test-automation`
 
 ## Quality gate before merge
 
@@ -112,3 +109,4 @@ For this project, I will follow this process whenever I implement a new feature:
 4. Push the branch to `origin`
 5. Merge it back into `main`
 6. Push the updated `main`
+7. Keep the merged branch for project history

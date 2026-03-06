@@ -82,7 +82,7 @@ const systemSteps = [
   "Upload screenshot",
   "Route through Next.js API",
   "Analyze with Ollama",
-  "Persist with Supabase",
+  "Persist with Neon + R2",
   "Render structured report",
 ];
 
@@ -311,7 +311,8 @@ export default function Home() {
             </div>
             <p className="max-w-2xl text-base leading-7 text-[var(--color-muted)]">
               The stack stays intentionally simple: Next.js App Router, Tailwind,
-              Ollama for analysis, and Supabase for auth, storage, and persistence.
+              Ollama for analysis, Neon for auth and database persistence, and Cloudflare R2 for
+              screenshot storage.
             </p>
           </div>
 
@@ -330,7 +331,7 @@ export default function Home() {
             </article>
             <article className="surface-muted p-5">
               <p className="eyebrow text-[var(--color-accent)]">Platform</p>
-              <p className="mt-3 text-lg">Supabase auth, storage, history</p>
+              <p className="mt-3 text-lg">Neon auth, Neon DB, Cloudflare R2</p>
             </article>
           </div>
 

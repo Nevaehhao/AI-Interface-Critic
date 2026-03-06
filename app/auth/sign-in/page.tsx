@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { SiteHeader } from "@/components/layout/site-header";
 import { SignInPanel } from "@/components/auth/sign-in-panel";
+import { hasNeonAuthConfig } from "@/lib/env";
 
 export default function SignInPage() {
   return (
@@ -12,7 +13,7 @@ export default function SignInPage() {
         <Link href="/" className="material-button material-button-text w-fit px-0">
           Back to landing
         </Link>
-        <SignInPanel />
+        <SignInPanel isConfigured={hasNeonAuthConfig()} />
       </main>
     </div>
   );

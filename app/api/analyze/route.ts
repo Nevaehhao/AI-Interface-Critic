@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 
 import { createMockAnalyzeResponse } from "@/lib/analysis-result";
 import { createMockAnalysisReport } from "@/lib/analysis-report";
+import { getCurrentAuthSession } from "@/lib/auth/server";
+import { persistAnalysis } from "@/lib/data/analysis-store";
 import { analyzeScreenshotWithOllama } from "@/lib/ollama-analysis";
-import { persistAnalysis } from "@/lib/supabase/analysis-store";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { validateImageFile } from "@/lib/uploads";
 
 export async function POST(request: Request) {
@@ -31,11 +31,7 @@ export async function POST(request: Request) {
 
   try {
     const ollamaAnalysis = await analyzeScreenshotWithOllama(file);
-
-    const supabase = await createSupabaseServerClient();
-    const {
-      data: { user },
-    } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+    const { user } = await getCurrentAuthSession();
 
     await persistAnalysis({
       file,
@@ -44,7 +40,7 @@ export async function POST(request: Request) {
       userId: user?.id ?? null,
       workspaceId,
     }).catch((error) => {
-      console.error("Supabase persistence failed.", error);
+      console.error("Persistence failed.", error);
     });
 
     return NextResponse.json({
@@ -60,11 +56,7 @@ export async function POST(request: Request) {
     createdAt: new Date().toISOString(),
     id: crypto.randomUUID(),
   });
-
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+  const { user } = await getCurrentAuthSession();
 
   await persistAnalysis({
     file,
@@ -73,7 +65,7 @@ export async function POST(request: Request) {
     userId: user?.id ?? null,
     workspaceId,
   }).catch((error) => {
-    console.error("Supabase persistence failed.", error);
+    console.error("Persistence failed.", error);
   });
 
   return NextResponse.json({
