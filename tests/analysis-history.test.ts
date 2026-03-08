@@ -52,6 +52,7 @@ describe("local analysis history", () => {
         id: "history-entry-1",
       }),
       source: "mock",
+      warning: "Ollama request failed.",
     });
 
     saveLatestAnalysisResult(response, {
@@ -64,6 +65,7 @@ describe("local analysis history", () => {
 
     expect(history).toHaveLength(1);
     expect(history[0]?.workspaceName).toBe("Portfolio");
+    expect(history[0]?.warning).toBe("Ollama request failed.");
     expect(getAnalysisResultForId("history-entry-1")?.screenshotDataUrl).toBe(
       "data:image/png;base64,abc",
     );

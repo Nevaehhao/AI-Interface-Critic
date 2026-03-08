@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --color-background: #f8fafd;
-  --color-surface: rgba(255, 255, 255, 0.86);
+  --color-background: #f5f7fb;
+  --color-surface: rgba(255, 255, 255, 0.96);
   --color-surface-solid: #ffffff;
-  --color-surface-muted: #f1f5fb;
-  --color-surface-tonal: #e8f0fe;
-  --color-surface-tonal-strong: #d3e3fd;
+  --color-surface-muted: #f3f5f8;
+  --color-surface-tonal: #eef4ff;
+  --color-surface-tonal-strong: #dce8ff;
   --color-foreground: #1f1f1f;
   --color-muted: #5f6368;
-  --color-line: #d2d9e3;
+  --color-line: #dde3eb;
   --color-accent: #1a73e8;
   --color-accent-strong: #1558b0;
   --color-accent-soft: #d3e3fd;
@@ -20,11 +20,11 @@
   --color-error: #c5221f;
   --color-error-soft: #fce8e6;
   --shadow-soft:
-    0 1px 2px rgba(60, 64, 67, 0.1),
-    0 4px 12px rgba(60, 64, 67, 0.08);
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px rgba(15, 23, 42, 0.06);
   --shadow-medium:
-    0 12px 28px rgba(60, 64, 67, 0.12),
-    0 2px 6px rgba(60, 64, 67, 0.08);
+    0 16px 36px rgba(15, 23, 42, 0.08),
+    0 2px 8px rgba(15, 23, 42, 0.04);
 }
 
 @theme inline {
@@ -46,11 +46,7 @@
 
   body {
     min-height: 100vh;
-    background:
-      radial-gradient(circle at top left, rgba(26, 115, 232, 0.14), transparent 30%),
-      radial-gradient(circle at 88% 6%, rgba(52, 168, 83, 0.14), transparent 24%),
-      radial-gradient(circle at 82% 28%, rgba(251, 188, 4, 0.12), transparent 18%),
-      linear-gradient(180deg, #f8fafd 0%, #f5f8fd 48%, #f1f4f9 100%);
+    background: linear-gradient(180deg, #fbfcfe 0%, #f6f8fc 55%, #f2f5fa 100%);
     color: var(--color-foreground);
     font-family: var(--font-display), sans-serif;
   }
@@ -85,24 +81,21 @@
   .surface-card {
     border: 1px solid var(--color-line);
     background: var(--color-surface);
-    border-radius: 2rem;
+    border-radius: 1.5rem;
     box-shadow: var(--shadow-soft);
-    backdrop-filter: blur(18px);
   }
 
   .surface-tonal {
     border: 1px solid rgba(26, 115, 232, 0.18);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.56)),
-      var(--color-surface-tonal);
-    border-radius: 2rem;
-    box-shadow: var(--shadow-medium);
+    background: var(--color-surface-tonal);
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow-soft);
   }
 
   .surface-muted {
     border: 1px solid var(--color-line);
     background: var(--color-surface-muted);
-    border-radius: 1.5rem;
+    border-radius: 1.25rem;
   }
 
   .app-chip {
@@ -110,18 +103,18 @@
     align-items: center;
     gap: 0.5rem;
     border: 1px solid var(--color-line);
-    background: rgba(255, 255, 255, 0.72);
+    background: #ffffff;
     border-radius: 999px;
-    padding: 0.5rem 0.9rem;
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
     color: var(--color-muted);
   }
 
   .eyebrow {
     font-size: 0.76rem;
     font-weight: 500;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-muted);
   }
@@ -132,8 +125,8 @@
     justify-content: center;
     gap: 0.5rem;
     border-radius: 999px;
-    padding: 0.85rem 1.3rem;
-    font-size: 0.95rem;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.92rem;
     font-weight: 500;
     line-height: 1;
     transition:
@@ -160,12 +153,12 @@
 
   .material-button-secondary {
     border: 1px solid rgba(26, 115, 232, 0.16);
-    background: rgba(232, 240, 254, 0.8);
+    background: #ffffff;
     color: var(--color-accent);
   }
 
   .material-button-secondary:hover {
-    background: rgba(211, 227, 253, 0.94);
+    background: var(--color-surface-tonal);
   }
 
   .material-button-text {
@@ -178,8 +171,8 @@
 
   .metric-card {
     border: 1px solid var(--color-line);
-    background: rgba(255, 255, 255, 0.92);
-    border-radius: 1.5rem;
+    background: #ffffff;
+    border-radius: 1.25rem;
     box-shadow: var(--shadow-soft);
   }
 

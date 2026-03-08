@@ -3,32 +3,17 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import type {
-  AnalysisReport,
-  AnalysisSection,
-} from "@/lib/analysis-report";
-import type { AnalysisSource } from "@/lib/analysis-result";
+import { SiteHeader } from "@/components/layout/site-header";
 import {
   buildAnalysisReportPdf,
   createAnalysisPdfFileName,
 } from "@/lib/report-pdf";
-import { SiteHeader } from "@/components/layout/site-header";
+import type { AnalysisReport } from "@/lib/analysis-report";
+import type { AnalysisSource } from "@/lib/analysis-result";
 import {
   ReportScreenshotPreview,
   type HighlightableIssue,
 } from "@/components/report/report-screenshot-preview";
-
-function scoreTone(score: number) {
-  if (score >= 85) {
-    return "status-badge status-badge-success";
-  }
-
-  if (score >= 70) {
-    return "status-badge status-badge-warning";
-  }
-
-  return "status-badge status-badge-error";
-}
 
 function severityTone(severity: string) {
   if (severity === "high") {
@@ -42,16 +27,10 @@ function severityTone(severity: string) {
   return "status-badge status-badge-neutral";
 }
 
-function suggestionPriorityTone(priority: string) {
-  if (priority === "now") {
-    return "status-badge status-badge-primary";
-  }
-
-  if (priority === "next") {
-    return "status-badge status-badge-warning";
-  }
-
-  return "status-badge status-badge-neutral";
+function sourceTone(source: AnalysisSource) {
+  return source === "ollama"
+    ? "status-badge status-badge-success"
+    : "status-badge status-badge-warning";
 }
 
 function flattenHighlightableIssues(report: AnalysisReport): HighlightableIssue[] {
@@ -69,99 +48,18 @@ function flattenHighlightableIssues(report: AnalysisReport): HighlightableIssue[
   );
 }
 
-function SectionCard({
-  section,
-  selectedIssueId,
-  onSelectIssue,
-}: {
-  section: AnalysisSection;
-  selectedIssueId: string | null;
-  onSelectIssue: (issueId: string) => void;
-}) {
-  return (
-    <section id={section.id} className="surface-card p-6 sm:p-8">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <p className="eyebrow">Section</p>
-          <h2 className="mt-3 text-3xl tracking-tight">{section.title}</h2>
-          <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-muted)]">
-            {section.summary}
-          </p>
-        </div>
-
-        <div className={scoreTone(section.score)}>Score {section.score}</div>
-      </div>
-
-      <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        {section.issues.map((issue) => {
-          const isSelected = selectedIssueId === issue.id;
-          const hasHighlights = issue.highlights.length > 0;
-
-          return (
-            <article
-              key={issue.id}
-              className={`surface-muted p-5 transition ${
-                isSelected ? "ring-2 ring-[var(--color-accent)]" : ""
-              }`}
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="eyebrow text-[var(--color-accent)]">
-                    {section.title}
-                  </p>
-                  <h3 className="mt-3 text-xl tracking-tight">{issue.title}</h3>
-                </div>
-                <span className={severityTone(issue.severity)}>
-                  {issue.severity} impact
-                </span>
-              </div>
-
-              <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-                {issue.description}
-              </p>
-
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                {hasHighlights ? (
-                  <>
-                    <span className="app-chip">
-                      {issue.highlights.length} highlight
-                      {issue.highlights.length > 1 ? "s" : ""}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => onSelectIssue(issue.id)}
-                      className="material-button material-button-secondary px-4 py-2 text-sm"
-                    >
-                      {isSelected ? "Highlighted on screenshot" : "Show on screenshot"}
-                    </button>
-                  </>
-                ) : (
-                  <span className="app-chip">No mapped region</span>
-                )}
-              </div>
-
-              <div className="mt-5 rounded-[1.25rem] bg-white p-4 shadow-sm">
-                <p className="eyebrow">Recommendation</p>
-                <p className="mt-2 text-sm leading-7">{issue.recommendation}</p>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
 export function ReportView({
   analysisId,
   report,
   screenshotUrl = null,
   source = "mock",
+  warning = null,
 }: {
   analysisId: string;
   report: AnalysisReport;
   screenshotUrl?: string | null;
   source?: AnalysisSource;
+  warning?: string | null;
 }) {
   const highlightableIssues = flattenHighlightableIssues(report);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(
@@ -171,9 +69,7 @@ export function ReportView({
   const [exportError, setExportError] = useState<string | null>(null);
 
   const selectedIssue =
-    highlightableIssues.find((issue) => issue.id === selectedIssueId) ?? null;
-  const activeSelectedIssue = selectedIssue ?? highlightableIssues[0] ?? null;
-  const activeSelectedIssueId = activeSelectedIssue?.id ?? null;
+    highlightableIssues.find((issue) => issue.id === selectedIssueId) ?? highlightableIssues[0] ?? null;
 
   async function handleExportPdf() {
     try {
@@ -185,8 +81,7 @@ export function ReportView({
         report,
         source,
       });
-      const pdfByteArray = Uint8Array.from(pdfBytes);
-      const pdfBlob = new Blob([pdfByteArray], { type: "application/pdf" });
+      const pdfBlob = new Blob([Uint8Array.from(pdfBytes)], { type: "application/pdf" });
       const downloadUrl = URL.createObjectURL(pdfBlob);
       const link = document.createElement("a");
 
@@ -196,9 +91,7 @@ export function ReportView({
       URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       setExportError(
-        error instanceof Error
-          ? error.message
-          : "Unable to export this report as PDF.",
+        error instanceof Error ? error.message : "Unable to export this report as PDF.",
       );
     } finally {
       setIsExportingPdf(false);
@@ -209,7 +102,7 @@ export function ReportView({
     <div className="page-shell">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12 lg:py-14">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 sm:px-10 lg:px-12 lg:py-14">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link href="/upload" className="material-button material-button-text w-fit px-0">
             Back to upload
@@ -220,9 +113,34 @@ export function ReportView({
             disabled={isExportingPdf}
             className="material-button material-button-secondary disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isExportingPdf ? "Exporting PDF..." : "Export report as PDF"}
+            {isExportingPdf ? "Exporting..." : "Export PDF"}
           </button>
         </div>
+
+        {source === "ollama" ? (
+          <div className="surface-card px-5 py-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className={sourceTone(source)}>Ollama result</span>
+              <p className="text-sm text-[var(--color-muted)]">
+                This report was generated from the local Ollama model.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="surface-card border-[rgba(234,134,0,0.24)] bg-[var(--color-warning-soft)] px-5 py-4">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className={sourceTone(source)}>Fallback result</span>
+                <p className="text-sm text-[var(--color-muted)]">
+                  Ollama did not complete this run, so the app showed fallback output instead.
+                </p>
+              </div>
+              {warning ? (
+                <p className="text-sm leading-7 text-[var(--color-foreground)]">Reason: {warning}</p>
+              ) : null}
+            </div>
+          </div>
+        )}
 
         {exportError ? (
           <div className="rounded-2xl bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
@@ -230,202 +148,135 @@ export function ReportView({
           </div>
         ) : null}
 
-        <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="surface-card p-6 sm:p-8">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="app-chip">Analysis {analysisId}</span>
-              <span
-                className={
-                  source === "ollama"
-                    ? "status-badge status-badge-primary"
-                    : "status-badge status-badge-success"
-                }
-              >
-                {source === "ollama" ? "Ollama analysis" : "Mock fallback"}
-              </span>
-              <span className="app-chip">
-                {new Date(report.createdAt).toLocaleString()}
-              </span>
-              <span className="app-chip">
-                {highlightableIssues.length} mapped issue
-                {highlightableIssues.length === 1 ? "" : "s"}
-              </span>
-              <span className="app-chip">
-                {report.redesignSuggestions.length} redesign suggestion
-                {report.redesignSuggestions.length === 1 ? "" : "s"}
-              </span>
+        <section className="surface-card p-6 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-3xl">
+              <p className="eyebrow">Report</p>
+              <h1 className="mt-4 text-4xl tracking-tight sm:text-5xl">
+                {report.summary.mainFinding}
+              </h1>
+              <p className="mt-4 text-base leading-8 text-[var(--color-muted)]">
+                Product type: {report.summary.productType}
+              </p>
             </div>
-
-            <h1 className="mt-5 text-4xl tracking-tight sm:text-5xl">
-              Structured UX critique for a {report.summary.productType}.
-            </h1>
-            <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--color-muted)]">
-              {report.summary.mainFinding}
-            </p>
-
-            <div className="mt-8 grid gap-4 md:grid-cols-[0.62fr_1fr]">
-              <div className="surface-tonal p-5">
-                <p className="eyebrow">Overall score</p>
-                <p className="mt-3 text-6xl font-medium tracking-tight text-[var(--color-accent)]">
-                  {report.summary.overallScore}
-                </p>
-                <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-                  A concise signal for how strong the interface feels before reading the details.
-                </p>
-              </div>
-
-              <div className="surface-muted p-5">
-                <p className="eyebrow">Strong signals</p>
-                <ul className="mt-4 space-y-3 text-sm leading-7">
-                  {report.summary.strengths.map((strength) => (
-                    <li key={strength}>{strength}</li>
-                  ))}
-                </ul>
-                <div className="mt-5 rounded-[1.25rem] bg-white p-4 shadow-sm">
-                  <p className="eyebrow">Next action</p>
-                  <p className="mt-2 text-sm leading-7">
-                    {report.summary.nextAction}
-                  </p>
-                </div>
-              </div>
+            <div className="surface-muted min-w-40 p-5 text-center">
+              <p className="eyebrow">Overall score</p>
+              <p className="mt-3 text-5xl font-medium tracking-tight text-[var(--color-accent)]">
+                {report.summary.overallScore}
+              </p>
             </div>
           </div>
 
-          <aside className="surface-tonal space-y-5 p-6">
-            <div>
-              <p className="eyebrow">Screenshot context</p>
-              <h2 className="mt-3 text-3xl tracking-tight">
-                Highlighted issue map
-              </h2>
-              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                Select an issue card to focus the screenshot on the affected region.
-              </p>
-            </div>
-
-            <ReportScreenshotPreview
-              fallbackImageUrl={screenshotUrl}
-              issues={highlightableIssues}
-              selectedIssueId={activeSelectedIssueId}
-              onSelectIssue={setSelectedIssueId}
-            />
-
-            <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
-              <p className="eyebrow">Selected issue</p>
-              {activeSelectedIssue ? (
-                <div className="mt-4 space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="app-chip">{activeSelectedIssue.sectionTitle}</span>
-                    <span className={severityTone(activeSelectedIssue.severity)}>
-                      {activeSelectedIssue.severity} impact
-                    </span>
-                  </div>
-                  <h3 className="text-xl tracking-tight">{activeSelectedIssue.title}</h3>
-                  <p className="text-sm leading-7 text-[var(--color-muted)]">
-                    {activeSelectedIssue.description}
-                  </p>
-                </div>
-              ) : (
-                <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-                  This report does not include mapped screenshot regions yet.
-                </p>
-              )}
-            </div>
-
-            <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
-              <p className="eyebrow">Jump to section</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <a
-                  href="#redesign-suggestions"
-                  className="material-button material-button-secondary px-4 py-2 text-sm"
-                >
-                  Redesign suggestions
-                </a>
-                {report.sections.map((section) => (
-                  <a
-                    key={section.id}
-                    href={`#${section.id}`}
-                    className="material-button material-button-secondary px-4 py-2 text-sm"
-                  >
-                    {section.title}
-                  </a>
+          <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr]">
+            <div className="surface-muted p-5">
+              <p className="eyebrow">Strengths</p>
+              <ul className="mt-4 space-y-3 text-sm leading-7 text-[var(--color-muted)]">
+                {report.summary.strengths.map((strength) => (
+                  <li key={strength}>{strength}</li>
                 ))}
+              </ul>
+            </div>
+
+            <div className="surface-muted p-5">
+              <p className="eyebrow">Next action</p>
+              <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+                {report.summary.nextAction}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
+                <span className="app-chip">Analysis {analysisId}</span>
+                <span className="app-chip">{new Date(report.createdAt).toLocaleString()}</span>
               </div>
             </div>
-          </aside>
+          </div>
         </section>
 
-        <section id="redesign-suggestions" className="surface-card p-6 sm:p-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p className="eyebrow">Redesign suggestions</p>
-              <h2 className="mt-3 text-3xl tracking-tight sm:text-4xl">
-                A clearer plan for what to redesign next.
-              </h2>
-              <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--color-muted)]">
-                These suggestions roll multiple issue-level observations into broader design moves
-                you can take back into a real iteration cycle.
-              </p>
-            </div>
-            <span className="app-chip">
-              Suggested improvements module
-            </span>
-          </div>
+        <section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
+          <aside className="surface-card p-6">
+            <p className="eyebrow">Screenshot</p>
+            <h2 className="mt-4 text-2xl tracking-tight">Issue map</h2>
+            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+              Select an issue to see its mapped region on the screenshot.
+            </p>
 
-          {report.redesignSuggestions.length > 0 ? (
-            <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            <div className="mt-6">
+              <ReportScreenshotPreview
+                fallbackImageUrl={screenshotUrl}
+                issues={highlightableIssues}
+                selectedIssueId={selectedIssue?.id ?? null}
+                onSelectIssue={setSelectedIssueId}
+              />
+            </div>
+          </aside>
+
+          <div className="grid gap-4">
+            {report.sections.map((section) => (
+              <section key={section.id} className="surface-card p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="eyebrow">{section.title}</p>
+                    <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                      {section.summary}
+                    </p>
+                  </div>
+                  <span className="app-chip">Score {section.score}</span>
+                </div>
+
+                <div className="mt-5 grid gap-3">
+                  {section.issues.map((issue) => {
+                    const isSelected = selectedIssue?.id === issue.id;
+
+                    return (
+                      <article
+                        key={issue.id}
+                        className={`surface-muted p-4 ${isSelected ? "ring-2 ring-[var(--color-accent)]" : ""}`}
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <h3 className="text-lg font-medium">{issue.title}</h3>
+                          <span className={severityTone(issue.severity)}>{issue.severity}</span>
+                        </div>
+                        <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                          {issue.description}
+                        </p>
+                        <p className="mt-3 text-sm leading-7">{issue.recommendation}</p>
+                        {issue.highlights.length > 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedIssueId(issue.id)}
+                            className="material-button material-button-secondary mt-4 px-4 py-2 text-sm"
+                          >
+                            Show on screenshot
+                          </button>
+                        ) : null}
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
+        </section>
+
+        {report.redesignSuggestions.length > 0 ? (
+          <section className="surface-card p-6 sm:p-8">
+            <p className="eyebrow">Redesign suggestions</p>
+            <h2 className="mt-4 text-3xl tracking-tight">What to improve next.</h2>
+
+            <div className="mt-6 grid gap-4 lg:grid-cols-3">
               {report.redesignSuggestions.map((suggestion) => (
                 <article key={suggestion.id} className="surface-muted p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <span className={suggestionPriorityTone(suggestion.priority)}>
-                      {suggestion.priority}
-                    </span>
-                    <span className="app-chip">Redesign direction</span>
+                    <h3 className="text-lg font-medium">{suggestion.title}</h3>
+                    <span className="app-chip">{suggestion.priority}</span>
                   </div>
-                  <h3 className="mt-4 text-xl tracking-tight">{suggestion.title}</h3>
                   <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
                     {suggestion.summary}
                   </p>
-
-                  <div className="mt-4 rounded-[1.25rem] bg-white p-4 shadow-sm">
-                    <p className="eyebrow">Why this matters</p>
-                    <p className="mt-2 text-sm leading-7">{suggestion.rationale}</p>
-                  </div>
-
-                  <div className="mt-4">
-                    <p className="eyebrow">Actions</p>
-                    <ul className="mt-3 space-y-2 text-sm leading-7 text-[var(--color-muted)]">
-                      {suggestion.actions.map((action) => (
-                        <li key={action}>{action}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="mt-4 rounded-[1.25rem] bg-[var(--color-accent-soft)] p-4">
-                    <p className="eyebrow text-[var(--color-accent)]">Expected impact</p>
-                    <p className="mt-2 text-sm leading-7">{suggestion.expectedImpact}</p>
-                  </div>
+                  <p className="mt-3 text-sm leading-7">{suggestion.expectedImpact}</p>
                 </article>
               ))}
             </div>
-          ) : (
-            <div className="surface-muted mt-8 p-5">
-              <p className="text-sm leading-7 text-[var(--color-muted)]">
-                This older report does not include dedicated redesign suggestions yet.
-              </p>
-            </div>
-          )}
-        </section>
-
-        <div className="grid gap-6">
-          {report.sections.map((section) => (
-            <SectionCard
-              key={section.id}
-              section={section}
-              selectedIssueId={activeSelectedIssueId}
-              onSelectIssue={setSelectedIssueId}
-            />
-          ))}
-        </div>
+          </section>
+        ) : null}
       </main>
     </div>
   );

@@ -11,6 +11,7 @@ describe("analysis result contract", () => {
 
     expect(analyzeResponseSchema.parse(response)).toEqual(response);
     expect(response.source).toBe("mock");
+    expect(response.warning).toBeNull();
     expect(response.analysis.summary.overallScore).toBeGreaterThan(0);
   });
 });

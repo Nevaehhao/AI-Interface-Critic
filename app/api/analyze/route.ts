@@ -46,30 +46,37 @@ export async function POST(request: Request) {
     return NextResponse.json({
       analysis: ollamaAnalysis,
       source: "ollama",
+      warning: null,
     });
   } catch (error) {
     console.error("Ollama analysis failed, falling back to mock output.", error);
+
+    const fallbackReason =
+      error instanceof Error
+        ? error.message
+        : "Ollama did not return a usable analysis result.";
+
+    const mockResponse = createMockAnalyzeResponse();
+    const mockAnalysis = createMockAnalysisReport({
+      createdAt: new Date().toISOString(),
+      id: crypto.randomUUID(),
+    });
+    const { user } = await getCurrentAuthSession();
+
+    await persistAnalysis({
+      file,
+      report: mockAnalysis,
+      source: "mock",
+      userId: user?.id ?? null,
+      workspaceId,
+    }).catch((persistError) => {
+      console.error("Persistence failed.", persistError);
+    });
+
+    return NextResponse.json({
+      ...mockResponse,
+      analysis: mockAnalysis,
+      warning: fallbackReason,
+    });
   }
-
-  const mockResponse = createMockAnalyzeResponse();
-  const mockAnalysis = createMockAnalysisReport({
-    createdAt: new Date().toISOString(),
-    id: crypto.randomUUID(),
-  });
-  const { user } = await getCurrentAuthSession();
-
-  await persistAnalysis({
-    file,
-    report: mockAnalysis,
-    source: "mock",
-    userId: user?.id ?? null,
-    workspaceId,
-  }).catch((error) => {
-    console.error("Persistence failed.", error);
-  });
-
-  return NextResponse.json({
-    ...mockResponse,
-    analysis: mockAnalysis,
-  });
 }
