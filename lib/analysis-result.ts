@@ -7,8 +7,10 @@ import {
 } from "@/lib/analysis-report";
 
 export const STORED_ANALYSIS_KEY = "ai-interface-critic.latest-analysis";
+export const STORED_ANALYSIS_HISTORY_KEY = "ai-interface-critic.analysis-history";
 export const ANALYSIS_SOURCE_VALUES = ["mock", "ollama"] as const;
 export type AnalysisSource = (typeof ANALYSIS_SOURCE_VALUES)[number];
+const MAX_STORED_ANALYSES = 24;
 
 export const analyzeResponseSchema = z.object({
   analysis: analysisReportSchema,
@@ -17,6 +19,16 @@ export const analyzeResponseSchema = z.object({
 
 export type AnalyzeResponse = z.infer<typeof analyzeResponseSchema>;
 
+export const storedAnalysisHistoryEntrySchema = analyzeResponseSchema.extend({
+  screenshotDataUrl: z.string().nullable().optional(),
+  workspaceId: z.string().nullable().optional(),
+  workspaceName: z.string().nullable().optional(),
+});
+
+export const storedAnalysisHistorySchema = z.array(storedAnalysisHistoryEntrySchema);
+
+export type StoredAnalysisHistoryEntry = z.infer<typeof storedAnalysisHistoryEntrySchema>;
+
 export function createMockAnalyzeResponse() {
   return analyzeResponseSchema.parse({
     analysis: createMockAnalysisReport(),
@@ -24,8 +36,44 @@ export function createMockAnalyzeResponse() {
   });
 }
 
-export function saveLatestAnalysisResult(response: AnalyzeResponse) {
+function loadStoredHistoryFromLocalStorage() {
+  const rawValue = window.localStorage.getItem(STORED_ANALYSIS_HISTORY_KEY);
+
+  if (!rawValue) {
+    return [] as StoredAnalysisHistoryEntry[];
+  }
+
+  try {
+    return storedAnalysisHistorySchema.parse(JSON.parse(rawValue));
+  } catch {
+    return [] as StoredAnalysisHistoryEntry[];
+  }
+}
+
+export function saveLatestAnalysisResult(
+  response: AnalyzeResponse,
+  options?: {
+    screenshotDataUrl?: string | null;
+    workspaceId?: string | null;
+    workspaceName?: string | null;
+  },
+) {
   window.sessionStorage.setItem(STORED_ANALYSIS_KEY, JSON.stringify(response));
+
+  const historyEntry = storedAnalysisHistoryEntrySchema.parse({
+    ...response,
+    screenshotDataUrl: options?.screenshotDataUrl ?? null,
+    workspaceId: options?.workspaceId ?? null,
+    workspaceName: options?.workspaceName ?? null,
+  });
+  const nextHistory = [
+    historyEntry,
+    ...loadStoredHistoryFromLocalStorage().filter(
+      (entry) => entry.analysis.id !== historyEntry.analysis.id,
+    ),
+  ].slice(0, MAX_STORED_ANALYSES);
+
+  window.localStorage.setItem(STORED_ANALYSIS_HISTORY_KEY, JSON.stringify(nextHistory));
 }
 
 export function loadLatestAnalysisResult() {
@@ -36,6 +84,10 @@ export function loadLatestAnalysisResult() {
   }
 
   return analyzeResponseSchema.parse(JSON.parse(rawValue));
+}
+
+export function loadStoredAnalysisHistory() {
+  return loadStoredHistoryFromLocalStorage();
 }
 
 export function getAnalysisForId(analysisId: string): AnalysisReport | null {
@@ -49,11 +101,26 @@ export function getAnalysisForId(analysisId: string): AnalysisReport | null {
 }
 
 export function getAnalysisResultForId(analysisId: string) {
+  const storedHistoryMatch = loadStoredHistoryFromLocalStorage().find(
+    (entry) => entry.analysis.id === analysisId,
+  );
+
+  if (storedHistoryMatch) {
+    return storedHistoryMatch;
+  }
+
   const latestAnalysis = loadLatestAnalysisResult();
 
   if (!latestAnalysis) {
     return null;
   }
 
-  return latestAnalysis.analysis.id === analysisId ? latestAnalysis : null;
+  return latestAnalysis.analysis.id === analysisId
+    ? storedAnalysisHistoryEntrySchema.parse({
+        ...latestAnalysis,
+        screenshotDataUrl: null,
+        workspaceId: null,
+        workspaceName: null,
+      })
+    : null;
 }

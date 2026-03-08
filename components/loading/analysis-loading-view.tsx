@@ -72,7 +72,11 @@ export function AnalysisLoadingView() {
         }
 
         const payload = analyzeResponseSchema.parse(await response.json());
-        saveLatestAnalysisResult(payload);
+        saveLatestAnalysisResult(payload, {
+          screenshotDataUrl: currentDraft.dataUrl,
+          workspaceId: currentDraft.workspaceId ?? null,
+          workspaceName: currentDraft.workspaceName ?? null,
+        });
         router.push(`/report/${payload.analysis.id}`);
       } catch (analyzeError) {
         if (controller.signal.aborted) {
