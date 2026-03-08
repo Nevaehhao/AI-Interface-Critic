@@ -1,31 +1,23 @@
 import Link from "next/link";
 
 const navItems = [
-  { href: "/#workflow", label: "Workflow" },
-  { href: "/#report-preview", label: "Report" },
-  { href: "/#system", label: "System" },
-  { href: "/workspaces", label: "Workspaces" },
+  { href: "/upload", label: "Upload" },
   { href: "/history", label: "History" },
+  { href: "/setup", label: "Setup" },
   { href: "/auth/sign-in", label: "Sign in" },
 ];
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-20 border-b border-[var(--color-line)] bg-white/78 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 sm:px-10 lg:px-12">
+    <header className="sticky top-0 z-20 border-b border-[var(--color-line)] bg-[rgba(255,255,255,0.92)] backdrop-blur-md">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4 sm:px-10 lg:px-12">
         <Link href="/" className="flex items-center gap-3">
-          <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[conic-gradient(from_180deg,_#4285f4,_#34a853,_#fbbc04,_#ea4335,_#4285f4)] p-[1px] shadow-sm">
-            <span className="flex h-full w-full items-center justify-center rounded-[calc(1rem-1px)] bg-white text-sm font-medium text-[var(--color-accent)]">
-              AI
-            </span>
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--color-line)] bg-white text-sm font-semibold text-[var(--color-accent)]">
+            AI
           </span>
-          <div>
-            <p className="eyebrow">
-              AI Interface Critic
-            </p>
-            <p className="text-sm text-[var(--color-muted)]">
-              Structured screenshot critique
-            </p>
+          <div className="leading-tight">
+            <p className="text-sm font-medium text-[var(--color-foreground)]">AI Interface Critic</p>
+            <p className="text-xs text-[var(--color-muted)]">Upload. Analyze. Review.</p>
           </div>
         </Link>
 
@@ -42,23 +34,11 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/workspaces"
-            className="material-button material-button-secondary hidden lg:inline-flex"
-          >
-            Workspaces
-          </Link>
-          <Link
-            href="/history"
-            className="material-button material-button-secondary hidden sm:inline-flex"
-          >
+          <Link href="/history" className="material-button material-button-secondary hidden sm:inline-flex">
             History
           </Link>
-          <Link
-            href="/upload"
-            className="material-button material-button-primary"
-          >
-            Start analysis
+          <Link href="/upload" className="material-button material-button-primary">
+            Upload screenshot
           </Link>
         </div>
       </div>

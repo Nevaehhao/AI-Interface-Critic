@@ -5,9 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 
-import {
-  savePendingAnalysisDraft,
-} from "@/lib/analysis-draft";
+import { savePendingAnalysisDraft } from "@/lib/analysis-draft";
 import type { WorkspaceRecord } from "@/lib/data/workspace-store";
 import {
   ACCEPTED_IMAGE_TYPES,
@@ -126,138 +124,92 @@ export function UploadForm({
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="surface-card space-y-6 p-6 sm:p-8">
-        <div>
-          <p className="eyebrow">
-            Step 1
-          </p>
-          <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">
-            Upload a screenshot for critique.
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
-            Start with a single interface image. The MVP accepts PNG, JPG, and
-            WebP files up to {MAX_UPLOAD_SIZE_MB}MB.
-          </p>
-        </div>
+    <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+      <section className="surface-card p-6 sm:p-8">
+        <p className="eyebrow">Upload</p>
+        <h1 className="mt-4 text-4xl tracking-tight sm:text-5xl">Upload one screenshot.</h1>
+        <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--color-muted)]">
+          Use a single screen where the main layout and primary actions are visible. Supported
+          types: PNG, JPG, and WebP up to {MAX_UPLOAD_SIZE_MB}MB.
+        </p>
 
-        <div className="surface-muted p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="eyebrow text-[var(--color-accent)]">Workspace</p>
-              <h2 className="mt-3 text-2xl tracking-tight">
-                Organize this critique before you run it.
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--color-muted)]">
-                Workspaces let you group analyses by product, case study, or client.
+        {isSignedIn && workspaces.length > 0 ? (
+          <label className="mt-6 block space-y-2">
+            <span className="text-sm text-[var(--color-muted)]">Workspace</span>
+            <select
+              value={selectedWorkspaceId}
+              onChange={(event) => setSelectedWorkspaceId(event.target.value)}
+              className="w-full rounded-2xl border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
+            >
+              {workspaces.map((workspace) => (
+                <option key={workspace.id} value={workspace.id}>
+                  {workspace.name}
+                </option>
+              ))}
+            </select>
+            {selectedWorkspace?.description ? (
+              <p className="text-sm leading-7 text-[var(--color-muted)]">
+                {selectedWorkspace.description}
               </p>
-            </div>
-            <Link href="/workspaces" className="material-button material-button-secondary">
-              Manage workspaces
-            </Link>
-          </div>
+            ) : null}
+          </label>
+        ) : null}
 
-          {isSignedIn ? (
-            workspaces.length > 0 ? (
-              <label className="mt-5 block space-y-2">
-                <span className="text-sm text-[var(--color-muted)]">Save analysis to</span>
-                <select
-                  value={selectedWorkspaceId}
-                  onChange={(event) => setSelectedWorkspaceId(event.target.value)}
-                  className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
-                >
-                  {workspaces.map((workspace) => (
-                    <option key={workspace.id} value={workspace.id}>
-                      {workspace.name}
-                    </option>
-                  ))}
-                </select>
-                {selectedWorkspace?.description ? (
-                  <p className="text-sm leading-7 text-[var(--color-muted)]">
-                    {selectedWorkspace.description}
-                  </p>
-                ) : null}
-              </label>
-            ) : (
-              <div className="mt-5 rounded-2xl bg-[var(--color-warning-soft)] px-4 py-3 text-sm text-[var(--color-warning)]">
-                Create your first workspace to group analyses by project.
-              </div>
-            )
-          ) : (
-            <div className="mt-5 rounded-2xl bg-[var(--color-accent-soft)] px-4 py-3 text-sm text-[var(--color-accent)]">
-              Sign in to save analyses into reusable workspaces. Anonymous runs still work locally.
-            </div>
-          )}
-        </div>
+        {!isSignedIn ? (
+          <div className="surface-muted mt-6 p-4 text-sm leading-7 text-[var(--color-muted)]">
+            History still works locally without sign-in. If you want synced workspaces later, use{" "}
+            <Link href="/auth/sign-in" className="text-[var(--color-accent)]">
+              sign in
+            </Link>
+            .
+          </div>
+        ) : null}
 
         <div
           role="presentation"
           onDrop={handleDrop}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
-          className={`rounded-[2rem] border border-dashed p-6 transition sm:p-8 ${
+          className={`mt-6 rounded-[1.5rem] border border-dashed p-8 text-center transition ${
             isDragging
-              ? "border-[var(--color-accent)] bg-[rgba(232,240,254,0.92)]"
-              : "border-[var(--color-line)] bg-[rgba(255,255,255,0.74)]"
+              ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
+              : "border-[var(--color-line)] bg-white"
           }`}
         >
-          <div className="flex flex-col gap-6">
-            <div className="space-y-3">
-              <p className="eyebrow text-[var(--color-accent)]">
-                Screenshot input
-              </p>
-              <h2 className="text-2xl tracking-tight">
-                Drag a file here or open the picker.
-              </h2>
-              <p className="max-w-xl text-sm leading-7 text-[var(--color-muted)]">
-                Use a full-screen or cropped UI image where hierarchy, spacing,
-                and interaction choices are visible.
-              </p>
-            </div>
+          <p className="text-base font-medium">Drag a screenshot here</p>
+          <p className="mt-2 text-sm text-[var(--color-muted)]">or choose a file from your computer</p>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="material-button material-button-primary mt-6"
+          >
+            Choose file
+          </button>
+          <p className="mt-4 text-xs text-[var(--color-muted)]">PNG, JPG, WebP</p>
 
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => inputRef.current?.click()}
-                className="material-button material-button-primary"
-              >
-                Choose screenshot
-              </button>
-              <div className="app-chip">
-                Accepted: PNG, JPG, WebP
-              </div>
-            </div>
-
-            <input
-              ref={inputRef}
-              accept={ACCEPTED_IMAGE_TYPES.join(",")}
-              className="sr-only"
-              onChange={handleInputChange}
-              type="file"
-            />
-
-            {error ? (
-              <div className="rounded-2xl bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
-                {error}
-              </div>
-            ) : null}
-          </div>
+          <input
+            ref={inputRef}
+            accept={ACCEPTED_IMAGE_TYPES.join(",")}
+            className="sr-only"
+            onChange={handleInputChange}
+            type="file"
+          />
         </div>
+
+        {error ? (
+          <div className="mt-6 rounded-2xl bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
+            {error}
+          </div>
+        ) : null}
       </section>
 
-      <aside className="surface-tonal space-y-5 p-6">
-        <div>
-          <p className="eyebrow">
-            Selected file
-          </p>
-          <h2 className="mt-3 text-3xl tracking-tight">
-            Preview before analysis
-          </h2>
-        </div>
+      <aside className="surface-card p-6">
+        <p className="eyebrow">Preview</p>
+        <h2 className="mt-4 text-2xl tracking-tight">Ready before you analyze.</h2>
 
         {selectedFile && previewUrl ? (
-          <div className="space-y-5">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-[var(--color-line)] bg-white">
+          <div className="mt-6 space-y-4">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] border border-[var(--color-line)] bg-white">
               <Image
                 alt="Selected UI screenshot preview"
                 fill
@@ -268,48 +220,37 @@ export function UploadForm({
               />
             </div>
 
-            <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
-              <p className="text-sm">{selectedFile.name}</p>
+            <div className="surface-muted p-4">
+              <p className="text-sm font-medium">{selectedFile.name}</p>
               <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-                <span className="app-chip px-3 py-1 text-xs">
-                  {selectedFile.type}
-                </span>
-                <span className="app-chip px-3 py-1 text-xs">
-                  {formatBytes(selectedFile.size)}
-                </span>
+                <span className="app-chip">{selectedFile.type}</span>
+                <span className="app-chip">{formatBytes(selectedFile.size)}</span>
+                {selectedWorkspace ? <span className="app-chip">{selectedWorkspace.name}</span> : null}
               </div>
             </div>
           </div>
         ) : (
-          <div className="surface-muted border-dashed p-6">
+          <div className="surface-muted mt-6 p-6">
             <p className="text-sm leading-7 text-[var(--color-muted)]">
-              Your screenshot preview will appear here once a valid image is
-              selected.
+              Your screenshot preview appears here after you choose a valid file.
             </p>
           </div>
         )}
 
-        <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
-          <p className="eyebrow text-[var(--color-accent)]">
-            What happens next
+        <div className="surface-muted mt-6 p-4">
+          <p className="text-sm leading-7 text-[var(--color-muted)]">
+            Next step: the app sends the screenshot to the analysis API and then opens a report.
+            The report will tell you whether Ollama ran successfully or fallback output was used.
           </p>
-          <ul className="mt-4 space-y-3 text-sm leading-7 text-[var(--color-muted)]">
-            <li>The screenshot is prepared in the browser</li>
-            <li>The app transitions into a staged analysis state</li>
-            <li>A structured report is rendered after processing</li>
-            {selectedWorkspace ? (
-              <li>The result is assigned to {selectedWorkspace.name}</li>
-            ) : null}
-          </ul>
         </div>
 
         <button
           type="button"
           disabled={!selectedFile || isSubmitting}
           onClick={handleSubmit}
-          className="material-button material-button-primary w-full disabled:cursor-not-allowed disabled:opacity-50"
+          className="material-button material-button-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSubmitting ? "Preparing analysis..." : "Analyze screenshot"}
+          {isSubmitting ? "Preparing..." : "Analyze screenshot"}
         </button>
       </aside>
     </div>

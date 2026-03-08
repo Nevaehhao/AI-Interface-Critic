@@ -15,6 +15,7 @@ const MAX_STORED_ANALYSES = 24;
 export const analyzeResponseSchema = z.object({
   analysis: analysisReportSchema,
   source: z.enum(ANALYSIS_SOURCE_VALUES),
+  warning: z.string().nullable().optional(),
 });
 
 export type AnalyzeResponse = z.infer<typeof analyzeResponseSchema>;
@@ -33,6 +34,7 @@ export function createMockAnalyzeResponse() {
   return analyzeResponseSchema.parse({
     analysis: createMockAnalysisReport(),
     source: "mock",
+    warning: null,
   });
 }
 

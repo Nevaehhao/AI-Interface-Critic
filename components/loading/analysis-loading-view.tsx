@@ -102,20 +102,12 @@ export function AnalysisLoadingView() {
   if (!draft) {
     return (
       <div className="surface-card p-6 sm:p-8">
-        <p className="eyebrow text-[var(--color-accent)]">
-          Missing screenshot
-        </p>
-        <h1 className="mt-4 text-3xl tracking-tight sm:text-4xl">
-          There is no pending upload to analyze.
-        </h1>
+        <p className="eyebrow text-[var(--color-accent)]">Missing screenshot</p>
+        <h1 className="mt-4 text-3xl tracking-tight sm:text-4xl">There is no upload to analyze.</h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-          Start from the upload flow so the loading state has a screenshot to
-          process.
+          Start from the upload page so the analysis step has a screenshot to process.
         </p>
-        <Link
-          href="/upload"
-          className="material-button material-button-secondary mt-6"
-        >
+        <Link href="/upload" className="material-button material-button-secondary mt-6">
           Go to upload
         </Link>
       </div>
@@ -123,17 +115,13 @@ export function AnalysisLoadingView() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+    <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
       <section className="surface-card p-6 sm:p-8">
-        <p className="eyebrow">
-          Step 2
-        </p>
-        <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">
-          The screenshot is being reviewed.
-        </h1>
+        <p className="eyebrow">Analyzing</p>
+        <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">Review in progress.</h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
-          This loading state explains the critique process so the wait feels
-          intentional instead of opaque.
+          The app is processing your screenshot now. When the report opens, it will clearly show
+          whether Ollama produced the result or fallback output was used.
         </p>
 
         {error ? (
@@ -150,12 +138,12 @@ export function AnalysisLoadingView() {
             return (
               <div
                 key={step}
-                className={`rounded-[1.5rem] border px-4 py-4 transition ${
+                className={`rounded-[1.25rem] border px-4 py-4 transition ${
                   isActive
                     ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
                     : isComplete
                       ? "border-[rgba(24,128,56,0.18)] bg-[var(--color-success-soft)]"
-                      : "border-[var(--color-line)] bg-[rgba(255,255,255,0.7)]"
+                      : "border-[var(--color-line)] bg-white"
                 }`}
               >
                 <div className="flex items-center justify-between gap-4">
@@ -173,14 +161,10 @@ export function AnalysisLoadingView() {
         </div>
       </section>
 
-      <aside className="surface-tonal space-y-5 p-6">
+      <aside className="surface-card space-y-5 p-6">
         <div>
-          <p className="eyebrow">
-            Screenshot snapshot
-          </p>
-          <h2 className="mt-3 text-3xl tracking-tight">
-            Current analysis input
-          </h2>
+          <p className="eyebrow">Input</p>
+          <h2 className="mt-3 text-3xl tracking-tight">Current screenshot</h2>
         </div>
 
         <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-[var(--color-line)] bg-white">
@@ -194,25 +178,19 @@ export function AnalysisLoadingView() {
           />
         </div>
 
-        <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
+        <div className="surface-muted p-4">
           <p className="text-sm">{draft.name}</p>
           <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-            <span className="app-chip px-3 py-1 text-xs">
-              {draft.type}
-            </span>
-            <span className="app-chip px-3 py-1 text-xs">
-              {formatBytes(draft.size)}
-            </span>
+            <span className="app-chip">{draft.type}</span>
+            <span className="app-chip">{formatBytes(draft.size)}</span>
           </div>
         </div>
 
-        <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
-          <p className="eyebrow text-[var(--color-accent)]">
-            Analysis engine
-          </p>
+        <div className="surface-muted p-5">
+          <p className="eyebrow text-[var(--color-accent)]">Engine</p>
           <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-            The app prefers a local Ollama model for screenshot critique and
-            falls back to typed mock output when the local model is unavailable.
+            The app tries Ollama first. If that fails, the final report will explicitly say it used
+            fallback output and show the reason.
           </p>
           {draft.workspaceName ? (
             <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
