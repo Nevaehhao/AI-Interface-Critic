@@ -20,25 +20,27 @@ export function ReportPageClient({
   const [report, setReport] = useState<AnalysisReport | null>(
     initialReport ?? (analysisId === "demo" ? mockAnalysisReport : null),
   );
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(initialScreenshotUrl);
   const [source, setSource] = useState<AnalysisSource>(initialSource);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
       const storedResult = getAnalysisResultForId(analysisId);
       setReport(storedResult?.analysis ?? initialReport ?? mockAnalysisReport);
+      setScreenshotUrl(storedResult?.screenshotDataUrl ?? initialScreenshotUrl);
       setSource(storedResult?.source ?? initialSource);
     });
 
     return () => {
       window.cancelAnimationFrame(frameId);
     };
-  }, [analysisId, initialReport, initialSource]);
+  }, [analysisId, initialReport, initialScreenshotUrl, initialSource]);
 
   return (
     <ReportView
       analysisId={analysisId}
       report={report ?? mockAnalysisReport}
-      screenshotUrl={initialScreenshotUrl}
+      screenshotUrl={screenshotUrl}
       source={source}
     />
   );
