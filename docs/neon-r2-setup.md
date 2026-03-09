@@ -1,4 +1,4 @@
-# Neon + R2 Setup
+# Neon + Local Storage Setup
 
 ## 1. Create a Neon Postgres project
 
@@ -29,21 +29,17 @@ http://localhost:3000
 
 as an allowed redirect or app URL in Neon Auth.
 
-## 3. Create a Cloudflare R2 bucket
+## 3. Configure local screenshot storage
 
-Create a bucket for screenshots, then generate an API token with object read and write access.
+The app now stores screenshots on local disk during development.
 
-Add these values to `.env.local`:
+Add this value to `.env.local`:
 
 ```bash
-R2_ACCOUNT_ID=
-R2_ACCESS_KEY_ID=
-R2_SECRET_ACCESS_KEY=
-R2_BUCKET_NAME=ui-screenshots
-R2_ENDPOINT=
+LOCAL_SCREENSHOT_STORAGE_DIR=.data/screenshots
 ```
 
-`R2_ENDPOINT` is optional. If omitted, the app builds the default endpoint from `R2_ACCOUNT_ID`.
+If omitted, the app defaults to `.data/screenshots` inside the project root.
 
 ## 4. Apply the database schema
 
@@ -79,4 +75,4 @@ Then open:
 /setup
 ```
 
-The setup page checks Ollama, Neon Auth, Neon Postgres, Cloudflare R2, and deployment readiness.
+The setup page checks Ollama, Neon Auth, Neon Postgres, local screenshot storage, and deployment readiness.

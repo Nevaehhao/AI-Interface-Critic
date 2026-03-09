@@ -4,7 +4,7 @@ import type { AnalysisSource } from "@/lib/analysis-result";
 import { getCurrentAuthSession } from "@/lib/auth/server";
 import { getDb } from "@/lib/db";
 import { hasDatabaseConfig, hasNeonAuthConfig } from "@/lib/env";
-import { uploadScreenshotToR2 } from "@/lib/storage/r2";
+import { writeScreenshotToLocalStorage } from "@/lib/storage/local";
 
 type PersistAnalysisInput = {
   file: File;
@@ -92,12 +92,11 @@ export async function persistAnalysis({
   const sanitizedName = sanitizeFileName(file.name);
   const screenshotKey = `${userId}/${report.id}-${sanitizedName || `screenshot.${extension}`}`;
   const fileBuffer = Buffer.from(await file.arrayBuffer());
-  const uploadResult = await uploadScreenshotToR2({
+  const uploadResult = await writeScreenshotToLocalStorage({
     body: fileBuffer,
-    contentType: file.type,
     key: screenshotKey,
   }).catch((error) => {
-    console.error("R2 screenshot upload failed.", error);
+    console.error("Local screenshot write failed.", error);
     return null;
   });
 

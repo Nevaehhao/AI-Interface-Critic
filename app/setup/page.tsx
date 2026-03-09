@@ -29,7 +29,7 @@ export default async function SetupPage() {
           <div>
             <p className="eyebrow">Platform setup</p>
             <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">
-              Readiness for Ollama, Neon, R2, and deployment.
+              Readiness for Ollama, Neon, local storage, and deployment.
             </h1>
             <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-muted)]">
               This page checks the services and environment variables your app needs before you
