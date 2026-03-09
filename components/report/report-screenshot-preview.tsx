@@ -55,6 +55,7 @@ export function ReportScreenshotPreview({
   const backgroundImage = draft?.dataUrl ?? fallbackImageUrl ?? "";
   const selectedIssue =
     issues.find((issue) => issue.id === selectedIssueId) ?? issues[0] ?? null;
+  const selectedHighlights = selectedIssue?.highlights ?? [];
 
   return (
     <div className="space-y-4">
@@ -70,43 +71,56 @@ export function ReportScreenshotPreview({
 
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[rgba(255,255,255,0.1)]" />
 
-        {issues.flatMap((issue, issueIndex) =>
-          issue.highlights.map((highlight, highlightIndex) => {
-            const isSelected = issue.id === selectedIssue?.id;
+        {selectedIssue ? (
+          <div className="absolute inset-x-4 top-4 z-10 rounded-full bg-white/90 px-4 py-2 text-xs font-medium text-[var(--color-foreground)] shadow-sm backdrop-blur">
+            Focused issue: {selectedIssue.title}
+          </div>
+        ) : null}
 
-            return (
-              <button
-                key={`${issue.id}-${highlight.id}`}
-                type="button"
-                aria-label={`Highlight ${issue.title}`}
-                onClick={() => onSelectIssue?.(issue.id)}
-                className={`absolute overflow-visible rounded-xl border-2 transition ${
-                  isSelected
-                    ? "border-[var(--color-accent)] bg-[rgba(26,115,232,0.14)] shadow-[0_0_0_9999px_rgba(255,255,255,0.12)]"
-                    : "border-[rgba(24,128,56,0.6)] bg-[rgba(24,128,56,0.12)] hover:border-[var(--color-accent)] hover:bg-[rgba(26,115,232,0.1)]"
-                }`}
-                style={{
-                  height: `${highlight.height}%`,
-                  left: `${highlight.x}%`,
-                  top: `${highlight.y}%`,
-                  width: `${highlight.width}%`,
-                  zIndex: isSelected ? 2 : 1,
-                }}
-              >
-                <span
-                  className={`absolute -top-3 left-3 rounded-full px-2 py-1 text-[10px] font-medium tracking-[0.04em] ${
-                    isSelected
-                      ? "bg-[var(--color-accent)] text-white"
-                      : "bg-white text-[var(--color-foreground)]"
-                  }`}
-                >
-                  {issueIndex + 1}.{highlightIndex + 1} {highlight.label}
-                </span>
-              </button>
-            );
-          }),
-        )}
+        {selectedHighlights.map((highlight, highlightIndex) => (
+          <div
+            key={`${selectedIssue?.id ?? "issue"}-${highlight.id}`}
+            aria-label={`Highlight ${selectedIssue?.title ?? ""}`}
+            className="absolute rounded-xl border-[3px] border-[var(--color-accent)] bg-[rgba(26,115,232,0.12)] shadow-[0_0_0_9999px_rgba(255,255,255,0.2)] transition"
+            style={{
+              height: `${highlight.height}%`,
+              left: `${highlight.x}%`,
+              top: `${highlight.y}%`,
+              width: `${highlight.width}%`,
+              zIndex: 2,
+            }}
+          >
+            <span className="absolute -top-3 left-3 rounded-full bg-[var(--color-accent)] px-2 py-1 text-[10px] font-medium tracking-[0.04em] text-white shadow-sm">
+              {highlightIndex + 1}
+            </span>
+          </div>
+        ))}
       </div>
+
+      {selectedIssue ? (
+        <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="eyebrow">Selected issue</p>
+              <h3 className="mt-2 text-lg font-medium">{selectedIssue.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                {selectedIssue.description}
+              </p>
+            </div>
+            <span className="app-chip">{selectedIssue.sectionTitle}</span>
+          </div>
+
+          {selectedHighlights.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {selectedHighlights.map((highlight, highlightIndex) => (
+                <span key={highlight.id} className="app-chip">
+                  Area {highlightIndex + 1}: {highlight.label}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       {issues.length > 0 ? (
         <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
