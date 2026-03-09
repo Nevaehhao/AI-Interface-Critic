@@ -169,13 +169,13 @@ Definition of done:
 ### Feature 8: Platform layer
 
 Goal:
-Integrate Neon Auth, Neon Postgres, Cloudflare R2, and platform setup for deployment.
+Integrate Neon Auth, Neon Postgres, local screenshot storage, and platform setup for deployment.
 
 Deliverables:
 
 - Neon Auth setup
 - Google and email/password authentication
-- Screenshot storage configuration with Cloudflare R2
+- Screenshot storage configuration with local file storage
 - Analysis metadata and result persistence
 - Deployment and environment setup notes
 

@@ -4,9 +4,8 @@ import {
   getServerEnv,
   hasDatabaseConfig,
   hasNeonAuthConfig,
-  hasR2Config,
 } from "@/lib/env";
-import { checkR2Bucket } from "@/lib/storage/r2";
+import { checkLocalScreenshotStorage } from "@/lib/storage/local";
 
 export type PlatformCheckStatus = "ready" | "action-required" | "offline";
 
@@ -163,30 +162,18 @@ async function checkDatabase() {
   }
 }
 
-async function checkR2() {
+async function checkLocalStorage() {
   const serverEnv = getServerEnv();
-
-  if (!hasR2Config()) {
-    return {
-      detail: "Screenshot storage is disabled because Cloudflare R2 credentials are missing.",
-      id: "r2-storage",
-      label: "Cloudflare R2",
-      nextAction:
-        "Create an R2 bucket, generate an API token, then add R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, and R2_SECRET_ACCESS_KEY.",
-      status: "action-required" as const,
-    };
-  }
-
-  const result = await checkR2Bucket();
+  const result = await checkLocalScreenshotStorage();
 
   return {
     detail: result.detail,
-    id: "r2-storage",
-    label: "Cloudflare R2",
+    id: "local-storage",
+    label: "Local screenshot storage",
     nextAction:
       result.status === "ready"
-        ? `Bucket ${serverEnv.R2_BUCKET_NAME} is ready for screenshot storage.`
-        : "Verify the bucket name, endpoint, account ID, and API token permissions.",
+        ? `Screenshots will be written to ${serverEnv.LOCAL_SCREENSHOT_STORAGE_DIR ?? ".data/screenshots"}.`
+        : "Verify the local screenshot directory path and file system permissions.",
     status: result.status,
   };
 }
@@ -232,7 +219,7 @@ export async function getPlatformStatus() {
     await checkOllama(),
     await checkNeonAuth(),
     await checkDatabase(),
-    await checkR2(),
+    await checkLocalStorage(),
   ];
 
   return {

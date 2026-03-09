@@ -5,7 +5,7 @@
 - Vercel for the Next.js app
 - Neon Auth for authentication
 - Neon Postgres for persistence
-- Cloudflare R2 for screenshot storage
+- Local file storage for screenshots during development
 - Ollama running on the machine or service that handles analysis
 
 ## Important constraint
@@ -24,12 +24,8 @@ Set the same values from `.env.local` in Vercel:
 ```bash
 NEXT_PUBLIC_APP_URL=
 DATABASE_URL=
+LOCAL_SCREENSHOT_STORAGE_DIR=
 NEON_AUTH_BASE_URL=
-R2_ACCOUNT_ID=
-R2_ACCESS_KEY_ID=
-R2_SECRET_ACCESS_KEY=
-R2_BUCKET_NAME=
-R2_ENDPOINT=
 OLLAMA_BASE_URL=
 OLLAMA_MODEL=
 ```
@@ -40,7 +36,7 @@ OLLAMA_MODEL=
 2. Set `NEXT_PUBLIC_APP_URL` to the deployed domain.
 3. Add the deployed domain to Neon Auth allowed URLs.
 4. Confirm the Neon database schema is applied.
-5. Confirm the R2 bucket and token are valid.
+5. Confirm the server can write to `LOCAL_SCREENSHOT_STORAGE_DIR` or swap to a cloud object store.
 6. Confirm the deployed app can reach `OLLAMA_BASE_URL`.
 7. Open `/setup` and verify all checks are ready.
 

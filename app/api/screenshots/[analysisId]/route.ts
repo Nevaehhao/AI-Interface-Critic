@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getStoredScreenshotKeyForAnalysis } from "@/lib/data/analysis-store";
-import { getScreenshotObject } from "@/lib/storage/r2";
+import { getScreenshotFromLocalStorage } from "@/lib/storage/local";
 
 export async function GET(
   _request: NextRequest,
@@ -18,10 +18,10 @@ export async function GET(
     return NextResponse.json({ error: "Screenshot not found." }, { status: 404 });
   }
 
-  const object = await getScreenshotObject(screenshotKey);
+  const object = await getScreenshotFromLocalStorage(screenshotKey);
 
   if (!object?.body) {
-    return NextResponse.json({ error: "Screenshot storage is not configured." }, { status: 404 });
+    return NextResponse.json({ error: "Screenshot file was not found on local storage." }, { status: 404 });
   }
 
   const headers = new Headers({
@@ -37,5 +37,5 @@ export async function GET(
     headers.set("ETag", object.etag);
   }
 
-  return new NextResponse(object.body.transformToWebStream(), { headers });
+  return new NextResponse(object.body, { headers });
 }
