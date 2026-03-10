@@ -183,6 +183,13 @@ export function HistoryPageClient({
 
       {visibleLocalAnalyses.length > 0 ? (
         <section className="grid gap-4">
+          <div className="px-1">
+            <p className="eyebrow">Local history</p>
+            <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+              These reports are stored in this browser and remain available even before cloud sync.
+            </p>
+          </div>
+
           {visibleLocalAnalyses.map((entry) => (
             <HistoryCard
               key={entry.analysis.id}
@@ -202,6 +209,13 @@ export function HistoryPageClient({
 
       {initialAnalyses.length > 0 ? (
         <section className="grid gap-4">
+          <div className="px-1">
+            <p className="eyebrow">Synced history</p>
+            <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+              These reports were saved to your Neon-backed account and can be reopened across sessions.
+            </p>
+          </div>
+
           {initialAnalyses.map((analysis) => (
             <HistoryCard
               key={analysis.id}

@@ -52,7 +52,8 @@ export function ReportScreenshotPreview({
     );
   }
 
-  const backgroundImage = draft?.dataUrl ?? fallbackImageUrl ?? "";
+  const previewDraft = fallbackImageUrl ? null : draft;
+  const backgroundImage = fallbackImageUrl ?? previewDraft?.dataUrl ?? "";
   const selectedIssue =
     issues.find((issue) => issue.id === selectedIssueId) ?? issues[0] ?? null;
   const selectedHighlights = selectedIssue?.highlights ?? [];
@@ -149,13 +150,13 @@ export function ReportScreenshotPreview({
       ) : null}
 
       <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
-        {draft ? (
+        {previewDraft ? (
           <>
-            <p className="text-sm">{draft.name}</p>
+            <p className="text-sm">{previewDraft.name}</p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-              <span className="app-chip px-3 py-1 text-xs">{draft.type}</span>
+              <span className="app-chip px-3 py-1 text-xs">{previewDraft.type}</span>
               <span className="app-chip px-3 py-1 text-xs">
-                {formatBytes(draft.size)}
+                {formatBytes(previewDraft.size)}
               </span>
             </div>
             <button
@@ -171,7 +172,7 @@ export function ReportScreenshotPreview({
           </>
         ) : (
           <p className="text-sm leading-7 text-[var(--color-muted)]">
-            This image was loaded from saved analysis history.
+            This image was loaded from the saved report record.
           </p>
         )}
       </div>
