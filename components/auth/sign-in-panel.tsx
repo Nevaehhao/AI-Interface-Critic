@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
 
@@ -23,6 +24,29 @@ function getAuthErrorMessage<T>(result: AuthResponse<T>, fallbackMessage: string
   return result.error?.message || fallbackMessage;
 }
 
+function GoogleMark() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+      <path
+        d="M21.81 12.23c0-.71-.06-1.39-.19-2.05H12.2v3.88h5.39a4.6 4.6 0 0 1-1.99 3.02v2.5h3.22c1.88-1.73 2.99-4.28 2.99-7.35Z"
+        fill="#4285F4"
+      />
+      <path
+        d="M12.2 22c2.7 0 4.96-.89 6.62-2.42l-3.22-2.5c-.89.6-2.03.96-3.4.96-2.62 0-4.84-1.77-5.63-4.14H3.24v2.58A9.99 9.99 0 0 0 12.2 22Z"
+        fill="#34A853"
+      />
+      <path
+        d="M6.57 13.9a5.99 5.99 0 0 1 0-3.8V7.52H3.24a10.01 10.01 0 0 0 0 8.96l3.33-2.58Z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M12.2 5.96c1.47 0 2.79.51 3.83 1.5l2.87-2.87C17.15 2.95 14.9 2 12.2 2a9.99 9.99 0 0 0-8.96 5.52L6.57 10.1c.79-2.37 3.01-4.14 5.63-4.14Z"
+        fill="#EA4335"
+      />
+    </svg>
+  );
+}
+
 export function SignInPanel({
   isConfigured,
 }: {
@@ -36,6 +60,8 @@ export function SignInPanel({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const inputClassName =
+    "w-full rounded-[1rem] border border-[var(--color-line)] bg-white px-4 py-3.5 text-sm text-[var(--color-foreground)] outline-none transition focus:border-[var(--color-accent)] focus:shadow-[0_0_0_4px_rgba(26,115,232,0.12)] placeholder:text-[var(--color-muted)]";
 
   async function handleGoogleSignIn() {
     if (!isConfigured) {
@@ -154,109 +180,161 @@ export function SignInPanel({
   }
 
   return (
-    <section className="surface-card max-w-2xl p-6 sm:p-8">
-      <p className="eyebrow">Sign in</p>
-      <h1 className="mt-4 text-4xl tracking-tight sm:text-5xl">Use Google or email.</h1>
-      <p className="mt-4 text-base leading-8 text-[var(--color-muted)]">
-        Sign-in is optional for local use. It is only needed if you want synced history and
-        workspaces across devices.
-      </p>
-      <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
-        If email verification is enabled in Neon Auth, account creation may require confirming
-        your inbox before history sync is available.
-      </p>
+    <section className="surface-card mx-auto w-full max-w-5xl overflow-hidden rounded-[2rem] shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+      <div className="grid lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="border-b border-[var(--color-line)] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-8 sm:p-10 lg:border-b-0 lg:border-r lg:p-12">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--color-line)] bg-white text-sm font-semibold text-[var(--color-accent)]">
+            AI
+          </div>
+          <p className="mt-8 text-sm font-medium text-[var(--color-muted)]">Sign in to continue</p>
+          <h1 className="mt-4 text-4xl tracking-tight sm:text-[3.25rem] sm:leading-[1.02]">
+            Use Google or email to sync your critiques.
+          </h1>
+          <p className="mt-5 max-w-md text-base leading-8 text-[var(--color-muted)]">
+            Local analysis still works without an account. Sign in only if you want history and
+            workspaces to follow you across devices.
+          </p>
 
-      <button
-        type="button"
-        onClick={() => void handleGoogleSignIn()}
-        className="material-button material-button-secondary mt-6"
-      >
-        {pendingAction === "google" ? "Connecting..." : "Continue with Google"}
-      </button>
+          <div className="surface-muted mt-8 p-5">
+            <p className="eyebrow text-[var(--color-accent)]">Before you sign in</p>
+            <ul className="mt-3 space-y-3 text-sm leading-7 text-[var(--color-muted)]">
+              <li>Google is the fastest path if you just want synced history.</li>
+              <li>Email sign-up may ask you to confirm your inbox before sync is enabled.</li>
+            </ul>
+          </div>
 
-      <div className="mt-8 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setMode("sign-in")}
-          className={`material-button px-4 py-2 text-sm ${
-            mode === "sign-in" ? "material-button-primary" : "material-button-secondary"
-          }`}
-        >
-          Sign in
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode("sign-up")}
-          className={`material-button px-4 py-2 text-sm ${
-            mode === "sign-up" ? "material-button-primary" : "material-button-secondary"
-          }`}
-        >
-          Create account
-        </button>
-      </div>
-
-      <div className="mt-6 space-y-4">
-        {mode === "sign-up" ? (
-          <label className="block space-y-2">
-            <span className="text-sm text-[var(--color-muted)]">Name</span>
-            <input
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Your name"
-              className="w-full rounded-2xl border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
-            />
-          </label>
-        ) : null}
-
-        <label className="block space-y-2">
-          <span className="text-sm text-[var(--color-muted)]">Email</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
-            className="w-full rounded-2xl border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
-          />
-        </label>
-
-        <label className="block space-y-2">
-          <span className="text-sm text-[var(--color-muted)]">Password</span>
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder={mode === "sign-up" ? "Create a password" : "Enter your password"}
-            className="w-full rounded-2xl border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
-          />
-        </label>
-      </div>
-
-      <button
-        type="button"
-        onClick={() => void handleEmailSubmit()}
-        className="material-button material-button-primary mt-6 w-full sm:w-auto"
-      >
-        {pendingAction === mode
-          ? mode === "sign-up"
-            ? "Creating..."
-            : "Signing in..."
-          : mode === "sign-up"
-            ? "Create account"
-            : "Sign in with email"}
-      </button>
-
-      {message ? (
-        <div className="mt-4 rounded-2xl bg-[var(--color-success-soft)] px-4 py-3 text-sm text-[var(--color-success)]">
-          {message}
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/upload" className="material-button material-button-text px-0">
+              Continue without account
+            </Link>
+          </div>
         </div>
-      ) : null}
 
-      {error ? (
-        <div className="mt-4 rounded-2xl bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
-          {error}
+        <div className="p-8 sm:p-10 lg:p-12">
+          <div className="max-w-xl">
+            <p className="text-sm text-[var(--color-muted)]">
+              Sign in to unlock synced history and workspace grouping.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => void handleGoogleSignIn()}
+              className="mt-6 flex w-full items-center justify-center gap-3 rounded-full border border-[var(--color-line)] bg-white px-5 py-3.5 text-sm font-medium text-[var(--color-foreground)] shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:border-[rgba(26,115,232,0.3)] hover:bg-[var(--color-surface-tonal)]"
+            >
+              <GoogleMark />
+              {pendingAction === "google" ? "Connecting to Google..." : "Continue with Google"}
+            </button>
+
+            <div className="mt-6 flex items-center gap-4 text-xs uppercase tracking-[0.14em] text-[var(--color-muted)]">
+              <span className="h-px flex-1 bg-[var(--color-line)]" />
+              <span>Email</span>
+              <span className="h-px flex-1 bg-[var(--color-line)]" />
+            </div>
+
+            <div className="mt-6 inline-flex rounded-full border border-[var(--color-line)] bg-[var(--color-surface-muted)] p-1">
+              <button
+                type="button"
+                onClick={() => setMode("sign-in")}
+                className={`rounded-full px-5 py-2.5 text-sm font-medium transition ${
+                  mode === "sign-in"
+                    ? "bg-white text-[var(--color-foreground)] shadow-[0_1px_3px_rgba(15,23,42,0.08)]"
+                    : "text-[var(--color-muted)]"
+                }`}
+              >
+                Sign in
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("sign-up")}
+                className={`rounded-full px-5 py-2.5 text-sm font-medium transition ${
+                  mode === "sign-up"
+                    ? "bg-white text-[var(--color-foreground)] shadow-[0_1px_3px_rgba(15,23,42,0.08)]"
+                    : "text-[var(--color-muted)]"
+                }`}
+              >
+                Create account
+              </button>
+            </div>
+
+            <div className="mt-8 space-y-4">
+              {mode === "sign-up" ? (
+                <label className="block space-y-2">
+                  <span className="text-sm text-[var(--color-muted)]">Full name</span>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder="Ruiyao Hao"
+                    className={inputClassName}
+                  />
+                </label>
+              ) : null}
+
+              <label className="block space-y-2">
+                <span className="text-sm text-[var(--color-muted)]">Email</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  className={inputClassName}
+                />
+              </label>
+
+              <label className="block space-y-2">
+                <span className="text-sm text-[var(--color-muted)]">Password</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder={mode === "sign-up" ? "Create a password" : "Enter your password"}
+                  className={inputClassName}
+                />
+              </label>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm leading-7 text-[var(--color-muted)]">
+                {mode === "sign-up"
+                  ? "Create an account for synced critiques and workspace grouping."
+                  : "Use your existing account to reopen saved critiques."}
+              </p>
+
+              <button
+                type="button"
+                onClick={() => void handleEmailSubmit()}
+                className="material-button material-button-primary min-w-40"
+              >
+                {pendingAction === mode
+                  ? mode === "sign-up"
+                    ? "Creating..."
+                    : "Signing in..."
+                  : mode === "sign-up"
+                    ? "Create account"
+                    : "Sign in"}
+              </button>
+            </div>
+
+            {message ? (
+              <div className="mt-5 rounded-[1.25rem] bg-[var(--color-success-soft)] px-4 py-3 text-sm text-[var(--color-success)]">
+                {message}
+              </div>
+            ) : null}
+
+            {error ? (
+              <div className="mt-5 rounded-[1.25rem] bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
+                {error}
+              </div>
+            ) : null}
+
+            {!isConfigured ? (
+              <div className="mt-5 rounded-[1.25rem] border border-[rgba(234,134,0,0.24)] bg-[var(--color-warning-soft)] px-4 py-3 text-sm text-[var(--color-warning)]">
+                Neon Auth is not configured yet. Add `NEON_AUTH_BASE_URL` before testing sign-in.
+              </div>
+            ) : null}
+          </div>
         </div>
-      ) : null}
+      </div>
     </section>
   );
 }
