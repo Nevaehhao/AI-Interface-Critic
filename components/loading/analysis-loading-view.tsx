@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
+  clearPendingAnalysisDraft,
   dataUrlToFile,
   loadPendingAnalysisDraft,
 } from "@/lib/analysis-draft";
@@ -25,6 +26,7 @@ const loadingSteps = [
 export function AnalysisLoadingView() {
   const router = useRouter();
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [attemptKey, setAttemptKey] = useState(0);
   const [draft, setDraft] = useState<ReturnType<typeof loadPendingAnalysisDraft>>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,7 +70,15 @@ export function AnalysisLoadingView() {
         });
 
         if (!response.ok) {
-          throw new Error("Analysis failed. Try uploading the screenshot again.");
+          const errorPayload = (await response.json().catch(() => null)) as {
+            error?: string;
+          } | null;
+
+          throw new Error(
+            typeof errorPayload?.error === "string"
+              ? errorPayload.error
+              : "Analysis failed. Try uploading the screenshot again.",
+          );
         }
 
         const payload = analyzeResponseSchema.parse(await response.json());
@@ -77,6 +87,7 @@ export function AnalysisLoadingView() {
           workspaceId: currentDraft.workspaceId ?? null,
           workspaceName: currentDraft.workspaceName ?? null,
         });
+        clearPendingAnalysisDraft();
         router.push(`/report/${payload.analysis.id}`);
       } catch (analyzeError) {
         if (controller.signal.aborted) {
@@ -97,7 +108,7 @@ export function AnalysisLoadingView() {
       window.clearInterval(stepInterval);
       controller.abort();
     };
-  }, [draft, router]);
+  }, [attemptKey, draft, router]);
 
   if (!draft) {
     return (
@@ -125,8 +136,24 @@ export function AnalysisLoadingView() {
         </p>
 
         {error ? (
-          <div className="mt-6 rounded-2xl bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
-            {error}
+          <div className="mt-6 space-y-4 rounded-2xl bg-[var(--color-error-soft)] px-4 py-4 text-sm text-[var(--color-error)]">
+            <p>{error}</p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveStepIndex(0);
+                  setError(null);
+                  setAttemptKey((currentAttemptKey) => currentAttemptKey + 1);
+                }}
+                className="material-button material-button-secondary"
+              >
+                Retry analysis
+              </button>
+              <Link href="/upload" className="material-button material-button-text px-0">
+                Back to upload
+              </Link>
+            </div>
           </div>
         ) : null}
 

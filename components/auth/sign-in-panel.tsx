@@ -5,6 +5,24 @@ import { startTransition, useState } from "react";
 
 import { authClient } from "@/lib/auth/client";
 
+type AuthResponse<T> =
+  | {
+      data: T;
+      error: null;
+    }
+  | {
+      data: null;
+      error: {
+        message?: string;
+        status: number;
+        statusText: string;
+      };
+    };
+
+function getAuthErrorMessage<T>(result: AuthResponse<T>, fallbackMessage: string) {
+  return result.error?.message || fallbackMessage;
+}
+
 export function SignInPanel({
   isConfigured,
 }: {
@@ -30,12 +48,29 @@ export function SignInPanel({
     setPendingAction("google");
 
     try {
-      await authClient.signIn.social({
+      const result = (await authClient.signIn.social({
         callbackURL: "/history",
         provider: "google",
-      });
+      })) as AuthResponse<{
+        redirect: boolean;
+        token?: string;
+        url?: string;
+      }>;
+
+      if (result.error) {
+        setError(getAuthErrorMessage(result, "Google sign-in failed."));
+        return;
+      }
+
+      if (result.data.url) {
+        window.location.href = result.data.url;
+        return;
+      }
+
+      setMessage("Opening Google sign-in...");
     } catch (authError) {
       setError(authError instanceof Error ? authError.message : "Google sign-in failed.");
+    } finally {
       setPendingAction(null);
     }
   }
@@ -62,34 +97,57 @@ export function SignInPanel({
 
     try {
       if (mode === "sign-up") {
-        await authClient.signUp.email({
+        const result = (await authClient.signUp.email({
           callbackURL: "/history",
           email,
           name: name.trim(),
           password,
-        });
+        })) as AuthResponse<{
+          token: string | null;
+          user: {
+            emailVerified: boolean;
+          };
+        }>;
+
+        if (result.error) {
+          setError(getAuthErrorMessage(result, "Account creation failed."));
+          return;
+        }
+
+        if (!result.data.token) {
+          setMessage("Account created. Check your email to finish sign-in.");
+          return;
+        }
+
         setMessage("Account created. Redirecting to history.");
       } else {
-        await authClient.signIn.email({
+        const result = (await authClient.signIn.email({
           callbackURL: "/history",
           email,
           password,
-        });
+        })) as AuthResponse<{
+          redirect: boolean;
+          token: string;
+          url?: string;
+        }>;
+
+        if (result.error) {
+          setError(getAuthErrorMessage(result, "Email sign-in failed."));
+          return;
+        }
+
         setMessage("Signed in. Redirecting to history.");
       }
 
+      setName("");
+      setEmail("");
+      setPassword("");
       startTransition(() => {
         router.push("/history");
         router.refresh();
       });
     } catch (authError) {
-      setError(
-        authError instanceof Error
-          ? authError.message
-          : mode === "sign-up"
-            ? "Account creation failed."
-            : "Email sign-in failed.",
-      );
+      setError(authError instanceof Error ? authError.message : "Authentication failed.");
     } finally {
       setPendingAction(null);
     }
@@ -102,6 +160,10 @@ export function SignInPanel({
       <p className="mt-4 text-base leading-8 text-[var(--color-muted)]">
         Sign-in is optional for local use. It is only needed if you want synced history and
         workspaces across devices.
+      </p>
+      <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+        If email verification is enabled in Neon Auth, account creation may require confirming
+        your inbox before history sync is available.
       </p>
 
       <button
