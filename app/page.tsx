@@ -1,3 +1,4 @@
+import { HomeHeroAuthAction, HomeStatusAuthAction } from "@/components/home/home-auth-actions";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ButtonLink } from "@/components/ui/button-link";
 
@@ -44,11 +45,9 @@ export default function Home() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink href="/upload">Start analysis</ButtonLink>
+            <HomeHeroAuthAction />
             <ButtonLink href="/report/demo" variant="secondary">
               View demo report
-            </ButtonLink>
-            <ButtonLink href="/history" variant="text">
-              Open history
             </ButtonLink>
           </div>
         </section>
@@ -98,9 +97,7 @@ export default function Home() {
               <ButtonLink href="/setup" variant="secondary">
                 Check setup
               </ButtonLink>
-              <ButtonLink href="/auth/sign-in" variant="text">
-                Sign in
-              </ButtonLink>
+              <HomeStatusAuthAction />
             </div>
           </div>
         </section>
