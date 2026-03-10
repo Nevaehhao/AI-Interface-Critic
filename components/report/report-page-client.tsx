@@ -15,12 +15,14 @@ export function ReportPageClient({
   initialScreenshotUrl = null,
   initialSource = "mock",
   initialWarning = null,
+  viewerUserId = null,
 }: {
   analysisId: string;
   initialReport?: AnalysisReport | null;
   initialScreenshotUrl?: string | null;
   initialSource?: AnalysisSource;
   initialWarning?: string | null;
+  viewerUserId?: string | null;
 }) {
   const [reportState, setReportState] = useState(() =>
     resolveReportClientState({
@@ -34,7 +36,7 @@ export function ReportPageClient({
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
-      const storedResult = getAnalysisResultForId(analysisId);
+      const storedResult = getAnalysisResultForId(analysisId, { viewerUserId });
       setReportState(
         resolveReportClientState({
           analysisId,
@@ -50,7 +52,7 @@ export function ReportPageClient({
     return () => {
       window.cancelAnimationFrame(frameId);
     };
-  }, [analysisId, initialReport, initialScreenshotUrl, initialSource, initialWarning]);
+  }, [analysisId, initialReport, initialScreenshotUrl, initialSource, initialWarning, viewerUserId]);
 
   if (!reportState.report) {
     return (

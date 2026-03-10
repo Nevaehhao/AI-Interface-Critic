@@ -23,7 +23,11 @@ const loadingSteps = [
   "Preparing structured critique",
 ] as const;
 
-export function AnalysisLoadingView() {
+export function AnalysisLoadingView({
+  viewerUserId = null,
+}: {
+  viewerUserId?: string | null;
+}) {
   const router = useRouter();
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [attemptKey, setAttemptKey] = useState(0);
@@ -84,6 +88,7 @@ export function AnalysisLoadingView() {
         const payload = analyzeResponseSchema.parse(await response.json());
         saveLatestAnalysisResult(payload, {
           screenshotDataUrl: currentDraft.dataUrl,
+          viewerUserId,
           workspaceId: currentDraft.workspaceId ?? null,
           workspaceName: currentDraft.workspaceName ?? null,
         });
@@ -108,7 +113,7 @@ export function AnalysisLoadingView() {
       window.clearInterval(stepInterval);
       controller.abort();
     };
-  }, [attemptKey, draft, router]);
+  }, [attemptKey, draft, router, viewerUserId]);
 
   if (!draft) {
     return (

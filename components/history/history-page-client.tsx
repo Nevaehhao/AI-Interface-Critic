@@ -95,6 +95,7 @@ export function HistoryPageClient({
   isSignedIn,
   selectedWorkspaceId,
   userEmail,
+  viewerUserId,
   workspaces,
 }: {
   initialAnalyses: PersistedAnalysisItem[];
@@ -102,19 +103,20 @@ export function HistoryPageClient({
   isSignedIn: boolean;
   selectedWorkspaceId: string | null;
   userEmail: string | null;
+  viewerUserId: string | null;
   workspaces: WorkspaceOption[];
 }) {
   const [localAnalyses, setLocalAnalyses] = useState<StoredAnalysisHistoryEntry[]>([]);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
-      setLocalAnalyses(loadStoredAnalysisHistory());
+      setLocalAnalyses(loadStoredAnalysisHistory({ viewerUserId }));
     });
 
     return () => {
       window.cancelAnimationFrame(frameId);
     };
-  }, []);
+  }, [viewerUserId]);
 
   const workspaceMap = new Map(workspaces.map((workspace) => [workspace.id, workspace]));
   const persistedIds = new Set(initialAnalyses.map((analysis) => analysis.id));
@@ -186,7 +188,7 @@ export function HistoryPageClient({
           <div className="px-1">
             <p className="eyebrow">Local history</p>
             <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
-              These reports are stored in this browser and remain available even before cloud sync.
+              These reports are stored only for the current browser profile and current account scope.
             </p>
           </div>
 
