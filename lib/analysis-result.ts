@@ -19,9 +19,13 @@ export const analyzeResponseSchema = z.object({
 });
 
 export type AnalyzeResponse = z.infer<typeof analyzeResponseSchema>;
+const storedLatestAnalysisSchema = analyzeResponseSchema.extend({
+  viewerUserId: z.string().nullable().optional(),
+});
 
 export const storedAnalysisHistoryEntrySchema = analyzeResponseSchema.extend({
   screenshotDataUrl: z.string().nullable().optional(),
+  viewerUserId: z.string().nullable().optional(),
   workspaceId: z.string().nullable().optional(),
   workspaceName: z.string().nullable().optional(),
 });
@@ -52,19 +56,48 @@ function loadStoredHistoryFromLocalStorage() {
   }
 }
 
+function matchesViewerUserId(
+  entry: { viewerUserId?: string | null },
+  viewerUserId: string | null | undefined,
+) {
+  if (typeof viewerUserId === "undefined") {
+    return true;
+  }
+
+  return (entry.viewerUserId ?? null) === viewerUserId;
+}
+
+function loadStoredLatestAnalysis() {
+  const rawValue = window.sessionStorage.getItem(STORED_ANALYSIS_KEY);
+
+  if (!rawValue) {
+    return null;
+  }
+
+  return storedLatestAnalysisSchema.parse(JSON.parse(rawValue));
+}
+
 export function saveLatestAnalysisResult(
   response: AnalyzeResponse,
   options?: {
     screenshotDataUrl?: string | null;
+    viewerUserId?: string | null;
     workspaceId?: string | null;
     workspaceName?: string | null;
   },
 ) {
-  window.sessionStorage.setItem(STORED_ANALYSIS_KEY, JSON.stringify(response));
+  window.sessionStorage.setItem(
+    STORED_ANALYSIS_KEY,
+    JSON.stringify({
+      ...response,
+      viewerUserId: options?.viewerUserId ?? null,
+    }),
+  );
 
   const historyEntry = storedAnalysisHistoryEntrySchema.parse({
     ...response,
     screenshotDataUrl: options?.screenshotDataUrl ?? null,
+    viewerUserId: options?.viewerUserId ?? null,
     workspaceId: options?.workspaceId ?? null,
     workspaceName: options?.workspaceName ?? null,
   });
@@ -79,48 +112,68 @@ export function saveLatestAnalysisResult(
 }
 
 export function loadLatestAnalysisResult() {
-  const rawValue = window.sessionStorage.getItem(STORED_ANALYSIS_KEY);
+  const storedLatestAnalysis = loadStoredLatestAnalysis();
 
-  if (!rawValue) {
+  if (!storedLatestAnalysis) {
     return null;
   }
 
-  return analyzeResponseSchema.parse(JSON.parse(rawValue));
+  return analyzeResponseSchema.parse(storedLatestAnalysis);
 }
 
-export function loadStoredAnalysisHistory() {
-  return loadStoredHistoryFromLocalStorage();
+export function loadStoredAnalysisHistory(options?: {
+  viewerUserId?: string | null;
+}) {
+  return loadStoredHistoryFromLocalStorage().filter((entry) =>
+    matchesViewerUserId(entry, options?.viewerUserId),
+  );
 }
 
-export function getAnalysisForId(analysisId: string): AnalysisReport | null {
-  const latestAnalysis = loadLatestAnalysisResult();
+export function getAnalysisForId(
+  analysisId: string,
+  options?: {
+    viewerUserId?: string | null;
+  },
+): AnalysisReport | null {
+  const latestAnalysis = loadStoredLatestAnalysis();
 
   if (!latestAnalysis) {
     return null;
   }
 
-  return latestAnalysis.analysis.id === analysisId ? latestAnalysis.analysis : null;
+  return latestAnalysis.analysis.id === analysisId &&
+    matchesViewerUserId(latestAnalysis, options?.viewerUserId)
+    ? latestAnalysis.analysis
+    : null;
 }
 
-export function getAnalysisResultForId(analysisId: string) {
+export function getAnalysisResultForId(
+  analysisId: string,
+  options?: {
+    viewerUserId?: string | null;
+  },
+) {
   const storedHistoryMatch = loadStoredHistoryFromLocalStorage().find(
-    (entry) => entry.analysis.id === analysisId,
+    (entry) =>
+      entry.analysis.id === analysisId && matchesViewerUserId(entry, options?.viewerUserId),
   );
 
   if (storedHistoryMatch) {
     return storedHistoryMatch;
   }
 
-  const latestAnalysis = loadLatestAnalysisResult();
+  const latestAnalysis = loadStoredLatestAnalysis();
 
   if (!latestAnalysis) {
     return null;
   }
 
-  return latestAnalysis.analysis.id === analysisId
+  return latestAnalysis.analysis.id === analysisId &&
+    matchesViewerUserId(latestAnalysis, options?.viewerUserId)
     ? storedAnalysisHistoryEntrySchema.parse({
         ...latestAnalysis,
         screenshotDataUrl: null,
+        viewerUserId: latestAnalysis.viewerUserId ?? null,
         workspaceId: null,
         workspaceName: null,
       })

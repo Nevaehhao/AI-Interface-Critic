@@ -31,6 +31,7 @@ export default async function HistoryPage({
         isSignedIn={Boolean(user)}
         selectedWorkspaceId={selectedWorkspaceId}
         userEmail={user?.email ?? null}
+        viewerUserId={user?.id ?? null}
         workspaces={(workspaces ?? []).map((workspace) => ({
           id: workspace.id,
           name: workspace.name,

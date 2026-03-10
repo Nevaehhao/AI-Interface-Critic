@@ -57,17 +57,23 @@ describe("local analysis history", () => {
 
     saveLatestAnalysisResult(response, {
       screenshotDataUrl: "data:image/png;base64,abc",
+      viewerUserId: "user-1",
       workspaceId: "workspace-1",
       workspaceName: "Portfolio",
     });
 
-    const history = loadStoredAnalysisHistory();
+    const history = loadStoredAnalysisHistory({ viewerUserId: "user-1" });
 
     expect(history).toHaveLength(1);
     expect(history[0]?.workspaceName).toBe("Portfolio");
+    expect(history[0]?.viewerUserId).toBe("user-1");
     expect(history[0]?.warning).toBe("Ollama request failed.");
-    expect(getAnalysisResultForId("history-entry-1")?.screenshotDataUrl).toBe(
+    expect(
+      getAnalysisResultForId("history-entry-1", { viewerUserId: "user-1" })?.screenshotDataUrl,
+    ).toBe(
       "data:image/png;base64,abc",
     );
+    expect(loadStoredAnalysisHistory({ viewerUserId: "user-2" })).toHaveLength(0);
+    expect(getAnalysisResultForId("history-entry-1", { viewerUserId: "user-2" })).toBeNull();
   });
 });
