@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import {
   loadStoredAnalysisHistory,
+  type AnalysisSource,
   type StoredAnalysisHistoryEntry,
 } from "@/lib/analysis-result";
 
@@ -21,7 +22,7 @@ type PersistedAnalysisItem = {
     };
   };
   screenshot_url: string | null;
-  source: "mock" | "ollama";
+  source: AnalysisSource;
   workspace_id: string | null;
 };
 
@@ -30,8 +31,16 @@ type WorkspaceOption = {
   name: string;
 };
 
-function formatAnalysisSource(source: "mock" | "ollama") {
-  return source === "ollama" ? "Ollama" : "Fallback";
+function formatAnalysisSource(source: AnalysisSource) {
+  if (source === "ollama") {
+    return "Ollama";
+  }
+
+  if (source === "openai-compatible") {
+    return "API model";
+  }
+
+  return "Fallback";
 }
 
 function HistoryCard({
@@ -52,7 +61,7 @@ function HistoryCard({
   overallScore: number;
   productType: string;
   screenshotUrl: string | null;
-  source: "mock" | "ollama";
+  source: AnalysisSource;
   workspaceName?: string | null;
 }) {
   return (

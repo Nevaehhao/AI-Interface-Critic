@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 
 import { createMockAnalyzeResponse } from "@/lib/analysis-result";
 import { createMockAnalysisReport } from "@/lib/analysis-report";
+import { analyzeScreenshot } from "@/lib/analyze-screenshot";
 import { getCurrentAuthSession } from "@/lib/auth/server";
 import { persistAnalysis } from "@/lib/data/analysis-store";
-import { analyzeScreenshotWithOllama } from "@/lib/ollama-analysis";
 import { validateImageFile } from "@/lib/uploads";
 
 export async function POST(request: Request) {
@@ -30,13 +30,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    const ollamaAnalysis = await analyzeScreenshotWithOllama(file);
+    const { analysis, provider } = await analyzeScreenshot(file);
     const { user } = await getCurrentAuthSession();
 
     await persistAnalysis({
       file,
-      report: ollamaAnalysis,
-      source: "ollama",
+      report: analysis,
+      source: provider,
       userId: user?.id ?? null,
       workspaceId,
     }).catch((error) => {
@@ -44,17 +44,17 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      analysis: ollamaAnalysis,
-      source: "ollama",
+      analysis,
+      source: provider,
       warning: null,
     });
   } catch (error) {
-    console.error("Ollama analysis failed, falling back to mock output.", error);
+    console.error("Analysis failed, falling back to mock output.", error);
 
     const fallbackReason =
       error instanceof Error
         ? error.message
-        : "Ollama did not return a usable analysis result.";
+        : "The configured provider did not return a usable analysis result.";
 
     const mockResponse = createMockAnalyzeResponse();
     const mockAnalysis = createMockAnalysisReport({

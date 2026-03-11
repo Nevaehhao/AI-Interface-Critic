@@ -28,9 +28,41 @@ function severityTone(severity: string) {
 }
 
 function sourceTone(source: AnalysisSource) {
-  return source === "ollama"
-    ? "status-badge status-badge-success"
-    : "status-badge status-badge-warning";
+  return source === "mock"
+    ? "status-badge status-badge-warning"
+    : "status-badge status-badge-success";
+}
+
+function sourceLabel(source: AnalysisSource) {
+  if (source === "ollama") {
+    return "Ollama result";
+  }
+
+  if (source === "openai-compatible") {
+    return "API model result";
+  }
+
+  return "Fallback result";
+}
+
+function sourceDescription(source: AnalysisSource) {
+  if (source === "ollama") {
+    return "This report was generated from the local Ollama model.";
+  }
+
+  if (source === "openai-compatible") {
+    return "This report was generated through a user-configured OpenAI-compatible API.";
+  }
+
+  return "The configured provider did not complete this run, so the app showed fallback output instead.";
+}
+
+function isLiveResult(source: AnalysisSource) {
+  return source === "ollama" || source === "openai-compatible";
+}
+
+function fallbackDescription() {
+  return "The configured provider did not complete this run, so the app showed fallback output instead.";
 }
 
 function flattenHighlightableIssues(report: AnalysisReport): HighlightableIssue[] {
@@ -117,12 +149,12 @@ export function ReportView({
           </button>
         </div>
 
-        {source === "ollama" ? (
+        {isLiveResult(source) ? (
           <div className="surface-card px-5 py-4">
             <div className="flex flex-wrap items-center gap-3">
-              <span className={sourceTone(source)}>Ollama result</span>
+              <span className={sourceTone(source)}>{sourceLabel(source)}</span>
               <p className="text-sm text-[var(--color-muted)]">
-                This report was generated from the local Ollama model.
+                {sourceDescription(source)}
               </p>
             </div>
           </div>
@@ -130,9 +162,9 @@ export function ReportView({
           <div className="surface-card border-[rgba(234,134,0,0.24)] bg-[var(--color-warning-soft)] px-5 py-4">
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center gap-3">
-                <span className={sourceTone(source)}>Fallback result</span>
+                <span className={sourceTone(source)}>{sourceLabel(source)}</span>
                 <p className="text-sm text-[var(--color-muted)]">
-                  Ollama did not complete this run, so the app showed fallback output instead.
+                  {fallbackDescription()}
                 </p>
               </div>
               {warning ? (

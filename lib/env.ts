@@ -5,12 +5,18 @@ const clientSchema = z.object({
 });
 
 const serverSchema = z.object({
+  AI_API_KEY: z.string().min(1).optional(),
+  AI_BASE_URL: z.string().url().optional(),
+  AI_MODEL: z.string().min(1).optional(),
+  AI_PROVIDER: z.enum(["ollama", "openai-compatible"]).default("ollama"),
   DATABASE_URL: z.string().min(1).optional(),
   LOCAL_SCREENSHOT_STORAGE_DIR: z.string().min(1).optional(),
   NEON_AUTH_BASE_URL: z.string().url().optional(),
   OLLAMA_BASE_URL: z.string().url().default("http://127.0.0.1:11434"),
   OLLAMA_MODEL: z.string().min(1).default("gemma3"),
 });
+
+export type ServerEnv = z.infer<typeof serverSchema>;
 
 export function getClientEnv() {
   return clientSchema.parse({
@@ -20,6 +26,10 @@ export function getClientEnv() {
 
 export function getServerEnv() {
   return serverSchema.parse({
+    AI_API_KEY: process.env.AI_API_KEY,
+    AI_BASE_URL: process.env.AI_BASE_URL,
+    AI_MODEL: process.env.AI_MODEL,
+    AI_PROVIDER: process.env.AI_PROVIDER,
     DATABASE_URL: process.env.DATABASE_URL,
     LOCAL_SCREENSHOT_STORAGE_DIR: process.env.LOCAL_SCREENSHOT_STORAGE_DIR,
     NEON_AUTH_BASE_URL: process.env.NEON_AUTH_BASE_URL,

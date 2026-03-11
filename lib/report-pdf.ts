@@ -107,6 +107,18 @@ function drawDivider(page: PDFPage, y: number) {
   });
 }
 
+function formatAnalysisSource(source: AnalysisSource) {
+  if (source === "ollama") {
+    return "Local Ollama";
+  }
+
+  if (source === "openai-compatible") {
+    return "OpenAI-compatible API";
+  }
+
+  return "Mock fallback";
+}
+
 export function createAnalysisPdfFileName(report: AnalysisReport, analysisId: string) {
   const normalizedType = report.summary.productType
     .toLowerCase()
@@ -160,7 +172,7 @@ export async function buildAnalysisReportPdf({
     lines: [
       `Analysis ID: ${analysisId}`,
       `Generated: ${new Date(report.createdAt).toLocaleString()}`,
-      `Source: ${source === "ollama" ? "Local Ollama" : "Mock fallback"}`,
+      `Source: ${formatAnalysisSource(source)}`,
     ],
     pdf,
     size: 11,
