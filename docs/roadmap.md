@@ -2,248 +2,96 @@
 
 ## Product statement
 
-AI Interface Critic analyzes UI screenshots and generates structured UX critique for early-stage design review.
+AI Interface Critic is an open-source critique-to-builder app for UI review workflows.
 
-## Product goals
+## Current direction
 
-- Help users get fast UX feedback without a live reviewer
-- Show clear design thinking, not just raw AI output
-- Produce a portfolio-quality web app with strong front-end execution
+The project is moving from:
 
-## Non-goals for MVP
+- screenshot critique only
 
-- Full design file import from Figma
-- Multi-user collaboration
-- Real-time editing
-- Complex billing or auth
+to:
 
-## Primary user
+- screenshot critique plus engineering handoff
 
-The MVP is optimized for:
+and then toward:
 
-- Junior designers needing fast critique before review
+- repository-aware implementation workflows
 
-This keeps the language, feature set, and UI focused.
+## Goals
 
-## Core user flow
+- Let users plug in their own model provider
+- Produce critique that feels like senior design review
+- Produce handoff that is useful to engineering
+- Stay honest about what is generated, inferred, or still manual
 
-1. User lands on the homepage
-2. User uploads a UI screenshot
-3. App shows a staged analysis loading state
-4. App returns a structured critique report
-5. User reviews issues and suggested improvements
+## Roadmap phases
 
-## Information architecture
+### Phase 1: Stable critique core
 
-The report should be organized into predictable sections:
+Status: shipped
 
-- Overview
-- Visual hierarchy
-- Accessibility
-- Layout structure
-- Interaction clarity
-- Suggested improvements
+- Upload flow
+- Loading flow
+- Structured report UI
+- Highlighted issue regions
+- Mock fallback behavior
 
-## MVP feature breakdown
+### Phase 2: Open provider foundation
 
-### Feature 1: Project scaffold
+Status: shipped
 
-Goal:
-Create a stable Next.js foundation.
+- Ollama support
+- OpenAI-compatible provider support
+- Setup visibility for the active provider
+- Environment-variable driven provider configuration
 
-Deliverables:
+### Phase 3: Critic to builder handoff
 
-- Next.js app with TypeScript and App Router
-- Tailwind setup
-- Basic layout and design tokens
-- Environment variable support
+Status: shipped
 
-Definition of done:
+- Review modes
+- Page URL and repo URL context
+- Product goal, audience, and stack context
+- Implementation plan in the report
+- Copyable builder brief
 
-- `pnpm dev` or `npm run dev` starts cleanly
-- Homepage renders
-- Repo has a clean base structure
+### Phase 4: Better source inputs
 
-### Feature 2: Landing page
+Next
 
-Goal:
-Explain the product clearly and route users into the upload flow.
+- Capture screenshots directly from a URL
+- Support multiple screens for a single flow review
+- Support richer page metadata and crawl hints
 
-Deliverables:
+### Phase 5: Repo-aware automation
 
-- Hero section
-- Product explanation
-- Sample report preview
-- Primary CTA to upload
+Next
 
-Definition of done:
+- GitHub repository connection
+- File tree summarization for builder mode
+- Local CLI bridge for repo access
+- Patch and PR generation
 
-- Clear value proposition above the fold
-- Mobile and desktop layouts both work
+### Phase 6: Team workflows
 
-### Feature 3: Upload flow
+Later
 
-Goal:
-Let the user submit a screenshot with minimal friction.
+- Shared reports
+- Review annotations
+- Team workspaces
+- Approval flows for generated implementation plans
 
-Deliverables:
+## Product constraints
 
-- File upload component
-- Drag-and-drop or click-to-upload
-- File validation
-- Preview before submission
+- The app should remain useful without paid hosted services
+- The UI must clearly disclose fallback output
+- Schema stability matters more than adding vendor-specific hacks quickly
+- Browser-only workflows should not pretend to have direct local repo access
 
-Definition of done:
+## Near-term priorities
 
-- PNG/JPG upload works
-- Invalid file states are handled
-- User can move from upload to analysis
-
-### Feature 4: Loading experience
-
-Goal:
-Make AI latency feel intentional instead of broken.
-
-Deliverables:
-
-- Dedicated loading screen
-- Rotating progress messages
-- Clear analysis states such as hierarchy, accessibility, layout
-
-Definition of done:
-
-- Loading UI is visible for async analysis
-- State changes are readable and polished
-
-### Feature 5: Report UI with mocked data
-
-Goal:
-Finish the front-end information architecture before integrating AI.
-
-Deliverables:
-
-- Report page
-- Issue cards
-- Section anchors or tabs
-- Overall score block
-
-Definition of done:
-
-- Mock JSON can render the full report
-- Cards are readable and scannable
-
-### Feature 6: Analysis API contract
-
-Goal:
-Define the exact shape of the data before model integration.
-
-Deliverables:
-
-- `POST /api/analyze`
-- Shared TypeScript types
-- Structured JSON schema for report output
-- Server-side validation
-
-Definition of done:
-
-- API returns mocked structured JSON
-- Front end consumes typed response cleanly
-
-### Feature 7: Ollama integration
-
-Goal:
-Replace mocked analysis with real model output.
-
-Deliverables:
-
-- Prompt for UX critique
-- Image upload handling on server
-- Ollama API call
-- JSON response parsing with fallback handling
-
-Definition of done:
-
-- Real screenshot produces a valid report
-- Errors and malformed responses are handled
-
-### Feature 8: Platform layer
-
-Goal:
-Integrate Neon Auth, Neon Postgres, local screenshot storage, and platform setup for deployment.
-
-Deliverables:
-
-- Neon Auth setup
-- Google and email/password authentication
-- Screenshot storage configuration with local file storage
-- Analysis metadata and result persistence
-- Deployment and environment setup notes
-
-Definition of done:
-
-- Users can authenticate through configured Neon Auth providers
-- Uploaded screenshots and completed analyses are persisted
-- Setup and deployment steps are documented
-
-## Post-MVP features
-
-- Issue highlighting on screenshot
-- Category scores and overall UX score
-- Redesign suggestions
-- Export report as PDF
-- Saved workspaces
-
-## Suggested build sequence
-
-This is the implementation order I recommend:
-
-1. Feature 1: Project scaffold
-2. Feature 2: Landing page
-3. Feature 3: Upload flow
-4. Feature 4: Loading experience
-5. Feature 5: Report UI with mocked data
-6. Feature 6: Analysis API contract
-7. Feature 7: Ollama integration
-8. Feature 8: Platform layer
-
-This order keeps UX structure ahead of model integration and avoids building an AI demo without product shape.
-
-## JSON shape to design around
-
-The app should eventually render something close to:
-
-```json
-{
-  "summary": {
-    "overallScore": 78,
-    "productType": "marketing landing page",
-    "mainFinding": "Primary call-to-action is visually weak."
-  },
-  "sections": [
-    {
-      "category": "Visual hierarchy",
-      "score": 72,
-      "issues": [
-        {
-          "title": "Primary CTA lacks contrast",
-          "severity": "high",
-          "description": "The main action blends into nearby elements.",
-          "suggestion": "Increase contrast and spacing around the primary action."
-        }
-      ]
-    }
-  ]
-}
-```
-
-## Portfolio angle
-
-To make this strong in a UX or product portfolio, document:
-
-- Problem framing
-- User flow
-- Information architecture
-- Loading state rationale
-- Report structure decisions
-- Tradeoffs between AI flexibility and structured outputs
-- Final implementation details
+1. URL capture
+2. GitHub and local CLI builder integration
+3. Better report comparison and before/after diffs
+4. Stronger persistence and shareability

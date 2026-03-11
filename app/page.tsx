@@ -4,16 +4,16 @@ import { ButtonLink } from "@/components/ui/button-link";
 
 const steps = [
   {
-    description: "Upload one UI screenshot. PNG, JPG, or WebP.",
+    description: "Upload a screenshot and attach page, repo, goal, and stack context when you have it.",
     title: "1. Upload",
   },
   {
-    description: "The app checks hierarchy, accessibility, interaction, and layout.",
+    description: "Run a UX, accessibility, conversion, design system, or implementation-handoff review.",
     title: "2. Analyze",
   },
   {
-    description: "Read a simple report with issues, suggestions, and a clear next step.",
-    title: "3. Review",
+    description: "Read the critique, inspect highlighted issues, then copy the builder brief into your coding workflow.",
+    title: "3. Build",
   },
 ];
 
@@ -23,6 +23,7 @@ const reportAreas = [
   "Accessibility issues",
   "Interaction clarity issues",
   "Layout issues and redesign suggestions",
+  "Full-stack implementation handoff",
 ];
 
 export default function Home() {
@@ -35,11 +36,11 @@ export default function Home() {
           <div className="max-w-3xl">
             <p className="eyebrow">AI Interface Critic</p>
             <h1 className="mt-4 text-4xl tracking-tight sm:text-5xl lg:text-6xl">
-              Upload a screenshot and get a clear UX critique.
+              Bring your own model. Turn UI critique into implementation.
             </h1>
             <p className="mt-5 text-base leading-8 text-[var(--color-muted)] sm:text-lg">
-              This app is built for one job: turn a UI screenshot into a simple report you can act
-              on. No chat thread, no noisy dashboard, no extra setup before the first analysis.
+              Upload a screenshot, add page or repo context, and get a structured review that feels
+              like a senior UI/UX designer plus a pragmatic full-stack engineer working together.
             </p>
           </div>
 
@@ -79,17 +80,17 @@ export default function Home() {
           <div className="surface-card p-8">
             <p className="eyebrow">System status</p>
             <h2 className="mt-4 text-3xl tracking-tight sm:text-4xl">
-              Local-first, with a visible fallback.
+              Open-source first, with a visible fallback.
             </h2>
             <div className="mt-6 space-y-4 text-sm leading-7 text-[var(--color-muted)]">
-              <p>The app tries Ollama first for real screenshot analysis.</p>
+              <p>The app works with Ollama or a hosted OpenAI-compatible API.</p>
               <p>
-                If Ollama fails, the report now shows that it used fallback output, so you do not
-                have to guess why a score looks repeated.
+                If the configured provider fails, the report explicitly shows fallback output so you
+                never have to guess why a run looks repeated.
               </p>
               <p>
-                History stores recent reports locally in the browser, and can also sync to Neon
-                when you configure cloud persistence.
+                Reports now include a builder handoff with front-end changes, back-end changes,
+                files to inspect, and acceptance criteria.
               </p>
             </div>
 
