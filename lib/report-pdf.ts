@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 
+import { getAnalysisModeLabel } from "@/lib/analysis-context";
 import type { AnalysisReport } from "@/lib/analysis-report";
 import type { AnalysisSource } from "@/lib/analysis-result";
 
@@ -173,6 +174,7 @@ export async function buildAnalysisReportPdf({
       `Analysis ID: ${analysisId}`,
       `Generated: ${new Date(report.createdAt).toLocaleString()}`,
       `Source: ${formatAnalysisSource(source)}`,
+      `Review mode: ${getAnalysisModeLabel(report.context.analysisMode)}`,
     ],
     pdf,
     size: 11,
@@ -235,6 +237,37 @@ export async function buildAnalysisReportPdf({
       cursor,
       font: regularFont,
       lines: wrapText(`• ${strength}`, regularFont, 11, CONTENT_WIDTH),
+      pdf,
+      size: 11,
+      topPadding: 8,
+    });
+  }
+
+  cursor = drawLines({
+    color: rgb(0.1, 0.45, 0.91),
+    cursor,
+    font: boldFont,
+    lines: ["Implementation plan"],
+    pdf,
+    size: 15,
+    topPadding: 24,
+  });
+
+  cursor = drawLines({
+    color: rgb(0.37, 0.39, 0.41),
+    cursor,
+    font: regularFont,
+    lines: wrapText(report.implementationPlan.summary, regularFont, 11, CONTENT_WIDTH),
+    pdf,
+    size: 11,
+    topPadding: 8,
+  });
+
+  for (const criterion of report.implementationPlan.acceptanceCriteria) {
+    cursor = drawLines({
+      cursor,
+      font: regularFont,
+      lines: wrapText(`• ${criterion}`, regularFont, 11, CONTENT_WIDTH),
       pdf,
       size: 11,
       topPadding: 8,

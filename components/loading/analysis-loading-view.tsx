@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { getAnalysisModeLabel } from "@/lib/analysis-context";
 import {
   clearPendingAnalysisDraft,
   dataUrlToFile,
@@ -65,6 +66,27 @@ export function AnalysisLoadingView({
         formData.append("file", file);
         if (currentDraft.workspaceId) {
           formData.append("workspaceId", currentDraft.workspaceId);
+        }
+        if (currentDraft.context) {
+          formData.append("analysisMode", currentDraft.context.analysisMode);
+          if (currentDraft.context.pageUrl) {
+            formData.append("pageUrl", currentDraft.context.pageUrl);
+          }
+          if (currentDraft.context.repoUrl) {
+            formData.append("repoUrl", currentDraft.context.repoUrl);
+          }
+          if (currentDraft.context.productGoal) {
+            formData.append("productGoal", currentDraft.context.productGoal);
+          }
+          if (currentDraft.context.targetAudience) {
+            formData.append("targetAudience", currentDraft.context.targetAudience);
+          }
+          if (currentDraft.context.techStack) {
+            formData.append("techStack", currentDraft.context.techStack);
+          }
+          if (currentDraft.context.notes) {
+            formData.append("notes", currentDraft.context.notes);
+          }
         }
 
         const response = await fetch("/api/analyze", {
@@ -221,8 +243,8 @@ export function AnalysisLoadingView({
         <div className="surface-muted p-5">
           <p className="eyebrow text-[var(--color-accent)]">Engine</p>
           <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-            The app tries Ollama first. If that fails, the final report will explicitly say it used
-            fallback output and show the reason.
+            The app tries your configured analysis provider first. If that fails, the final report
+            will explicitly say it used fallback output and show the reason.
           </p>
           {draft.workspaceName ? (
             <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
@@ -230,6 +252,23 @@ export function AnalysisLoadingView({
             </p>
           ) : null}
         </div>
+
+        {draft.context ? (
+          <div className="surface-muted p-5">
+            <p className="eyebrow text-[var(--color-accent)]">Review context</p>
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
+              <span className="app-chip">{getAnalysisModeLabel(draft.context.analysisMode)}</span>
+              {draft.context.pageUrl ? <span className="app-chip">Page URL attached</span> : null}
+              {draft.context.repoUrl ? <span className="app-chip">Repo URL attached</span> : null}
+              {draft.context.techStack ? <span className="app-chip">{draft.context.techStack}</span> : null}
+            </div>
+            {draft.context.productGoal ? (
+              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                Goal: {draft.context.productGoal}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </aside>
     </div>
   );

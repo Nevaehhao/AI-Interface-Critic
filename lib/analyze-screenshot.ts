@@ -1,3 +1,4 @@
+import type { AnalysisContext } from "@/lib/analysis-context";
 import type { AnalysisReport } from "@/lib/analysis-report";
 import {
   resolveAnalysisProvider,
@@ -11,18 +12,21 @@ export type AnalyzeScreenshotResult = {
   provider: AnalysisProvider;
 };
 
-export async function analyzeScreenshot(file: File): Promise<AnalyzeScreenshotResult> {
+export async function analyzeScreenshot(
+  file: File,
+  context?: AnalysisContext,
+): Promise<AnalyzeScreenshotResult> {
   const providerConfig = resolveAnalysisProvider();
 
   if (providerConfig.provider === "openai-compatible") {
     return {
-      analysis: await analyzeScreenshotWithOpenAiCompatibleApi(file),
+      analysis: await analyzeScreenshotWithOpenAiCompatibleApi(file, context),
       provider: providerConfig.provider,
     };
   }
 
   return {
-    analysis: await analyzeScreenshotWithOllama(file),
+    analysis: await analyzeScreenshotWithOllama(file, context),
     provider: providerConfig.provider,
   };
 }

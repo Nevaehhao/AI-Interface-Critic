@@ -1,3 +1,4 @@
+import type { AnalysisContext } from "@/lib/analysis-context";
 import { buildAnalysisPrompt } from "@/lib/analysis-prompt";
 import {
   analysisReportContentJsonSchema,
@@ -56,6 +57,7 @@ function extractResponseContent(payload: OpenAiCompatibleResponse) {
 
 export async function analyzeScreenshotWithOpenAiCompatibleApi(
   file: File,
+  context?: AnalysisContext,
 ) {
   const providerConfig = resolveAnalysisProvider();
 
@@ -75,7 +77,7 @@ export async function analyzeScreenshotWithOpenAiCompatibleApi(
           content: [
             {
               type: "text",
-              text: buildAnalysisPrompt(),
+              text: buildAnalysisPrompt(context),
             },
             {
               type: "image_url",
@@ -111,5 +113,7 @@ export async function analyzeScreenshotWithOpenAiCompatibleApi(
     );
   }
 
-  return parseStructuredAnalysisContent(extractResponseContent(payload));
+  return parseStructuredAnalysisContent(extractResponseContent(payload), {
+    context,
+  });
 }

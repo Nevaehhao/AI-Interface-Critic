@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { SiteHeader } from "@/components/layout/site-header";
+import { getAnalysisModeLabel } from "@/lib/analysis-context";
+import { buildBuilderBrief } from "@/lib/builder-brief";
 import {
   buildAnalysisReportPdf,
   createAnalysisPdfFileName,
@@ -14,6 +16,31 @@ import {
   ReportScreenshotPreview,
   type HighlightableIssue,
 } from "@/components/report/report-screenshot-preview";
+
+function DetailListCard({
+  emptyLabel,
+  items,
+  title,
+}: {
+  emptyLabel: string;
+  items: string[];
+  title: string;
+}) {
+  return (
+    <div className="surface-muted p-5">
+      <p className="eyebrow">{title}</p>
+      {items.length > 0 ? (
+        <ul className="mt-4 space-y-3 text-sm leading-7 text-[var(--color-muted)]">
+          {items.map((item) => (
+            <li key={`${title}-${item}`}>{item}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">{emptyLabel}</p>
+      )}
+    </div>
+  );
+}
 
 function severityTone(severity: string) {
   if (severity === "high") {
@@ -99,6 +126,7 @@ export function ReportView({
   );
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
 
   const selectedIssue =
     highlightableIssues.find((issue) => issue.id === selectedIssueId) ?? highlightableIssues[0] ?? null;
@@ -130,6 +158,21 @@ export function ReportView({
     }
   }
 
+  async function handleCopyBuilderBrief() {
+    try {
+      await navigator.clipboard.writeText(
+        buildBuilderBrief({
+          analysisId,
+          report,
+          source,
+        }),
+      );
+      setCopyState("copied");
+    } catch {
+      setCopyState("error");
+    }
+  }
+
   return (
     <div className="page-shell">
       <SiteHeader />
@@ -139,14 +182,27 @@ export function ReportView({
           <Link href="/upload" className="material-button material-button-text w-fit px-0">
             Back to upload
           </Link>
-          <button
-            type="button"
-            onClick={() => void handleExportPdf()}
-            disabled={isExportingPdf}
-            className="material-button material-button-secondary disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isExportingPdf ? "Exporting..." : "Export PDF"}
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => void handleCopyBuilderBrief()}
+              className="material-button material-button-secondary"
+            >
+              {copyState === "copied"
+                ? "Builder brief copied"
+                : copyState === "error"
+                  ? "Copy failed"
+                  : "Copy builder brief"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleExportPdf()}
+              disabled={isExportingPdf}
+              className="material-button material-button-secondary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isExportingPdf ? "Exporting..." : "Export PDF"}
+            </button>
+          </div>
         </div>
 
         {isLiveResult(source) ? (
@@ -220,6 +276,40 @@ export function ReportView({
               </div>
             </div>
           </div>
+
+          <div className="mt-6 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
+            <span className="app-chip">{getAnalysisModeLabel(report.context.analysisMode)}</span>
+            {report.context.pageUrl ? <span className="app-chip">Page URL attached</span> : null}
+            {report.context.repoUrl ? <span className="app-chip">Repo URL attached</span> : null}
+            {report.context.techStack ? <span className="app-chip">{report.context.techStack}</span> : null}
+          </div>
+        </section>
+
+        <section className="surface-card p-6 sm:p-8">
+          <p className="eyebrow">Review brief</p>
+          <h2 className="mt-4 text-3xl tracking-tight">What the model was optimizing for.</h2>
+
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            <DetailListCard
+              emptyLabel="No page or repository URLs were provided for this run."
+              items={[
+                ...(report.context.pageUrl ? [`Live page: ${report.context.pageUrl}`] : []),
+                ...(report.context.repoUrl ? [`Repository: ${report.context.repoUrl}`] : []),
+              ]}
+              title="Attached links"
+            />
+            <DetailListCard
+              emptyLabel="No extra audience or business context was attached."
+              items={[
+                ...(report.context.productGoal ? [`Goal: ${report.context.productGoal}`] : []),
+                ...(report.context.targetAudience
+                  ? [`Audience: ${report.context.targetAudience}`]
+                  : []),
+                ...(report.context.notes ? [`Notes: ${report.context.notes}`] : []),
+              ]}
+              title="Product context"
+            />
+          </div>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
@@ -285,6 +375,45 @@ export function ReportView({
                 </div>
               </section>
             ))}
+          </div>
+        </section>
+
+        <section className="surface-card p-6 sm:p-8">
+          <p className="eyebrow">Builder handoff</p>
+          <h2 className="mt-4 text-3xl tracking-tight">Implementation plan for a full-stack pass.</h2>
+          <p className="mt-4 max-w-4xl text-base leading-8 text-[var(--color-muted)]">
+            {report.implementationPlan.summary}
+          </p>
+
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            <DetailListCard
+              emptyLabel="No front-end tasks were generated."
+              items={report.implementationPlan.frontendChanges}
+              title="Front-end changes"
+            />
+            <DetailListCard
+              emptyLabel="No back-end changes were generated."
+              items={report.implementationPlan.backendChanges}
+              title="Back-end changes"
+            />
+            <DetailListCard
+              emptyLabel="No file hints were generated."
+              items={report.implementationPlan.filesToInspect}
+              title="Files to inspect"
+            />
+            <DetailListCard
+              emptyLabel="No risks were called out."
+              items={report.implementationPlan.risks}
+              title="Risks"
+            />
+          </div>
+
+          <div className="mt-4">
+            <DetailListCard
+              emptyLabel="No acceptance criteria were generated."
+              items={report.implementationPlan.acceptanceCriteria}
+              title="Acceptance criteria"
+            />
           </div>
         </section>
 

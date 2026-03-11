@@ -5,6 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 
+import {
+  ANALYSIS_MODE_VALUES,
+  analysisContextSchema,
+  getAnalysisModeLabel,
+  type AnalysisMode,
+} from "@/lib/analysis-context";
 import { savePendingAnalysisDraft } from "@/lib/analysis-draft";
 import type { WorkspaceRecord } from "@/lib/data/workspace-store";
 import {
@@ -30,6 +36,13 @@ export function UploadForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("ux-review");
+  const [pageUrl, setPageUrl] = useState("");
+  const [repoUrl, setRepoUrl] = useState("");
+  const [productGoal, setProductGoal] = useState("");
+  const [targetAudience, setTargetAudience] = useState("");
+  const [techStack, setTechStack] = useState("");
+  const [notes, setNotes] = useState("");
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>(
     workspaces.some((workspace) => workspace.id === initialWorkspaceId)
       ? initialWorkspaceId ?? ""
@@ -108,7 +121,29 @@ export function UploadForm({
     try {
       setIsSubmitting(true);
       setError(null);
+
+      const parsedContext = analysisContextSchema.safeParse({
+        analysisMode,
+        notes,
+        pageUrl,
+        productGoal,
+        repoUrl,
+        targetAudience,
+        techStack,
+      });
+
+      if (!parsedContext.success) {
+        throw new Error(
+          parsedContext.error.issues[0]?.path[0] === "pageUrl"
+            ? "Enter a valid page URL."
+            : parsedContext.error.issues[0]?.path[0] === "repoUrl"
+              ? "Enter a valid repository URL."
+              : "Review context is incomplete or invalid.",
+        );
+      }
+
       await savePendingAnalysisDraft(selectedFile, {
+        context: parsedContext.data,
         workspaceId: selectedWorkspace?.id ?? null,
         workspaceName: selectedWorkspace?.name ?? null,
       });
@@ -164,6 +199,101 @@ export function UploadForm({
             .
           </div>
         ) : null}
+
+        <div className="mt-6 grid gap-4">
+          <div className="surface-muted p-4">
+            <p className="eyebrow">Review brief</p>
+            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+              Add product and code context so the AI can critique like a senior UI/UX designer and
+              produce a more concrete engineering handoff.
+            </p>
+          </div>
+
+          <label className="block space-y-2">
+            <span className="text-sm text-[var(--color-muted)]">Review mode</span>
+            <select
+              value={analysisMode}
+              onChange={(event) => setAnalysisMode(event.target.value as AnalysisMode)}
+              className="w-full rounded-2xl border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
+            >
+              {ANALYSIS_MODE_VALUES.map((mode) => (
+                <option key={mode} value={mode}>
+                  {getAnalysisModeLabel(mode)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <label className="block space-y-2">
+              <span className="text-sm text-[var(--color-muted)]">Page URL</span>
+              <input
+                type="url"
+                value={pageUrl}
+                onChange={(event) => setPageUrl(event.target.value)}
+                placeholder="https://example.com/pricing"
+                className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+              />
+            </label>
+
+            <label className="block space-y-2">
+              <span className="text-sm text-[var(--color-muted)]">Repo URL</span>
+              <input
+                type="url"
+                value={repoUrl}
+                onChange={(event) => setRepoUrl(event.target.value)}
+                placeholder="https://github.com/you/product"
+                className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+              />
+            </label>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <label className="block space-y-2">
+              <span className="text-sm text-[var(--color-muted)]">Product goal</span>
+              <input
+                type="text"
+                value={productGoal}
+                onChange={(event) => setProductGoal(event.target.value)}
+                placeholder="Drive trial signups from the hero"
+                className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+              />
+            </label>
+
+            <label className="block space-y-2">
+              <span className="text-sm text-[var(--color-muted)]">Target audience</span>
+              <input
+                type="text"
+                value={targetAudience}
+                onChange={(event) => setTargetAudience(event.target.value)}
+                placeholder="First-time founders on mobile"
+                className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+              />
+            </label>
+          </div>
+
+          <label className="block space-y-2">
+            <span className="text-sm text-[var(--color-muted)]">Tech stack</span>
+            <input
+              type="text"
+              value={techStack}
+              onChange={(event) => setTechStack(event.target.value)}
+              placeholder="Next.js, Tailwind, shadcn/ui"
+              className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+            />
+          </label>
+
+          <label className="block space-y-2">
+            <span className="text-sm text-[var(--color-muted)]">Extra notes</span>
+            <textarea
+              rows={4}
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              placeholder="The hero was recently redesigned and the CTA is underperforming."
+              className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+            />
+          </label>
+        </div>
 
         <div
           role="presentation"

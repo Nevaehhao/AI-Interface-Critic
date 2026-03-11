@@ -19,9 +19,10 @@ describe("analysis report schema", () => {
       ),
     ).toBe(true);
     expect(report.redesignSuggestions.length).toBeGreaterThan(0);
+    expect(report.implementationPlan.frontendChanges.length).toBeGreaterThan(0);
   });
 
-  it("fills redesignSuggestions with an empty array for legacy payloads", () => {
+  it("fills new top-level report fields for legacy payloads", () => {
     const parsed = analysisReportSchema.parse({
       createdAt: "2026-03-06T00:00:00.000Z",
       id: "legacy-report",
@@ -51,6 +52,8 @@ describe("analysis report schema", () => {
       },
     });
 
+    expect(parsed.context.analysisMode).toBe("ux-review");
     expect(parsed.redesignSuggestions).toEqual([]);
+    expect(parsed.implementationPlan.summary).toBe("No implementation plan is available yet.");
   });
 });

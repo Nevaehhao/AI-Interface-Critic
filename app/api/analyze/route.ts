@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 
+import type { AnalysisContext } from "@/lib/analysis-context";
 import { createMockAnalyzeResponse } from "@/lib/analysis-result";
 import { createMockAnalysisReport } from "@/lib/analysis-report";
 import { analyzeScreenshot } from "@/lib/analyze-screenshot";
+import { parseAnalysisContextFromFormData } from "@/lib/analysis-context";
 import { getCurrentAuthSession } from "@/lib/auth/server";
 import { persistAnalysis } from "@/lib/data/analysis-store";
 import { validateImageFile } from "@/lib/uploads";
@@ -15,6 +17,21 @@ export async function POST(request: Request) {
     typeof workspaceIdValue === "string" && workspaceIdValue.trim().length > 0
       ? workspaceIdValue
       : null;
+  let analysisContext: AnalysisContext;
+
+  try {
+    analysisContext = parseAnalysisContextFromFormData(formData);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "The analysis context is invalid.",
+      },
+      { status: 400 },
+    );
+  }
 
   if (!(file instanceof File)) {
     return NextResponse.json(
@@ -30,7 +47,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { analysis, provider } = await analyzeScreenshot(file);
+    const { analysis, provider } = await analyzeScreenshot(file, analysisContext);
     const { user } = await getCurrentAuthSession();
 
     await persistAnalysis({
@@ -58,6 +75,7 @@ export async function POST(request: Request) {
 
     const mockResponse = createMockAnalyzeResponse();
     const mockAnalysis = createMockAnalysisReport({
+      context: analysisContext,
       createdAt: new Date().toISOString(),
       id: crypto.randomUUID(),
     });
