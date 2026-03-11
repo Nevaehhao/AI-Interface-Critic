@@ -1,5 +1,9 @@
 import { getDb } from "@/lib/db";
 import {
+  getAnalysisProviderDisplayName,
+  resolveAnalysisProvider,
+} from "@/lib/analysis-provider";
+import {
   getClientEnv,
   getServerEnv,
   hasDatabaseConfig,
@@ -21,11 +25,33 @@ function normalizeBaseUrl(baseUrl: string) {
   return baseUrl.replace(/\/+$/, "");
 }
 
-async function checkOllama() {
-  const serverEnv = getServerEnv();
-  const tagsUrl = `${normalizeBaseUrl(serverEnv.OLLAMA_BASE_URL).replace(/\/api$/, "")}/api/tags`;
-
+async function checkAnalysisProvider() {
   try {
+    const providerConfig = resolveAnalysisProvider();
+
+    if (providerConfig.provider === "openai-compatible") {
+      const response = await fetch(`${normalizeBaseUrl(providerConfig.baseUrl)}/models`, {
+        cache: "no-store",
+        headers: {
+          Authorization: `Bearer ${providerConfig.apiKey}`,
+        },
+        signal: AbortSignal.timeout(2500),
+      });
+
+      return {
+        detail: response.ok
+          ? `Connected to ${providerConfig.model} via ${getAnalysisProviderDisplayName(providerConfig.provider)}.`
+          : `The configured API endpoint responded with ${response.status}.`,
+        id: "analysis-provider",
+        label: "Analysis provider",
+        nextAction: response.ok
+          ? "No action required."
+          : "Verify AI_BASE_URL, AI_API_KEY, AI_MODEL, and whether the endpoint supports the OpenAI chat completions API.",
+        status: response.ok ? ("ready" as const) : ("offline" as const),
+      };
+    }
+
+    const tagsUrl = `${normalizeBaseUrl(providerConfig.baseUrl).replace(/\/api$/, "")}/api/tags`;
     const response = await fetch(tagsUrl, {
       cache: "no-store",
       signal: AbortSignal.timeout(2500),
@@ -34,8 +60,8 @@ async function checkOllama() {
     if (!response.ok) {
       return {
         detail: `Ollama responded with ${response.status}.`,
-        id: "ollama",
-        label: "Ollama",
+        id: "analysis-provider",
+        label: "Analysis provider",
         nextAction: "Start the local Ollama server and confirm the configured base URL is reachable.",
         status: "offline" as const,
       };
@@ -45,27 +71,31 @@ async function checkOllama() {
       models?: Array<{ name?: string }>;
     };
     const hasModel = (payload.models ?? []).some(
-      (model) => model.name === serverEnv.OLLAMA_MODEL,
+      (model) => model.name === providerConfig.model,
     );
 
     return {
       detail: hasModel
-        ? `Connected to ${serverEnv.OLLAMA_MODEL}.`
-        : `Ollama is reachable, but ${serverEnv.OLLAMA_MODEL} is not installed yet.`,
-      id: "ollama",
-      label: "Ollama",
+        ? `Connected to ${providerConfig.model} via Ollama.`
+        : `Ollama is reachable, but ${providerConfig.model} is not installed yet.`,
+      id: "analysis-provider",
+      label: "Analysis provider",
       nextAction: hasModel
         ? "No action required."
-        : `Run ollama pull ${serverEnv.OLLAMA_MODEL} on this machine.`,
+        : `Run ollama pull ${providerConfig.model} on this machine.`,
       status: hasModel ? ("ready" as const) : ("action-required" as const),
     };
-  } catch {
+  } catch (error) {
     return {
-      detail: "The local Ollama API is not reachable from this app.",
-      id: "ollama",
-      label: "Ollama",
-      nextAction: "Start Ollama or fix OLLAMA_BASE_URL before running live analysis.",
-      status: "offline" as const,
+      detail:
+        error instanceof Error
+          ? error.message
+          : "The configured analysis provider is not reachable from this app.",
+      id: "analysis-provider",
+      label: "Analysis provider",
+      nextAction:
+        "Set AI_PROVIDER and the corresponding AI_BASE_URL / AI_MODEL / AI_API_KEY values before running live analysis.",
+      status: "action-required" as const,
     };
   }
 }
@@ -163,7 +193,6 @@ async function checkDatabase() {
 }
 
 async function checkLocalStorage() {
-  const serverEnv = getServerEnv();
   const result = await checkLocalScreenshotStorage();
 
   return {
@@ -172,7 +201,7 @@ async function checkLocalStorage() {
     label: "Local screenshot storage",
     nextAction:
       result.status === "ready"
-        ? `Screenshots will be written to ${serverEnv.LOCAL_SCREENSHOT_STORAGE_DIR ?? ".data/screenshots"}.`
+        ? `Screenshots will be written to ${process.env.LOCAL_SCREENSHOT_STORAGE_DIR ?? ".data/screenshots"}.`
         : "Verify the local screenshot directory path and file system permissions.",
     status: result.status,
   };
@@ -216,7 +245,7 @@ function checkDeploymentTarget() {
 export async function getPlatformStatus() {
   const checks = [
     checkDeploymentTarget(),
-    await checkOllama(),
+    await checkAnalysisProvider(),
     await checkNeonAuth(),
     await checkDatabase(),
     await checkLocalStorage(),
