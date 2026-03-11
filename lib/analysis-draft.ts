@@ -1,6 +1,9 @@
+import type { AnalysisContext } from "@/lib/analysis-context";
+
 export const PENDING_ANALYSIS_KEY = "ai-interface-critic.pending-analysis";
 
 export type PendingAnalysisDraft = {
+  context?: AnalysisContext;
   dataUrl: string;
   name: string;
   size: number;
@@ -33,12 +36,14 @@ export function fileToDataUrl(file: File) {
 export async function savePendingAnalysisDraft(
   file: File,
   options?: {
+    context?: AnalysisContext;
     workspaceId?: string | null;
     workspaceName?: string | null;
   },
 ) {
   const dataUrl = await fileToDataUrl(file);
   const draft: PendingAnalysisDraft = {
+    context: options?.context,
     dataUrl,
     name: file.name,
     size: file.size,

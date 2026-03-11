@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import {
+  analysisContextSchema,
+  createDefaultAnalysisContext,
+  type AnalysisContext,
+} from "@/lib/analysis-context";
+
 export const analysisIssueHighlightSchema = z.object({
   id: z.string(),
   x: z.number().min(0).max(100),
@@ -44,15 +50,36 @@ export const analysisRedesignSuggestionSchema = z.object({
   expectedImpact: z.string(),
 });
 
+export const analysisImplementationPlanSchema = z.object({
+  acceptanceCriteria: z.array(z.string()).default([]),
+  backendChanges: z.array(z.string()).default([]),
+  filesToInspect: z.array(z.string()).default([]),
+  frontendChanges: z.array(z.string()).default([]),
+  risks: z.array(z.string()).default([]),
+  summary: z.string(),
+});
+
+export const emptyImplementationPlan = analysisImplementationPlanSchema.parse({
+  acceptanceCriteria: [],
+  backendChanges: [],
+  filesToInspect: [],
+  frontendChanges: [],
+  risks: [],
+  summary: "No implementation plan is available yet.",
+});
+
 export const analysisReportContentSchema = z.object({
+  implementationPlan: analysisImplementationPlanSchema.default(emptyImplementationPlan),
   summary: analysisSummarySchema,
   sections: z.array(analysisSectionSchema).min(1),
   redesignSuggestions: z.array(analysisRedesignSuggestionSchema).default([]),
 });
 
 export const analysisReportSchema = z.object({
+  context: analysisContextSchema.default(createDefaultAnalysisContext()),
   id: z.string(),
   createdAt: z.string(),
+  implementationPlan: analysisReportContentSchema.shape.implementationPlan,
   summary: analysisReportContentSchema.shape.summary,
   sections: analysisReportContentSchema.shape.sections,
   redesignSuggestions: analysisReportContentSchema.shape.redesignSuggestions,
@@ -63,14 +90,16 @@ export type AnalysisIssueHighlight = z.infer<typeof analysisIssueHighlightSchema
 export type AnalysisSection = z.infer<typeof analysisSectionSchema>;
 export type AnalysisSummary = z.infer<typeof analysisSummarySchema>;
 export type AnalysisRedesignSuggestion = z.infer<typeof analysisRedesignSuggestionSchema>;
+export type AnalysisImplementationPlan = z.infer<typeof analysisImplementationPlanSchema>;
 export type AnalysisReportContent = z.infer<typeof analysisReportContentSchema>;
 export type AnalysisReport = z.infer<typeof analysisReportSchema>;
 
 export function createAnalysisReport(
   content: AnalysisReportContent,
-  overrides?: Partial<Pick<AnalysisReport, "id" | "createdAt">>,
+  overrides?: Partial<Pick<AnalysisReport, "id" | "createdAt" | "context">>,
 ) {
   return analysisReportSchema.parse({
+    context: overrides?.context ?? createDefaultAnalysisContext(),
     id: overrides?.id ?? crypto.randomUUID(),
     createdAt: overrides?.createdAt ?? new Date().toISOString(),
     ...content,
@@ -296,10 +325,37 @@ export function createMockAnalysisReport(
           "The interface should feel calmer and better organized without losing content depth.",
       },
     ],
+    implementationPlan: {
+      acceptanceCriteria: [
+        "The primary CTA is the strongest visual action above the fold.",
+        "Supporting copy meets contrast targets without losing the visual style.",
+        "Secondary actions no longer compete with the main path.",
+      ],
+      backendChanges: [
+        "No backend change is required unless CTA experiments are tied to analytics events.",
+      ],
+      filesToInspect: [
+        "Landing page hero component",
+        "Shared button styles or CTA design tokens",
+        "Section spacing and typography utilities",
+      ],
+      frontendChanges: [
+        "Increase contrast and spacing around the primary CTA.",
+        "Reduce emphasis on neighboring secondary actions.",
+        "Tighten the typography scale so headline, support copy, and metadata are easier to scan.",
+      ],
+      risks: [
+        "Over-correcting contrast or spacing could disrupt the brand tone.",
+        "If CTA variants are scattered across the codebase, style drift may persist after the first fix.",
+      ],
+      summary:
+        "Start with the CTA stack and supporting typography. The highest-value implementation work is front-end only and should be validated with a quick first-scan usability check after the visual changes land.",
+    },
   };
 
   const baseReport = createAnalysisReport(baseContent, {
     createdAt: "2026-03-06T11:00:00.000Z",
+    context: createDefaultAnalysisContext(),
     id: "demo",
   });
 

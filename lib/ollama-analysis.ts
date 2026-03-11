@@ -1,3 +1,4 @@
+import type { AnalysisContext } from "@/lib/analysis-context";
 import { buildAnalysisPrompt } from "@/lib/analysis-prompt";
 import {
   analysisReportContentJsonSchema,
@@ -29,6 +30,7 @@ export const normalizeOllamaAnalysisContent = normalizeAnalysisContent;
 
 export async function analyzeScreenshotWithOllama(
   file: File,
+  context?: AnalysisContext,
 ) {
   const providerConfig = resolveAnalysisProvider();
 
@@ -42,7 +44,7 @@ export async function analyzeScreenshotWithOllama(
       messages: [
         {
           role: "user",
-          content: buildAnalysisPrompt(),
+          content: buildAnalysisPrompt(context),
           images: [await fileToBase64(file)],
         },
       ],
@@ -67,5 +69,7 @@ export async function analyzeScreenshotWithOllama(
     throw new Error("Ollama did not return structured analysis output.");
   }
 
-  return parseStructuredAnalysisContent(payload.message.content);
+  return parseStructuredAnalysisContent(payload.message.content, {
+    context,
+  });
 }

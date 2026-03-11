@@ -9,8 +9,43 @@ import {
 export const analysisReportContentJsonSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["summary", "sections", "redesignSuggestions"],
+  required: ["summary", "sections", "redesignSuggestions", "implementationPlan"],
   properties: {
+    implementationPlan: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "summary",
+        "frontendChanges",
+        "backendChanges",
+        "filesToInspect",
+        "acceptanceCriteria",
+        "risks",
+      ],
+      properties: {
+        summary: { type: "string" },
+        frontendChanges: {
+          type: "array",
+          items: { type: "string" },
+        },
+        backendChanges: {
+          type: "array",
+          items: { type: "string" },
+        },
+        filesToInspect: {
+          type: "array",
+          items: { type: "string" },
+        },
+        acceptanceCriteria: {
+          type: "array",
+          items: { type: "string" },
+        },
+        risks: {
+          type: "array",
+          items: { type: "string" },
+        },
+      },
+    },
     summary: {
       type: "object",
       additionalProperties: false,
@@ -274,6 +309,41 @@ export function normalizeAnalysisContent(value: unknown) {
 
   return {
     ...value,
+    implementationPlan: isJsonRecord(value.implementationPlan)
+      ? {
+          ...value.implementationPlan,
+          acceptanceCriteria: Array.isArray(value.implementationPlan.acceptanceCriteria)
+            ? value.implementationPlan.acceptanceCriteria.filter(
+                (item): item is string =>
+                  typeof item === "string" && item.trim().length > 0,
+              )
+            : value.implementationPlan.acceptanceCriteria,
+          backendChanges: Array.isArray(value.implementationPlan.backendChanges)
+            ? value.implementationPlan.backendChanges.filter(
+                (item): item is string =>
+                  typeof item === "string" && item.trim().length > 0,
+              )
+            : value.implementationPlan.backendChanges,
+          filesToInspect: Array.isArray(value.implementationPlan.filesToInspect)
+            ? value.implementationPlan.filesToInspect.filter(
+                (item): item is string =>
+                  typeof item === "string" && item.trim().length > 0,
+              )
+            : value.implementationPlan.filesToInspect,
+          frontendChanges: Array.isArray(value.implementationPlan.frontendChanges)
+            ? value.implementationPlan.frontendChanges.filter(
+                (item): item is string =>
+                  typeof item === "string" && item.trim().length > 0,
+              )
+            : value.implementationPlan.frontendChanges,
+          risks: Array.isArray(value.implementationPlan.risks)
+            ? value.implementationPlan.risks.filter(
+                (item): item is string =>
+                  typeof item === "string" && item.trim().length > 0,
+              )
+            : value.implementationPlan.risks,
+        }
+      : value.implementationPlan,
     redesignSuggestions: Array.isArray(value.redesignSuggestions)
       ? value.redesignSuggestions.map((suggestion, suggestionIndex) =>
           normalizeRedesignSuggestion(suggestion, suggestionIndex),
@@ -304,6 +374,9 @@ function summarizeValidationError(error: ZodError) {
 
 export function parseStructuredAnalysisContent(
   content: string,
+  options?: {
+    context?: AnalysisReport["context"];
+  },
 ): AnalysisReport {
   let parsedContent: unknown;
 
@@ -320,5 +393,7 @@ export function parseStructuredAnalysisContent(
     throw summarizeValidationError(validationResult.error);
   }
 
-  return createAnalysisReport(validationResult.data);
+  return createAnalysisReport(validationResult.data, {
+    context: options?.context,
+  });
 }
