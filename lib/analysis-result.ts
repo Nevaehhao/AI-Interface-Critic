@@ -186,3 +186,32 @@ export function getAnalysisResultForId(
       })
     : null;
 }
+
+export function updateStoredAnalysisReport(
+  analysisId: string,
+  report: AnalysisReport,
+) {
+  const latestAnalysis = loadStoredLatestAnalysis();
+
+  if (latestAnalysis?.analysis.id === analysisId) {
+    window.sessionStorage.setItem(
+      STORED_ANALYSIS_KEY,
+      JSON.stringify({
+        ...latestAnalysis,
+        analysis: report,
+      }),
+    );
+  }
+
+  const currentHistory = loadStoredHistoryFromLocalStorage();
+  const nextHistory = currentHistory.map((entry) =>
+    entry.analysis.id === analysisId
+      ? storedAnalysisHistoryEntrySchema.parse({
+          ...entry,
+          analysis: report,
+        })
+      : entry,
+  );
+
+  window.localStorage.setItem(STORED_ANALYSIS_HISTORY_KEY, JSON.stringify(nextHistory));
+}

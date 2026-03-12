@@ -6,6 +6,8 @@ create table if not exists workspaces (
   name text not null,
   description text,
   accent_color text,
+  tags text[] not null default '{}',
+  archived_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -21,9 +23,23 @@ create table if not exists analyses (
   overall_score integer not null,
   main_finding text not null,
   screenshot_key text,
+  share_enabled boolean not null default false,
+  share_token text unique,
   report jsonb not null,
   created_at timestamptz not null default now()
 );
+
+alter table if exists workspaces
+  add column if not exists tags text[] not null default '{}';
+
+alter table if exists workspaces
+  add column if not exists archived_at timestamptz;
+
+alter table if exists analyses
+  add column if not exists share_enabled boolean not null default false;
+
+alter table if exists analyses
+  add column if not exists share_token text unique;
 
 create index if not exists idx_workspaces_auth_user_id
   on workspaces (auth_user_id, created_at desc);

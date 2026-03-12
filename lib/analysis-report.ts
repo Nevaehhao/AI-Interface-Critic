@@ -27,6 +27,11 @@ export const analysisIssueSchema = z.object({
     .default("medium"),
   recommendation: z.string(),
   severity: z.enum(["low", "medium", "high"]),
+  triageNote: z.string().trim().max(400).nullable().default(null),
+  triageStatus: z
+    .enum(["open", "fixed", "ignored", "revisit"])
+    .default("open"),
+  triageUpdatedAt: z.string().nullable().default(null),
   highlights: z.array(analysisIssueHighlightSchema).default([]),
 });
 
@@ -120,7 +125,7 @@ export function createAnalysisReport(
 export function createMockAnalysisReport(
   overrides?: Partial<AnalysisReport>,
 ): AnalysisReport {
-  const baseContent: AnalysisReportContent = {
+  const baseContent = analysisReportContentSchema.parse({
     summary: {
       overallScore: 78,
       productType: "marketing landing page",
@@ -403,7 +408,7 @@ export function createMockAnalysisReport(
       summary:
         "Start with the CTA stack and supporting typography. The highest-value implementation work is front-end only and should be validated with a quick first-scan usability check after the visual changes land.",
     },
-  };
+  });
 
   const baseReport = createAnalysisReport(baseContent, {
     createdAt: "2026-03-06T11:00:00.000Z",
@@ -418,3 +423,31 @@ export function createMockAnalysisReport(
 }
 
 export const mockAnalysisReport: AnalysisReport = createMockAnalysisReport();
+
+export function updateIssueTriage(
+  report: AnalysisReport,
+  input: {
+    issueId: string;
+    triageNote: string | null;
+    triageStatus: AnalysisIssue["triageStatus"];
+  },
+) {
+  const nextUpdatedAt = new Date().toISOString();
+
+  return analysisReportSchema.parse({
+    ...report,
+    sections: report.sections.map((section) => ({
+      ...section,
+      issues: section.issues.map((issue) =>
+        issue.id === input.issueId
+          ? {
+              ...issue,
+              triageNote: input.triageNote,
+              triageStatus: input.triageStatus,
+              triageUpdatedAt: nextUpdatedAt,
+            }
+          : issue,
+      ),
+    })),
+  });
+}

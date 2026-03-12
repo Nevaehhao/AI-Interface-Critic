@@ -7,7 +7,9 @@ import {
 } from "@/lib/data/workspace-store";
 
 export async function GET() {
-  const { user, workspaces } = await listWorkspaces();
+  const { user, workspaces } = await listWorkspaces({
+    includeArchived: true,
+  });
 
   return NextResponse.json({
     signedIn: Boolean(user),

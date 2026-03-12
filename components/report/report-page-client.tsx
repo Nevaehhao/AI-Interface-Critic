@@ -13,6 +13,7 @@ export function ReportPageClient({
   analysisId,
   initialReport = null,
   initialScreenshotUrl = null,
+  initialShareUrl = null,
   initialSource = "mock",
   initialWarning = null,
   viewerUserId = null,
@@ -20,6 +21,7 @@ export function ReportPageClient({
   analysisId: string;
   initialReport?: AnalysisReport | null;
   initialScreenshotUrl?: string | null;
+  initialShareUrl?: string | null;
   initialSource?: AnalysisSource;
   initialWarning?: string | null;
   viewerUserId?: string | null;
@@ -86,6 +88,7 @@ export function ReportPageClient({
   return (
     <ReportView
       analysisId={analysisId}
+      initialShareUrl={initialShareUrl}
       report={reportState.report}
       screenshotUrl={reportState.screenshotUrl}
       source={reportState.source}

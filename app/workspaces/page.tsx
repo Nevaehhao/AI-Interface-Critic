@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { SiteHeader } from "@/components/layout/site-header";
 import { WorkspaceCreateForm } from "@/components/workspaces/workspace-create-form";
+import { WorkspaceManagerCard } from "@/components/workspaces/workspace-manager-card";
 import { listPersistedAnalyses } from "@/lib/data/analysis-store";
 import { listWorkspaces } from "@/lib/data/workspace-store";
 import { hasDatabaseConfig, hasNeonAuthConfig } from "@/lib/env";
@@ -11,11 +12,13 @@ export const dynamic = "force-dynamic";
 
 export default async function WorkspacesPage() {
   const [{ analyses, user: analysisUser }, { workspaces, user: workspaceUser }] =
-    await Promise.all([listPersistedAnalyses(), listWorkspaces()]);
+    await Promise.all([listPersistedAnalyses(), listWorkspaces({ includeArchived: true })]);
 
   const persistenceConfigured = hasDatabaseConfig() && hasNeonAuthConfig();
   const user = workspaceUser ?? analysisUser;
   const analysisCounts = new Map<string, number>();
+  const activeWorkspaces = (workspaces ?? []).filter((workspace) => !workspace.archived_at);
+  const archivedWorkspaces = (workspaces ?? []).filter((workspace) => Boolean(workspace.archived_at));
 
   for (const analysis of analyses ?? []) {
     if (!analysis.workspace_id) {
@@ -86,30 +89,13 @@ export default async function WorkspacesPage() {
 
             <section className="surface-tonal p-6">
               <p className="eyebrow">Your workspaces</p>
-              <h2 className="mt-3 text-3xl tracking-tight">Active project groups</h2>
+              <h2 className="mt-3 text-3xl tracking-tight">Project groups</h2>
 
               {workspaces.length > 0 ? (
                 <div className="mt-6 grid gap-4">
-                  {workspaces.map((workspace) => (
-                    <article
-                      key={workspace.id}
-                      className="surface-card rounded-[1.5rem] p-5 shadow-none"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <h3 className="text-xl tracking-tight">{workspace.name}</h3>
-                          {workspace.description ? (
-                            <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
-                              {workspace.description}
-                            </p>
-                          ) : null}
-                        </div>
-                        <span className="app-chip">
-                          {analysisCounts.get(workspace.id) ?? 0} analyses
-                        </span>
-                      </div>
-
-                      <div className="mt-5 flex flex-wrap gap-3">
+                  {activeWorkspaces.map((workspace) => (
+                    <div key={workspace.id} className="grid gap-3">
+                      <div className="flex flex-wrap gap-3">
                         <Link
                           href={`/upload?workspaceId=${workspace.id}`}
                           className="material-button material-button-primary"
@@ -123,8 +109,31 @@ export default async function WorkspacesPage() {
                           Open history
                         </Link>
                       </div>
-                    </article>
+                      <WorkspaceManagerCard
+                        analysisCount={analysisCounts.get(workspace.id) ?? 0}
+                        workspace={workspace}
+                      />
+                    </div>
                   ))}
+
+                  {archivedWorkspaces.length > 0 ? (
+                    <div className="mt-4 grid gap-4">
+                      <div className="px-1">
+                        <p className="eyebrow">Archived</p>
+                        <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                          Archived workspaces stay available for history and can be restored.
+                        </p>
+                      </div>
+
+                      {archivedWorkspaces.map((workspace) => (
+                        <WorkspaceManagerCard
+                          key={workspace.id}
+                          analysisCount={analysisCounts.get(workspace.id) ?? 0}
+                          workspace={workspace}
+                        />
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ) : (
                 <div className="surface-card mt-6 rounded-[1.5rem] p-5 shadow-none">
