@@ -35,10 +35,10 @@ export default function Home() {
         <section className="surface-card p-8 sm:p-10">
           <div className="max-w-3xl">
             <p className="eyebrow">AI Interface Critic</p>
-            <h1 className="mt-4 text-4xl tracking-tight sm:text-5xl lg:text-6xl">
-              Bring your own model. Turn UI critique into implementation.
+            <h1 className="mt-4 max-w-4xl text-4xl tracking-tight sm:text-5xl lg:text-[3.9rem]">
+              Minimal UI review, sharper implementation handoff.
             </h1>
-            <p className="mt-5 text-base leading-8 text-[var(--color-muted)] sm:text-lg">
+            <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--color-muted)] sm:text-lg">
               Upload a screenshot, add page or repo context, and get a structured review that feels
               like a senior UI/UX designer plus a pragmatic full-stack engineer working together.
             </p>
@@ -66,7 +66,7 @@ export default function Home() {
           <div className="surface-card p-8">
             <p className="eyebrow">What the report includes</p>
             <h2 className="mt-4 text-3xl tracking-tight sm:text-4xl">
-              A simple structure you can scan quickly.
+              A quieter layout you can scan quickly.
             </h2>
             <div className="mt-6 grid gap-3">
               {reportAreas.map((area) => (

@@ -1,30 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --color-background: #f5f7fb;
-  --color-surface: rgba(255, 255, 255, 0.96);
+  --color-background: #f7f7f5;
+  --color-surface: rgba(255, 255, 255, 0.92);
   --color-surface-solid: #ffffff;
-  --color-surface-muted: #f3f5f8;
-  --color-surface-tonal: #eef4ff;
-  --color-surface-tonal-strong: #dce8ff;
-  --color-foreground: #1f1f1f;
-  --color-muted: #5f6368;
-  --color-line: #dde3eb;
-  --color-accent: #1a73e8;
-  --color-accent-strong: #1558b0;
-  --color-accent-soft: #d3e3fd;
-  --color-success: #188038;
-  --color-success-soft: #e6f4ea;
-  --color-warning: #ea8600;
-  --color-warning-soft: #fef7e0;
-  --color-error: #c5221f;
-  --color-error-soft: #fce8e6;
+  --color-surface-muted: #f3f3ef;
+  --color-surface-tonal: #f1f5f2;
+  --color-surface-tonal-strong: #e8efe9;
+  --color-foreground: #161616;
+  --color-muted: #666661;
+  --color-line: rgba(17, 17, 17, 0.08);
+  --color-accent: #161616;
+  --color-accent-strong: #000000;
+  --color-accent-soft: rgba(17, 17, 17, 0.06);
+  --color-success: #1f6f43;
+  --color-success-soft: #edf7f0;
+  --color-warning: #8d5f17;
+  --color-warning-soft: #faf2e5;
+  --color-error: #a3362b;
+  --color-error-soft: #fbeceb;
   --shadow-soft:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 8px 24px rgba(15, 23, 42, 0.06);
+    0 1px 1px rgba(17, 17, 17, 0.02),
+    0 8px 24px rgba(17, 17, 17, 0.03);
   --shadow-medium:
-    0 16px 36px rgba(15, 23, 42, 0.08),
-    0 2px 8px rgba(15, 23, 42, 0.04);
+    0 18px 48px rgba(17, 17, 17, 0.05),
+    0 2px 8px rgba(17, 17, 17, 0.03);
 }
 
 @theme inline {
@@ -46,9 +46,12 @@
 
   body {
     min-height: 100vh;
-    background: linear-gradient(180deg, #fbfcfe 0%, #f6f8fc 55%, #f2f5fa 100%);
+    background:
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.9), transparent 42%),
+      linear-gradient(180deg, #fbfbf9 0%, #f6f6f3 100%);
     color: var(--color-foreground);
     font-family: var(--font-display), sans-serif;
+    letter-spacing: -0.01em;
   }
 
   a {
@@ -81,21 +84,22 @@
   .surface-card {
     border: 1px solid var(--color-line);
     background: var(--color-surface);
-    border-radius: 1.5rem;
+    backdrop-filter: blur(14px);
+    border-radius: 1.25rem;
     box-shadow: var(--shadow-soft);
   }
 
   .surface-tonal {
-    border: 1px solid rgba(26, 115, 232, 0.18);
+    border: 1px solid rgba(22, 22, 22, 0.06);
     background: var(--color-surface-tonal);
-    border-radius: 1.5rem;
+    border-radius: 1.25rem;
     box-shadow: var(--shadow-soft);
   }
 
   .surface-muted {
     border: 1px solid var(--color-line);
     background: var(--color-surface-muted);
-    border-radius: 1.25rem;
+    border-radius: 1rem;
   }
 
   .app-chip {
@@ -103,18 +107,18 @@
     align-items: center;
     gap: 0.5rem;
     border: 1px solid var(--color-line);
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.75);
     border-radius: 999px;
-    padding: 0.45rem 0.8rem;
-    font-size: 0.75rem;
+    padding: 0.4rem 0.72rem;
+    font-size: 0.72rem;
     letter-spacing: 0.06em;
     color: var(--color-muted);
   }
 
   .eyebrow {
-    font-size: 0.76rem;
+    font-size: 0.7rem;
     font-weight: 500;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--color-muted);
   }
@@ -125,8 +129,8 @@
     justify-content: center;
     gap: 0.5rem;
     border-radius: 999px;
-    padding: 0.8rem 1.2rem;
-    font-size: 0.92rem;
+    padding: 0.72rem 1.05rem;
+    font-size: 0.9rem;
     font-weight: 500;
     line-height: 1;
     transition:
@@ -138,13 +142,13 @@
   }
 
   .material-button:hover {
-    transform: translateY(-1px);
+    transform: translateY(-0.5px);
   }
 
   .material-button-primary {
     background: var(--color-accent);
     color: #ffffff;
-    box-shadow: 0 6px 16px rgba(26, 115, 232, 0.24);
+    box-shadow: 0 10px 24px rgba(17, 17, 17, 0.12);
   }
 
   .material-button-primary:hover {
@@ -152,21 +156,21 @@
   }
 
   .material-button-secondary {
-    border: 1px solid rgba(26, 115, 232, 0.16);
-    background: #ffffff;
-    color: var(--color-accent);
+    border: 1px solid var(--color-line);
+    background: rgba(255, 255, 255, 0.82);
+    color: var(--color-foreground);
   }
 
   .material-button-secondary:hover {
-    background: var(--color-surface-tonal);
+    background: #ffffff;
   }
 
   .material-button-text {
-    color: var(--color-accent);
+    color: var(--color-foreground);
   }
 
   .material-button-text:hover {
-    background: rgba(26, 115, 232, 0.08);
+    background: rgba(17, 17, 17, 0.04);
   }
 
   .metric-card {
@@ -195,7 +199,7 @@
 
   .status-badge-primary {
     background: var(--color-accent-soft);
-    color: var(--color-accent-strong);
+    color: var(--color-foreground);
   }
 
   .status-badge-success {
