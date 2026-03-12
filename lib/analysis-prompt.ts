@@ -22,10 +22,13 @@ Instructions:
 - Use 1 to 2 issues per section when relevant.
 - Keep recommendations actionable.
 - Use a 0 to 100 score for the overall summary and each section.
+- For every issue, include confidence, evidence, heuristics, and implementationComplexity.
 - Add screenshot highlight boxes for each issue when a visible region can be identified.
 - Highlight coordinates must use percentages from 0 to 100 for x, y, width, and height.
 - Always return a highlights array for every issue. Use an empty array if no region is clear.
-- The implementation plan must separate front-end work, back-end work, files to inspect, acceptance criteria, and risks.
+- Use concise heuristic names such as Visual hierarchy, Accessibility, Interaction cost, Clarity, Readability, and Progressive disclosure.
+- The implementation plan must separate front-end work, back-end work, files to inspect, acceptance criteria, risks, and estimatedScope.
+- Add implementationComplexity to each redesign suggestion.
 - If the repo URL, page URL, goal, or stack are provided, use them to make the plan more concrete.
 - Return valid JSON matching the required schema exactly.
 `.trim();

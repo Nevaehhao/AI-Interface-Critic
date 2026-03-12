@@ -117,6 +117,14 @@ function formatAnalysisSource(source: AnalysisSource) {
     return "OpenAI-compatible API";
   }
 
+  if (source === "anthropic") {
+    return "Anthropic";
+  }
+
+  if (source === "gemini") {
+    return "Gemini";
+  }
+
   return "Mock fallback";
 }
 
@@ -261,6 +269,16 @@ export async function buildAnalysisReportPdf({
     pdf,
     size: 11,
     topPadding: 8,
+  });
+
+  cursor = drawLines({
+    color: rgb(0.37, 0.39, 0.41),
+    cursor,
+    font: regularFont,
+    lines: [`Estimated scope: ${report.implementationPlan.estimatedScope}`],
+    pdf,
+    size: 11,
+    topPadding: 6,
   });
 
   for (const criterion of report.implementationPlan.acceptanceCriteria) {

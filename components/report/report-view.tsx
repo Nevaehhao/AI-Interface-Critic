@@ -69,6 +69,14 @@ function sourceLabel(source: AnalysisSource) {
     return "API model result";
   }
 
+  if (source === "anthropic") {
+    return "Anthropic result";
+  }
+
+  if (source === "gemini") {
+    return "Gemini result";
+  }
+
   return "Fallback result";
 }
 
@@ -81,11 +89,24 @@ function sourceDescription(source: AnalysisSource) {
     return "This report was generated through a user-configured OpenAI-compatible API.";
   }
 
+  if (source === "anthropic") {
+    return "This report was generated through a user-configured Anthropic model.";
+  }
+
+  if (source === "gemini") {
+    return "This report was generated through a user-configured Gemini model.";
+  }
+
   return "The configured provider did not complete this run, so the app showed fallback output instead.";
 }
 
 function isLiveResult(source: AnalysisSource) {
-  return source === "ollama" || source === "openai-compatible";
+  return (
+    source === "ollama" ||
+    source === "openai-compatible" ||
+    source === "anthropic" ||
+    source === "gemini"
+  );
 }
 
 function fallbackDescription() {
@@ -354,11 +375,33 @@ export function ReportView({
                       >
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <h3 className="text-lg font-medium">{issue.title}</h3>
-                          <span className={severityTone(issue.severity)}>{issue.severity}</span>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="app-chip">{issue.implementationComplexity}</span>
+                            <span className="app-chip">
+                              Confidence {Math.round(issue.confidence * 100)}%
+                            </span>
+                            <span className={severityTone(issue.severity)}>{issue.severity}</span>
+                          </div>
                         </div>
                         <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
                           {issue.description}
                         </p>
+                        {issue.heuristics.length > 0 ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {issue.heuristics.map((heuristic) => (
+                              <span key={`${issue.id}-${heuristic}`} className="app-chip">
+                                {heuristic}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                        {issue.evidence.length > 0 ? (
+                          <ul className="mt-3 space-y-2 text-sm leading-7 text-[var(--color-muted)]">
+                            {issue.evidence.map((evidence) => (
+                              <li key={`${issue.id}-${evidence}`}>{evidence}</li>
+                            ))}
+                          </ul>
+                        ) : null}
                         <p className="mt-3 text-sm leading-7">{issue.recommendation}</p>
                         {issue.highlights.length > 0 ? (
                           <button
@@ -384,6 +427,11 @@ export function ReportView({
           <p className="mt-4 max-w-4xl text-base leading-8 text-[var(--color-muted)]">
             {report.implementationPlan.summary}
           </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="app-chip">
+              Estimated scope {report.implementationPlan.estimatedScope}
+            </span>
+          </div>
 
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
             <DetailListCard
@@ -427,7 +475,10 @@ export function ReportView({
                 <article key={suggestion.id} className="surface-muted p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <h3 className="text-lg font-medium">{suggestion.title}</h3>
-                    <span className="app-chip">{suggestion.priority}</span>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="app-chip">{suggestion.priority}</span>
+                      <span className="app-chip">{suggestion.implementationComplexity}</span>
+                    </div>
                   </div>
                   <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
                     {suggestion.summary}

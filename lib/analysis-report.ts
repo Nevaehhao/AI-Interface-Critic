@@ -16,9 +16,15 @@ export const analysisIssueHighlightSchema = z.object({
 });
 
 export const analysisIssueSchema = z.object({
+  confidence: z.number().min(0).max(1).default(0.72),
   id: z.string(),
   title: z.string(),
   description: z.string(),
+  evidence: z.array(z.string()).default([]),
+  heuristics: z.array(z.string()).default([]),
+  implementationComplexity: z
+    .enum(["small", "medium", "large"])
+    .default("medium"),
   recommendation: z.string(),
   severity: z.enum(["low", "medium", "high"]),
   highlights: z.array(analysisIssueHighlightSchema).default([]),
@@ -42,6 +48,9 @@ export const analysisSummarySchema = z.object({
 
 export const analysisRedesignSuggestionSchema = z.object({
   id: z.string(),
+  implementationComplexity: z
+    .enum(["small", "medium", "large"])
+    .default("medium"),
   title: z.string(),
   summary: z.string(),
   rationale: z.string(),
@@ -53,6 +62,7 @@ export const analysisRedesignSuggestionSchema = z.object({
 export const analysisImplementationPlanSchema = z.object({
   acceptanceCriteria: z.array(z.string()).default([]),
   backendChanges: z.array(z.string()).default([]),
+  estimatedScope: z.enum(["small", "medium", "large"]).default("medium"),
   filesToInspect: z.array(z.string()).default([]),
   frontendChanges: z.array(z.string()).default([]),
   risks: z.array(z.string()).default([]),
@@ -62,6 +72,7 @@ export const analysisImplementationPlanSchema = z.object({
 export const emptyImplementationPlan = analysisImplementationPlanSchema.parse({
   acceptanceCriteria: [],
   backendChanges: [],
+  estimatedScope: "medium",
   filesToInspect: [],
   frontendChanges: [],
   risks: [],
@@ -136,8 +147,15 @@ export function createMockAnalysisReport(
             title: "Primary action is not visually dominant",
             description:
               "The main CTA competes with surrounding labels and supporting elements, making first-scan prioritization slower.",
+            evidence: [
+              "The CTA shares similar fill intensity with nearby elements.",
+              "The surrounding cluster reduces the first-scan entry point.",
+            ],
+            heuristics: ["Visual hierarchy", "Primary action clarity"],
+            implementationComplexity: "small",
             recommendation:
               "Increase CTA contrast, simplify nearby supporting UI, and create more separation around the key action.",
+            confidence: 0.88,
             severity: "high",
             highlights: [
               {
@@ -155,8 +173,14 @@ export function createMockAnalysisReport(
             title: "Secondary content carries similar emphasis",
             description:
               "Multiple blocks share similar scale and color intensity, reducing the sense of a clear entry point.",
+            evidence: [
+              "Cards and callouts are visually weighted too closely.",
+            ],
+            heuristics: ["Progressive disclosure", "Reading rhythm"],
+            implementationComplexity: "medium",
             recommendation:
               "Introduce a stronger type scale and reserve brighter treatments for the most important content.",
+            confidence: 0.72,
             severity: "medium",
             highlights: [
               {
@@ -183,8 +207,14 @@ export function createMockAnalysisReport(
             title: "Muted supporting text may be too low contrast",
             description:
               "Subdued labels match the visual style, but some text appears at risk of insufficient contrast against low-emphasis surfaces.",
+            evidence: [
+              "Muted supporting labels sit on low-contrast backgrounds.",
+            ],
+            heuristics: ["WCAG contrast", "Text readability"],
+            implementationComplexity: "small",
             recommendation:
               "Raise contrast on supporting copy and validate critical text against WCAG contrast ratios.",
+            confidence: 0.82,
             severity: "high",
             highlights: [
               {
@@ -202,8 +232,14 @@ export function createMockAnalysisReport(
             title: "Metadata text is compact for scan-heavy use",
             description:
               "Small uppercase labels look polished, but they can become hard to read when stacked repeatedly.",
+            evidence: [
+              "Repeated compact labels increase scan effort.",
+            ],
+            heuristics: ["Legibility", "Scan efficiency"],
+            implementationComplexity: "small",
             recommendation:
               "Increase font size or reduce frequency of dense uppercase microcopy in key areas.",
+            confidence: 0.69,
             severity: "low",
             highlights: [
               {
@@ -230,8 +266,14 @@ export function createMockAnalysisReport(
             title: "Preferred next action is not explicit enough",
             description:
               "Users can identify likely actions, but the interface does not strongly indicate the intended progression path.",
+            evidence: [
+              "The main next step is not sufficiently differentiated from supporting actions.",
+            ],
+            heuristics: ["Interaction clarity", "Next-step affordance"],
+            implementationComplexity: "medium",
             recommendation:
               "Pair the main action with clearer helper text or stronger positional emphasis.",
+            confidence: 0.76,
             severity: "medium",
             highlights: [
               {
@@ -258,8 +300,14 @@ export function createMockAnalysisReport(
             title: "Some sections feel visually dense",
             description:
               "Clusters of cards and labels sit close together, which can reduce clarity when scanning quickly.",
+            evidence: [
+              "Multiple surface treatments and tight stacks compete for attention.",
+            ],
+            heuristics: ["Spacing rhythm", "Content grouping"],
+            implementationComplexity: "medium",
             recommendation:
               "Add more vertical spacing between stacked regions and reduce repeated border treatments where possible.",
+            confidence: 0.74,
             severity: "medium",
             highlights: [
               {
@@ -283,6 +331,7 @@ export function createMockAnalysisReport(
           "Make one action visually dominant and reduce the emphasis of nearby supporting elements.",
         rationale:
           "The current layout asks users to compare equally weighted options before they understand which action matters most.",
+        implementationComplexity: "small",
         priority: "now",
         actions: [
           "Promote the primary CTA with stronger color contrast and more whitespace.",
@@ -299,6 +348,7 @@ export function createMockAnalysisReport(
           "Create clearer separation between headline, metadata, and support copy.",
         rationale:
           "Several text blocks currently feel similar in scale and contrast, which weakens scan order and increases effort.",
+        implementationComplexity: "medium",
         priority: "next",
         actions: [
           "Increase contrast for critical labels and body copy.",
@@ -315,6 +365,7 @@ export function createMockAnalysisReport(
           "Introduce more vertical spacing and simplify repeated surfaces so the layout can breathe.",
         rationale:
           "Dense stacks of cards and chips create unnecessary visual competition, especially when multiple sections are reviewed quickly.",
+        implementationComplexity: "medium",
         priority: "later",
         actions: [
           "Increase vertical spacing between grouped sections.",
@@ -334,6 +385,7 @@ export function createMockAnalysisReport(
       backendChanges: [
         "No backend change is required unless CTA experiments are tied to analytics events.",
       ],
+      estimatedScope: "medium",
       filesToInspect: [
         "Landing page hero component",
         "Shared button styles or CTA design tokens",

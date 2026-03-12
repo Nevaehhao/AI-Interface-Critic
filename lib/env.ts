@@ -8,7 +8,9 @@ const serverSchema = z.object({
   AI_API_KEY: z.string().min(1).optional(),
   AI_BASE_URL: z.string().url().optional(),
   AI_MODEL: z.string().min(1).optional(),
-  AI_PROVIDER: z.enum(["ollama", "openai-compatible"]).default("ollama"),
+  AI_PROVIDER: z
+    .enum(["ollama", "openai-compatible", "anthropic", "gemini"])
+    .default("ollama"),
   DATABASE_URL: z.string().min(1).optional(),
   LOCAL_SCREENSHOT_STORAGE_DIR: z.string().min(1).optional(),
   NEON_AUTH_BASE_URL: z.string().url().optional(),

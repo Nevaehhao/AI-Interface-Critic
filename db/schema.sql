@@ -14,7 +14,9 @@ create table if not exists analyses (
   id uuid primary key,
   auth_user_id text not null,
   workspace_id uuid references workspaces(id) on delete set null,
-  source text not null check (source in ('mock', 'ollama', 'openai-compatible')),
+  source text not null check (
+    source in ('mock', 'ollama', 'openai-compatible', 'anthropic', 'gemini')
+  ),
   product_type text not null,
   overall_score integer not null,
   main_finding text not null,

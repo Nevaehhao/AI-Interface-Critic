@@ -40,6 +40,14 @@ function formatAnalysisSource(source: AnalysisSource) {
     return "API model";
   }
 
+  if (source === "anthropic") {
+    return "Anthropic";
+  }
+
+  if (source === "gemini") {
+    return "Gemini";
+  }
+
   return "Fallback";
 }
 
