@@ -4,15 +4,15 @@ import { ButtonLink } from "@/components/ui/button-link";
 
 const steps = [
   {
-    description: "Upload a screenshot and attach page, repo, goal, and stack context when you have it.",
-    title: "1. Upload",
+    description: "Upload a screenshot or let the app capture a live URL, then attach page, repo, goal, and stack context.",
+    title: "1. Capture",
   },
   {
-    description: "Run a UX, accessibility, conversion, design system, or implementation-handoff review.",
-    title: "2. Analyze",
+    description: "Run a UX, accessibility, conversion, design system, or implementation-handoff review with your own model.",
+    title: "2. Critique",
   },
   {
-    description: "Read the critique, inspect highlighted issues, then copy the builder brief into your coding workflow.",
+    description: "Triage issues, compare runs, review flow-level patterns, then pass JSON or a builder brief into your coding workflow.",
     title: "3. Build",
   },
 ];
@@ -23,6 +23,8 @@ const reportAreas = [
   "Accessibility issues",
   "Interaction clarity issues",
   "Layout issues and redesign suggestions",
+  "Issue triage and comparison views",
+  "History search, trends, and flow review",
   "Full-stack implementation handoff",
 ];
 
@@ -84,13 +86,14 @@ export default function Home() {
             </h2>
             <div className="mt-6 space-y-4 text-sm leading-7 text-[var(--color-muted)]">
               <p>The app works with Ollama or a hosted OpenAI-compatible API.</p>
+              <p>It also supports Anthropic and Gemini without changing the product workflow.</p>
               <p>
                 If the configured provider fails, the report explicitly shows fallback output so you
                 never have to guess why a run looks repeated.
               </p>
               <p>
-                Reports now include a builder handoff with front-end changes, back-end changes,
-                files to inspect, and acceptance criteria.
+                Reports now include triage, compare, share links, and a builder CLI path from
+                critique into local repo work.
               </p>
             </div>
 

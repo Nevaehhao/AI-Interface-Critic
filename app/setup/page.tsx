@@ -33,7 +33,8 @@ export default async function SetupPage() {
             </h1>
             <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-muted)]">
               This page checks the services and environment variables your app needs before you
-              call the stack “live”, whether you use Ollama or a hosted OpenAI-compatible API.
+              call the stack “live”, whether you use Ollama, a hosted OpenAI-compatible API,
+              Anthropic, or Gemini.
             </p>
           </div>
 
@@ -67,6 +68,33 @@ export default async function SetupPage() {
             </article>
           ))}
         </div>
+
+        <section className="surface-card p-6 sm:p-8">
+          <p className="eyebrow">Extra setup</p>
+          <h2 className="mt-3 text-3xl tracking-tight">Optional capabilities to unlock.</h2>
+          <div className="mt-6 grid gap-4 lg:grid-cols-3">
+            <div className="surface-muted p-5">
+              <p className="eyebrow">URL capture</p>
+              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                Install Chromium for Playwright with <code>npx playwright install chromium</code>.
+              </p>
+            </div>
+            <div className="surface-muted p-5">
+              <p className="eyebrow">GitHub intake</p>
+              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                Add <code>GITHUB_TOKEN</code> if you want better GitHub API limits or private repo
+                access.
+              </p>
+            </div>
+            <div className="surface-muted p-5">
+              <p className="eyebrow">Builder CLI</p>
+              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                Use <code>npm run builder -- help</code> to bridge exported reports into a local
+                repo workflow.
+              </p>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
