@@ -58,28 +58,27 @@ Status: shipped
 
 ### Phase 4: Better source inputs
 
-Next
+Status: shipped for URL capture and repo intake foundation
 
 - Capture screenshots directly from a URL
-- Support multiple screens for a single flow review
-- Support richer page metadata and crawl hints
+- GitHub repository intake for public repos
+- Richer page metadata and repo hints
 
 ### Phase 5: Repo-aware automation
 
-Next
+Status: shipped for the local bridge, still evolving for patch quality
 
-- GitHub repository connection
 - File tree summarization for builder mode
 - Local CLI bridge for repo access
-- Patch and PR generation
+- Patch and PR generation commands
 
 ### Phase 6: Team workflows
 
-Later
+Status: partly shipped, deeper collaboration still later
 
 - Shared reports
-- Review annotations
-- Team workspaces
+- Review annotations and issue triage
+- Team workspaces with archive, tags, and colors
 - Approval flows for generated implementation plans
 
 ## Product constraints
@@ -91,7 +90,7 @@ Later
 
 ## Near-term priorities
 
-1. URL capture
-2. GitHub and local CLI builder integration
-3. Better report comparison and before/after diffs
-4. Stronger persistence and shareability
+1. Richer multi-screen input directly from upload
+2. Better patch quality, validation, and auto-test loops in builder mode
+3. Private repository adapters and authentication flows
+4. Team review permissions and approval workflows
