@@ -52,25 +52,25 @@ export function SiteHeader() {
   }, [isMenuOpen]);
 
   return (
-    <header className="sticky top-0 z-20 border-b border-[var(--color-line)] bg-[rgba(255,255,255,0.92)] backdrop-blur-md">
+    <header className="sticky top-0 z-20 border-b border-[var(--color-line)] bg-[rgba(247,247,245,0.86)] backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4 sm:px-10 lg:px-12">
         <Link href="/" className="flex items-center gap-3">
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--color-line)] bg-white text-sm font-semibold text-[var(--color-accent)]">
-            AI
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--color-line)] bg-[rgba(255,255,255,0.86)] text-sm font-semibold text-[var(--color-foreground)]">
+            AC
           </span>
           <div className="leading-tight">
             <p className="text-sm font-medium text-[var(--color-foreground)]">AI Interface Critic</p>
-            <p className="text-xs text-[var(--color-muted)]">Upload. Analyze. Review.</p>
+            <p className="text-xs text-[var(--color-muted)]">Critique. Handoff. Build.</p>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm text-[var(--color-muted)] md:flex">
+        <nav className="hidden items-center gap-2 text-sm text-[var(--color-muted)] md:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-full px-3 py-2 transition hover:bg-white hover:text-[var(--color-foreground)] ${
-                pathname === item.href ? "bg-white text-[var(--color-foreground)]" : ""
+              className={`rounded-full px-3 py-2 transition hover:bg-[rgba(255,255,255,0.86)] hover:text-[var(--color-foreground)] ${
+                pathname === item.href ? "bg-[rgba(255,255,255,0.92)] text-[var(--color-foreground)]" : ""
               }`}
             >
               {item.label}
@@ -79,8 +79,8 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link href="/upload" className="material-button material-button-primary">
-            Upload screenshot
+          <Link href="/upload" className="material-button material-button-secondary">
+            New run
           </Link>
 
           {isPending ? (
@@ -96,7 +96,7 @@ export function SiteHeader() {
                 aria-expanded={isMenuOpen}
                 aria-haspopup="menu"
                 aria-label="Open account menu"
-                className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-[var(--color-line)] bg-white text-sm font-semibold text-[var(--color-accent)] shadow-[0_8px_20px_rgba(15,23,42,0.08)] transition hover:border-[var(--color-accent)] hover:shadow-[0_12px_24px_rgba(15,23,42,0.12)]"
+                className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-[var(--color-line)] bg-[rgba(255,255,255,0.88)] text-sm font-semibold text-[var(--color-foreground)] shadow-[0_8px_20px_rgba(17,17,17,0.06)] transition hover:border-[rgba(17,17,17,0.12)] hover:shadow-[0_12px_24px_rgba(17,17,17,0.09)]"
               >
                 {user?.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -113,10 +113,10 @@ export function SiteHeader() {
               {isMenuOpen ? (
                 <div
                   role="menu"
-                  className="absolute right-0 top-[calc(100%+12px)] w-[18.5rem] rounded-[1.75rem] border border-[var(--color-line)] bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.18)]"
+                  className="absolute right-0 top-[calc(100%+12px)] w-[18.5rem] rounded-[1.5rem] border border-[var(--color-line)] bg-[rgba(255,255,255,0.94)] p-5 shadow-[0_24px_60px_rgba(17,17,17,0.12)] backdrop-blur-xl"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-[var(--color-accent-soft)] text-base font-semibold text-[var(--color-accent)]">
+                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-[var(--color-accent-soft)] text-base font-semibold text-[var(--color-foreground)]">
                       {user?.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -139,7 +139,7 @@ export function SiteHeader() {
                   </div>
 
                   <div className="mt-5 rounded-[1.25rem] border border-[var(--color-line)] bg-[var(--color-surface-muted)] p-4">
-                    <p className="eyebrow text-[var(--color-accent)]">Account</p>
+                    <p className="eyebrow text-[var(--color-foreground)]">Account</p>
                     <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
                       Signed in with Neon Auth. Open your history or workspace to continue this
                       review flow.
