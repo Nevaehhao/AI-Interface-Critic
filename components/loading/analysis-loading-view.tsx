@@ -63,7 +63,9 @@ export function AnalysisLoadingView({
       try {
         const file = await dataUrlToFile(currentDraft);
         const formData = new FormData();
-        formData.append("file", file);
+        if (file) {
+          formData.append("file", file);
+        }
         if (currentDraft.workspaceId) {
           formData.append("workspaceId", currentDraft.workspaceId);
         }
@@ -109,7 +111,7 @@ export function AnalysisLoadingView({
 
         const payload = analyzeResponseSchema.parse(await response.json());
         saveLatestAnalysisResult(payload, {
-          screenshotDataUrl: currentDraft.dataUrl,
+          screenshotDataUrl: payload.screenshotDataUrl ?? currentDraft.dataUrl,
           viewerUserId,
           workspaceId: currentDraft.workspaceId ?? null,
           workspaceName: currentDraft.workspaceName ?? null,
@@ -218,27 +220,46 @@ export function AnalysisLoadingView({
       <aside className="surface-card space-y-5 p-6">
         <div>
           <p className="eyebrow">Input</p>
-          <h2 className="mt-3 text-3xl tracking-tight">Current screenshot</h2>
+          <h2 className="mt-3 text-3xl tracking-tight">
+            {draft.captureMode === "url-capture" ? "Current page" : "Current screenshot"}
+          </h2>
         </div>
 
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-[var(--color-line)] bg-white">
-          <Image
-            alt="Screenshot being analyzed"
-            fill
-            className="object-cover"
-            sizes="(min-width: 1024px) 32rem, 100vw"
-            src={draft.dataUrl}
-            unoptimized
-          />
-        </div>
+        {draft.dataUrl ? (
+          <>
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-[var(--color-line)] bg-white">
+              <Image
+                alt="Screenshot being analyzed"
+                fill
+                className="object-cover"
+                sizes="(min-width: 1024px) 32rem, 100vw"
+                src={draft.dataUrl}
+                unoptimized
+              />
+            </div>
 
-        <div className="surface-muted p-4">
-          <p className="text-sm">{draft.name}</p>
-          <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-            <span className="app-chip">{draft.type}</span>
-            <span className="app-chip">{formatBytes(draft.size)}</span>
+            <div className="surface-muted p-4">
+              <p className="text-sm">{draft.name}</p>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
+                {draft.type ? <span className="app-chip">{draft.type}</span> : null}
+                {draft.size ? <span className="app-chip">{formatBytes(draft.size)}</span> : null}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="surface-muted p-5">
+            <p className="text-sm font-medium">Server capture pending</p>
+            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+              The app will open the provided URL in a headless browser, capture the visible
+              viewport, and use that screenshot for analysis.
+            </p>
+            {draft.context?.pageUrl ? (
+              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                URL: {draft.context.pageUrl}
+              </p>
+            ) : null}
           </div>
-        </div>
+        )}
 
         <div className="surface-muted p-5">
           <p className="eyebrow text-[var(--color-accent)]">Engine</p>
@@ -249,6 +270,11 @@ export function AnalysisLoadingView({
           {draft.workspaceName ? (
             <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
               This run will be saved to the workspace <strong>{draft.workspaceName}</strong>.
+            </p>
+          ) : null}
+          {draft.captureMode === "url-capture" ? (
+            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+              URL capture requires Playwright with Chromium installed on the server.
             </p>
           ) : null}
         </div>

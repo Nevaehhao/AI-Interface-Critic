@@ -36,8 +36,14 @@ Instructions:
 export function buildAnalysisPrompt(context?: AnalysisContext) {
   const contextLines = [
     `Review mode: ${getAnalysisModeLabel(context?.analysisMode ?? "ux-review")}`,
+    `Capture mode: ${context?.pageCaptureMode ?? "upload"}`,
     context?.pageUrl ? `Live page URL: ${context.pageUrl}` : null,
+    context?.pageTitle ? `Page title: ${context.pageTitle}` : null,
     context?.repoUrl ? `Repository URL: ${context.repoUrl}` : null,
+    context?.repoSummary ? `Repository summary: ${context.repoSummary}` : null,
+    context?.repoEntryPoints.length
+      ? `Repository entry points: ${context.repoEntryPoints.join(", ")}`
+      : null,
     context?.productGoal ? `Product goal: ${context.productGoal}` : null,
     context?.targetAudience ? `Target audience: ${context.targetAudience}` : null,
     context?.techStack ? `Tech stack: ${context.techStack}` : null,

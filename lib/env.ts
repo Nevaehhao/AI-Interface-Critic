@@ -12,6 +12,7 @@ const serverSchema = z.object({
     .enum(["ollama", "openai-compatible", "anthropic", "gemini"])
     .default("ollama"),
   DATABASE_URL: z.string().min(1).optional(),
+  GITHUB_TOKEN: z.string().min(1).optional(),
   LOCAL_SCREENSHOT_STORAGE_DIR: z.string().min(1).optional(),
   NEON_AUTH_BASE_URL: z.string().url().optional(),
   OLLAMA_BASE_URL: z.string().url().default("http://127.0.0.1:11434"),
@@ -33,6 +34,7 @@ export function getServerEnv() {
     AI_MODEL: process.env.AI_MODEL,
     AI_PROVIDER: process.env.AI_PROVIDER,
     DATABASE_URL: process.env.DATABASE_URL,
+    GITHUB_TOKEN: process.env.GITHUB_TOKEN,
     LOCAL_SCREENSHOT_STORAGE_DIR: process.env.LOCAL_SCREENSHOT_STORAGE_DIR,
     NEON_AUTH_BASE_URL: process.env.NEON_AUTH_BASE_URL,
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,

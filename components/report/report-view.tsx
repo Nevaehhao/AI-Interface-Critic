@@ -128,6 +128,15 @@ function flattenHighlightableIssues(report: AnalysisReport): HighlightableIssue[
   );
 }
 
+function createAnalysisJsonFileName(report: AnalysisReport, analysisId: string) {
+  const normalizedType = report.summary.productType
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `ai-interface-critic-${normalizedType || "report"}-${analysisId}.json`;
+}
+
 export function ReportView({
   analysisId,
   report,
@@ -194,6 +203,19 @@ export function ReportView({
     }
   }
 
+  function handleExportJson() {
+    const jsonBlob = new Blob([JSON.stringify(report, null, 2)], {
+      type: "application/json",
+    });
+    const downloadUrl = URL.createObjectURL(jsonBlob);
+    const link = document.createElement("a");
+
+    link.href = downloadUrl;
+    link.download = createAnalysisJsonFileName(report, analysisId);
+    link.click();
+    URL.revokeObjectURL(downloadUrl);
+  }
+
   return (
     <div className="page-shell">
       <SiteHeader />
@@ -214,6 +236,13 @@ export function ReportView({
                 : copyState === "error"
                   ? "Copy failed"
                   : "Copy builder brief"}
+            </button>
+            <button
+              type="button"
+              onClick={handleExportJson}
+              className="material-button material-button-secondary"
+            >
+              Export JSON
             </button>
             <button
               type="button"
@@ -300,6 +329,9 @@ export function ReportView({
 
           <div className="mt-6 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
             <span className="app-chip">{getAnalysisModeLabel(report.context.analysisMode)}</span>
+            <span className="app-chip">
+              {report.context.pageCaptureMode === "url-capture" ? "Captured from URL" : "Uploaded screenshot"}
+            </span>
             {report.context.pageUrl ? <span className="app-chip">Page URL attached</span> : null}
             {report.context.repoUrl ? <span className="app-chip">Repo URL attached</span> : null}
             {report.context.techStack ? <span className="app-chip">{report.context.techStack}</span> : null}
@@ -310,11 +342,12 @@ export function ReportView({
           <p className="eyebrow">Review brief</p>
           <h2 className="mt-4 text-3xl tracking-tight">What the model was optimizing for.</h2>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <div className="mt-6 grid gap-4 lg:grid-cols-3">
             <DetailListCard
               emptyLabel="No page or repository URLs were provided for this run."
               items={[
                 ...(report.context.pageUrl ? [`Live page: ${report.context.pageUrl}`] : []),
+                ...(report.context.pageTitle ? [`Page title: ${report.context.pageTitle}`] : []),
                 ...(report.context.repoUrl ? [`Repository: ${report.context.repoUrl}`] : []),
               ]}
               title="Attached links"
@@ -329,6 +362,14 @@ export function ReportView({
                 ...(report.context.notes ? [`Notes: ${report.context.notes}`] : []),
               ]}
               title="Product context"
+            />
+            <DetailListCard
+              emptyLabel="No repository summary was generated for this run."
+              items={[
+                ...(report.context.repoSummary ? [report.context.repoSummary] : []),
+                ...report.context.repoEntryPoints.map((entryPoint) => `Inspect: ${entryPoint}`),
+              ]}
+              title="Repository intake"
             />
           </div>
         </section>

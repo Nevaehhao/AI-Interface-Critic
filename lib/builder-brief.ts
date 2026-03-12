@@ -41,8 +41,14 @@ export function buildBuilderBrief({
 }) {
   const contextLines = [
     `Review mode: ${getAnalysisModeLabel(report.context.analysisMode)}`,
+    `Capture mode: ${report.context.pageCaptureMode}`,
     report.context.pageUrl ? `Page URL: ${report.context.pageUrl}` : null,
+    report.context.pageTitle ? `Page title: ${report.context.pageTitle}` : null,
     report.context.repoUrl ? `Repo URL: ${report.context.repoUrl}` : null,
+    report.context.repoSummary ? `Repo summary: ${report.context.repoSummary}` : null,
+    report.context.repoEntryPoints.length > 0
+      ? `Repo entry points: ${report.context.repoEntryPoints.join(", ")}`
+      : null,
     report.context.productGoal ? `Product goal: ${report.context.productGoal}` : null,
     report.context.targetAudience ? `Target audience: ${report.context.targetAudience}` : null,
     report.context.techStack ? `Tech stack: ${report.context.techStack}` : null,
