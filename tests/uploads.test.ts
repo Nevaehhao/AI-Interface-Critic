@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  MAX_FLOW_SCREENSHOTS,
   MAX_UPLOAD_SIZE_BYTES,
   formatBytes,
   validateImageFile,
+  validateImageFiles,
 } from "../lib/uploads";
 
 describe("upload validation", () => {
@@ -31,5 +33,13 @@ describe("upload validation", () => {
     expect(formatBytes(512)).toBe("512 B");
     expect(formatBytes(2048)).toBe("2.0 KB");
     expect(formatBytes(3 * 1024 * 1024)).toBe("3.0 MB");
+  });
+
+  it("rejects batches above the flow screenshot limit", () => {
+    const files = Array.from({ length: MAX_FLOW_SCREENSHOTS + 1 }, (_, index) =>
+      new File(["image"], `screen-${index + 1}.png`, { type: "image/png" }),
+    );
+
+    expect(validateImageFiles(files)).toBe("Use up to 5 screenshots per batch.");
   });
 });

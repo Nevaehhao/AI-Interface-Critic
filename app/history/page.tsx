@@ -9,10 +9,15 @@ export const dynamic = "force-dynamic";
 export default async function HistoryPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ workspaceId?: string }>;
+  searchParams?: Promise<{ selected?: string; workspaceId?: string }>;
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const selectedWorkspaceId = resolvedSearchParams?.workspaceId ?? null;
+  const selectedAnalysisIds = (resolvedSearchParams?.selected ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .slice(0, 5);
 
   const [{ analyses, user }, { workspaces }] = await Promise.all([
     listPersistedAnalyses(selectedWorkspaceId),
@@ -26,9 +31,10 @@ export default async function HistoryPage({
       <SiteHeader />
 
       <HistoryPageClient
-        initialAnalyses={analyses ?? []}
-        isPersistenceConfigured={persistenceConfigured}
-        isSignedIn={Boolean(user)}
+      initialAnalyses={analyses ?? []}
+      initialSelectedIds={selectedAnalysisIds}
+      isPersistenceConfigured={persistenceConfigured}
+      isSignedIn={Boolean(user)}
         selectedWorkspaceId={selectedWorkspaceId}
         userEmail={user?.email ?? null}
         viewerUserId={user?.id ?? null}

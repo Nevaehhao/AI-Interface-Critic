@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { AnalysisIssue, AnalysisIssueHighlight } from "@/lib/analysis-report";
 import {
   clearPendingAnalysisDraft,
+  getPendingAnalysisScreenshots,
   loadPendingAnalysisDraft,
   type PendingAnalysisDraft,
 } from "@/lib/analysis-draft";
@@ -53,7 +54,10 @@ export function ReportScreenshotPreview({
   }
 
   const previewDraft = fallbackImageUrl ? null : draft;
-  const backgroundImage = fallbackImageUrl ?? previewDraft?.dataUrl ?? "";
+  const primaryScreenshot = previewDraft
+    ? getPendingAnalysisScreenshots(previewDraft)[0] ?? null
+    : null;
+  const backgroundImage = fallbackImageUrl ?? primaryScreenshot?.dataUrl ?? "";
   const selectedIssue =
     issues.find((issue) => issue.id === selectedIssueId) ?? issues[0] ?? null;
   const selectedHighlights = selectedIssue?.highlights ?? [];
@@ -152,15 +156,22 @@ export function ReportScreenshotPreview({
       <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
         {previewDraft ? (
           <>
-            <p className="text-sm">{previewDraft.name}</p>
+            <p className="text-sm">
+              {previewDraft.screenshots.length > 1
+                ? `${previewDraft.screenshots.length} pending screenshots`
+                : primaryScreenshot?.name ?? previewDraft.name}
+            </p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-              {previewDraft.type ? (
-                <span className="app-chip px-3 py-1 text-xs">{previewDraft.type}</span>
+              {primaryScreenshot?.type ? (
+                <span className="app-chip px-3 py-1 text-xs">{primaryScreenshot.type}</span>
               ) : null}
-              {typeof previewDraft.size === "number" ? (
+              {typeof primaryScreenshot?.size === "number" ? (
                 <span className="app-chip px-3 py-1 text-xs">
-                  {formatBytes(previewDraft.size)}
+                  {formatBytes(primaryScreenshot.size)}
                 </span>
+              ) : null}
+              {previewDraft.screenshots.length > 1 ? (
+                <span className="app-chip px-3 py-1 text-xs">Flow batch</span>
               ) : null}
             </div>
             <button

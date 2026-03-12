@@ -15,9 +15,10 @@ import { savePendingAnalysisDraft } from "@/lib/analysis-draft";
 import type { WorkspaceRecord } from "@/lib/data/workspace-store";
 import {
   ACCEPTED_IMAGE_TYPES,
+  MAX_FLOW_SCREENSHOTS,
   MAX_UPLOAD_SIZE_MB,
   formatBytes,
-  validateImageFile,
+  validateImageFiles,
 } from "@/lib/uploads";
 
 export function UploadForm({
@@ -34,8 +35,8 @@ export function UploadForm({
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("ux-review");
   const [pageUrl, setPageUrl] = useState("");
   const [repoUrl, setRepoUrl] = useState("");
@@ -54,52 +55,52 @@ export function UploadForm({
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
+      previewUrls.forEach((previewUrl) => {
         URL.revokeObjectURL(previewUrl);
-      }
+      });
     };
-  }, [previewUrl]);
+  }, [previewUrls]);
 
-  function updateFile(file: File | null) {
-    if (!file) {
+  function updateFiles(files: File[]) {
+    if (files.length === 0) {
       return;
     }
 
-    const validationError = validateImageFile(file);
+    const validationError = validateImageFiles(files);
 
     if (validationError) {
-      setSelectedFile(null);
-      setPreviewUrl((currentPreviewUrl) => {
-        if (currentPreviewUrl) {
+      setSelectedFiles([]);
+      setPreviewUrls((currentPreviewUrls) => {
+        currentPreviewUrls.forEach((currentPreviewUrl) => {
           URL.revokeObjectURL(currentPreviewUrl);
-        }
+        });
 
-        return null;
+        return [];
       });
       setError(validationError);
       return;
     }
 
-    const nextPreviewUrl = URL.createObjectURL(file);
-    setSelectedFile(file);
-    setPreviewUrl((currentPreviewUrl) => {
-      if (currentPreviewUrl) {
+    const nextPreviewUrls = files.map((file) => URL.createObjectURL(file));
+    setSelectedFiles(files);
+    setPreviewUrls((currentPreviewUrls) => {
+      currentPreviewUrls.forEach((currentPreviewUrl) => {
         URL.revokeObjectURL(currentPreviewUrl);
-      }
+      });
 
-      return nextPreviewUrl;
+      return nextPreviewUrls;
     });
     setError(null);
   }
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
-    updateFile(event.target.files?.[0] ?? null);
+    updateFiles(Array.from(event.target.files ?? []));
   }
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
     setIsDragging(false);
-    updateFile(event.dataTransfer.files?.[0] ?? null);
+    updateFiles(Array.from(event.dataTransfer.files ?? []));
   }
 
   function handleDragOver(event: DragEvent<HTMLDivElement>) {
@@ -113,7 +114,7 @@ export function UploadForm({
   }
 
   async function handleSubmit() {
-    if (!selectedFile && pageUrl.trim().length === 0) {
+    if (selectedFiles.length === 0 && pageUrl.trim().length === 0) {
       setError("Add a screenshot or enter a live page URL before starting analysis.");
       return;
     }
@@ -142,7 +143,7 @@ export function UploadForm({
         );
       }
 
-      await savePendingAnalysisDraft(selectedFile, {
+      await savePendingAnalysisDraft(selectedFiles, {
         context: parsedContext.data,
         workspaceId: selectedWorkspace?.id ?? null,
         workspaceName: selectedWorkspace?.name ?? null,
@@ -168,7 +169,7 @@ export function UploadForm({
         <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--color-muted)]">
           Use a single screen where the main layout and primary actions are visible, or provide a
           page URL and let the app capture the page for you. Supported image types: PNG, JPG, and
-          WebP up to {MAX_UPLOAD_SIZE_MB}MB.
+          WebP up to {MAX_UPLOAD_SIZE_MB}MB. Multi-screen batches support up to {MAX_FLOW_SCREENSHOTS} screenshots.
         </p>
 
         {isSignedIn && workspaces.length > 0 ? (
@@ -309,8 +310,8 @@ export function UploadForm({
               : "border-[var(--color-line)] bg-white"
           }`}
         >
-          <p className="text-base font-medium">Drag a screenshot here</p>
-          <p className="mt-2 text-sm text-[var(--color-muted)]">or choose a file from your computer</p>
+          <p className="text-base font-medium">Drag screenshots here</p>
+          <p className="mt-2 text-sm text-[var(--color-muted)]">or choose one to {MAX_FLOW_SCREENSHOTS} files from your computer</p>
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
@@ -325,6 +326,7 @@ export function UploadForm({
             accept={ACCEPTED_IMAGE_TYPES.join(",")}
             className="sr-only"
             onChange={handleInputChange}
+            multiple
             type="file"
           />
         </div>
@@ -340,24 +342,51 @@ export function UploadForm({
         <p className="eyebrow">Preview</p>
         <h2 className="mt-4 text-2xl tracking-tight">Ready before you analyze.</h2>
 
-        {selectedFile && previewUrl ? (
+        {selectedFiles.length > 0 && previewUrls.length > 0 ? (
           <div className="mt-6 space-y-4">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] border border-[var(--color-line)] bg-white">
-              <Image
-                alt="Selected UI screenshot preview"
-                fill
-                className="object-cover"
-                sizes="(min-width: 1024px) 32rem, 100vw"
-                src={previewUrl}
-                unoptimized
-              />
+            <div className={`grid gap-3 ${previewUrls.length > 1 ? "sm:grid-cols-2" : ""}`}>
+              {previewUrls.map((previewUrl, index) => (
+                <div
+                  key={`${selectedFiles[index]?.name ?? previewUrl}-${index}`}
+                  className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] border border-[var(--color-line)] bg-white"
+                >
+                  <Image
+                    alt={`Selected UI screenshot preview ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(min-width: 1024px) 20rem, 100vw"
+                    src={previewUrl}
+                    unoptimized
+                  />
+                  {previewUrls.length > 1 ? (
+                    <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs text-[var(--color-foreground)] shadow-sm">
+                      Screen {index + 1}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
             </div>
 
             <div className="surface-muted p-4">
-              <p className="text-sm font-medium">{selectedFile.name}</p>
+              <p className="text-sm font-medium">
+                {selectedFiles.length === 1
+                  ? selectedFiles[0]?.name
+                  : `${selectedFiles.length} screenshots ready for one batch`}
+              </p>
               <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-                <span className="app-chip">{selectedFile.type}</span>
-                <span className="app-chip">{formatBytes(selectedFile.size)}</span>
+                {selectedFiles.length === 1 ? (
+                  <>
+                    <span className="app-chip">{selectedFiles[0]?.type}</span>
+                    <span className="app-chip">{formatBytes(selectedFiles[0]?.size ?? 0)}</span>
+                  </>
+                ) : (
+                  <span className="app-chip">
+                    {formatBytes(selectedFiles.reduce((sum, file) => sum + file.size, 0))} total
+                  </span>
+                )}
+                {selectedFiles.length > 1 ? (
+                  <span className="app-chip">Flow batch</span>
+                ) : null}
                 {selectedWorkspace ? <span className="app-chip">{selectedWorkspace.name}</span> : null}
               </div>
             </div>
@@ -389,11 +418,15 @@ export function UploadForm({
 
         <button
           type="button"
-          disabled={(!selectedFile && pageUrl.trim().length === 0) || isSubmitting}
+          disabled={(selectedFiles.length === 0 && pageUrl.trim().length === 0) || isSubmitting}
           onClick={handleSubmit}
           className="material-button material-button-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSubmitting ? "Preparing..." : "Analyze input"}
+          {isSubmitting
+            ? "Preparing..."
+            : selectedFiles.length > 1
+              ? "Analyze flow batch"
+              : "Analyze input"}
         </button>
       </aside>
     </div>
