@@ -3,10 +3,19 @@
 import { useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
 
+function parseTags(value: string) {
+  return [...new Set(value
+    .split(",")
+    .map((tag) => tag.trim().toLowerCase())
+    .filter(Boolean))].slice(0, 8);
+}
+
 export function WorkspaceCreateForm() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [accentColor, setAccentColor] = useState("#111111");
+  const [tags, setTags] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,8 +29,10 @@ export function WorkspaceCreateForm() {
     try {
       const response = await fetch("/api/workspaces", {
         body: JSON.stringify({
+          accentColor,
           description,
           name,
+          tags: parseTags(tags),
         }),
         headers: {
           "Content-Type": "application/json",
@@ -39,6 +50,8 @@ export function WorkspaceCreateForm() {
 
       setName("");
       setDescription("");
+      setAccentColor("#111111");
+      setTags("");
       setSuccessMessage("Workspace created.");
       startTransition(() => {
         router.refresh();
@@ -85,6 +98,29 @@ export function WorkspaceCreateForm() {
             className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
           />
         </label>
+
+        <div className="grid gap-4 lg:grid-cols-[0.7fr_1.3fr]">
+          <label className="block space-y-2">
+            <span className="text-sm text-[var(--color-muted)]">Accent color</span>
+            <input
+              type="color"
+              value={accentColor}
+              onChange={(event) => setAccentColor(event.target.value)}
+              className="h-12 w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-2 py-2"
+            />
+          </label>
+
+          <label className="block space-y-2">
+            <span className="text-sm text-[var(--color-muted)]">Tags</span>
+            <input
+              type="text"
+              value={tags}
+              onChange={(event) => setTags(event.target.value)}
+              placeholder="marketing, onboarding, mobile"
+              className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+            />
+          </label>
+        </div>
       </div>
 
       {successMessage ? (

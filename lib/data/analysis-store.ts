@@ -15,6 +15,7 @@ type PersistAnalysisInput = {
 };
 
 type AnalysisDbRow = {
+  auth_user_id: string | null;
   id: string;
   created_at: string;
   main_finding: string;
@@ -22,12 +23,14 @@ type AnalysisDbRow = {
   product_type: string;
   report: AnalysisReport | string;
   screenshot_key: string | null;
+  share_enabled: boolean;
+  share_token: string | null;
   source: AnalysisSource;
-  auth_user_id: string | null;
   workspace_id: string | null;
 };
 
 export type StoredAnalysisRow = {
+  auth_user_id: string | null;
   id: string;
   created_at: string;
   main_finding: string;
@@ -35,13 +38,16 @@ export type StoredAnalysisRow = {
   product_type: string;
   report: AnalysisReport;
   screenshot_url: string | null;
+  share_enabled: boolean;
+  share_token: string | null;
   source: AnalysisSource;
-  auth_user_id: string | null;
   workspace_id: string | null;
 };
 
 export type PersistedAnalysisRecord = {
   report: AnalysisReport;
+  shareEnabled: boolean;
+  shareToken: string | null;
   screenshotUrl: string | null;
   source: AnalysisSource;
 };
@@ -66,6 +72,8 @@ function toStoredAnalysisRow(row: AnalysisDbRow): StoredAnalysisRow {
     product_type: row.product_type,
     report: parseStoredReport(row.report),
     screenshot_url: row.screenshot_key ? `/api/screenshots/${row.id}` : null,
+    share_enabled: row.share_enabled,
+    share_token: row.share_token,
     source: row.source,
     workspace_id: row.workspace_id,
   };
@@ -112,6 +120,8 @@ export async function persistAnalysis({
       overall_score,
       main_finding,
       screenshot_key,
+      share_enabled,
+      share_token,
       report,
       created_at
     )
@@ -124,6 +134,8 @@ export async function persistAnalysis({
       ${report.summary.overallScore},
       ${report.summary.mainFinding},
       ${persistedScreenshotKey},
+      false,
+      null,
       ${JSON.stringify(report)}::jsonb,
       ${report.createdAt}::timestamptz
     )
@@ -173,6 +185,8 @@ export async function getPersistedAnalysisById(
       product_type,
       report,
       screenshot_key,
+      share_enabled,
+      share_token,
       source,
       auth_user_id,
       workspace_id
@@ -188,6 +202,8 @@ export async function getPersistedAnalysisById(
 
   return {
     report: parseStoredReport(row.report),
+    shareEnabled: row.share_enabled,
+    shareToken: row.share_token,
     screenshotUrl: row.screenshot_key ? `/api/screenshots/${row.id}` : null,
     source: row.source,
   };
@@ -221,6 +237,28 @@ export async function getStoredScreenshotKeyForAnalysis(analysisId: string) {
   return row?.screenshot_key ?? null;
 }
 
+export async function getStoredScreenshotKeyForSharedToken(shareToken: string) {
+  if (!hasDatabaseConfig()) {
+    return null;
+  }
+
+  const sql = getDb();
+
+  if (!sql) {
+    return null;
+  }
+
+  const [row] = (await sql`
+    select screenshot_key
+    from analyses
+    where share_token = ${shareToken}
+      and share_enabled = true
+    limit 1
+  `) as Array<{ screenshot_key: string | null }>;
+
+  return row?.screenshot_key ?? null;
+}
+
 export async function listPersistedAnalyses(workspaceId?: string | null) {
   if (!hasDatabaseConfig() || !hasNeonAuthConfig()) {
     return { analyses: null, user: null };
@@ -248,6 +286,8 @@ export async function listPersistedAnalyses(workspaceId?: string | null) {
           product_type,
           report,
           screenshot_key,
+          share_enabled,
+          share_token,
           source,
           auth_user_id,
           workspace_id
@@ -255,7 +295,7 @@ export async function listPersistedAnalyses(workspaceId?: string | null) {
         where auth_user_id = ${user.id}
           and workspace_id = ${workspaceId}::uuid
         order by created_at desc
-        limit 24
+        limit 96
       `) as AnalysisDbRow[])
     : ((await sql`
         select
@@ -266,17 +306,197 @@ export async function listPersistedAnalyses(workspaceId?: string | null) {
           product_type,
           report,
           screenshot_key,
+          share_enabled,
+          share_token,
           source,
           auth_user_id,
           workspace_id
         from analyses
         where auth_user_id = ${user.id}
         order by created_at desc
-        limit 24
+        limit 96
       `) as AnalysisDbRow[]);
 
   return {
     analyses: analyses.map(toStoredAnalysisRow),
     user,
+  };
+}
+
+export async function updatePersistedAnalysisReport(
+  analysisId: string,
+  report: AnalysisReport,
+) {
+  if (!hasDatabaseConfig() || !hasNeonAuthConfig()) {
+    throw new Error("Database persistence is not configured.");
+  }
+
+  const sql = getDb();
+
+  if (!sql) {
+    throw new Error("Database env is missing.");
+  }
+
+  const { user } = await getCurrentAuthSession();
+
+  if (!user) {
+    throw new Error("Sign in before updating report triage.");
+  }
+
+  const [row] = (await sql`
+    update analyses
+    set
+      report = ${JSON.stringify(report)}::jsonb,
+      product_type = ${report.summary.productType},
+      overall_score = ${report.summary.overallScore},
+      main_finding = ${report.summary.mainFinding}
+    where id = ${analysisId}::uuid
+      and auth_user_id = ${user.id}
+    returning
+      id,
+      created_at,
+      main_finding,
+      overall_score,
+      product_type,
+      report,
+      screenshot_key,
+      share_enabled,
+      share_token,
+      source,
+      auth_user_id,
+      workspace_id
+  `) as AnalysisDbRow[];
+
+  if (!row) {
+    throw new Error("Unable to update the stored analysis.");
+  }
+
+  return {
+    report: parseStoredReport(row.report),
+    shareEnabled: row.share_enabled,
+    shareToken: row.share_token,
+    screenshotUrl: row.screenshot_key ? `/api/screenshots/${row.id}` : null,
+    source: row.source,
+  };
+}
+
+export async function setAnalysisShareEnabled(
+  analysisId: string,
+  enabled: boolean,
+) {
+  if (!hasDatabaseConfig() || !hasNeonAuthConfig()) {
+    throw new Error("Database persistence is not configured.");
+  }
+
+  const sql = getDb();
+
+  if (!sql) {
+    throw new Error("Database env is missing.");
+  }
+
+  const { user } = await getCurrentAuthSession();
+
+  if (!user) {
+    throw new Error("Sign in before sharing a report.");
+  }
+
+  const shareToken = enabled ? crypto.randomUUID() : null;
+  const [row] = enabled
+    ? ((await sql`
+        update analyses
+        set
+          share_enabled = true,
+          share_token = coalesce(share_token, ${shareToken})
+        where id = ${analysisId}::uuid
+          and auth_user_id = ${user.id}
+        returning
+          id,
+          created_at,
+          main_finding,
+          overall_score,
+          product_type,
+          report,
+          screenshot_key,
+          share_enabled,
+          share_token,
+          source,
+          auth_user_id,
+          workspace_id
+      `) as AnalysisDbRow[])
+    : ((await sql`
+        update analyses
+        set
+          share_enabled = false,
+          share_token = null
+        where id = ${analysisId}::uuid
+          and auth_user_id = ${user.id}
+        returning
+          id,
+          created_at,
+          main_finding,
+          overall_score,
+          product_type,
+          report,
+          screenshot_key,
+          share_enabled,
+          share_token,
+          source,
+          auth_user_id,
+          workspace_id
+      `) as AnalysisDbRow[]);
+
+  if (!row) {
+    throw new Error("Unable to update share state for this report.");
+  }
+
+  return {
+    report: parseStoredReport(row.report),
+    shareEnabled: row.share_enabled,
+    shareToken: row.share_token,
+    screenshotUrl: row.screenshot_key ? `/api/screenshots/${row.id}` : null,
+    source: row.source,
+  };
+}
+
+export async function getSharedAnalysisByToken(shareToken: string) {
+  if (!hasDatabaseConfig()) {
+    return null;
+  }
+
+  const sql = getDb();
+
+  if (!sql) {
+    return null;
+  }
+
+  const [row] = (await sql`
+    select
+      id,
+      created_at,
+      main_finding,
+      overall_score,
+      product_type,
+      report,
+      screenshot_key,
+      share_enabled,
+      share_token,
+      source,
+      auth_user_id,
+      workspace_id
+    from analyses
+    where share_token = ${shareToken}
+      and share_enabled = true
+    limit 1
+  `) as AnalysisDbRow[];
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    analysisId: row.id,
+    report: parseStoredReport(row.report),
+    screenshotUrl: row.screenshot_key ? `/api/shared-screenshots/${shareToken}` : null,
+    source: row.source,
   };
 }

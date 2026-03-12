@@ -16,7 +16,7 @@ export default async function HistoryPage({
 
   const [{ analyses, user }, { workspaces }] = await Promise.all([
     listPersistedAnalyses(selectedWorkspaceId),
-    listWorkspaces(),
+    listWorkspaces({ includeArchived: true }),
   ]);
 
   const persistenceConfigured = hasDatabaseConfig() && hasNeonAuthConfig();

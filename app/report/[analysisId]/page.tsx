@@ -17,6 +17,11 @@ export default async function ReportPage({
       analysisId={analysisId}
       initialReport={initialRecord?.report ?? null}
       initialScreenshotUrl={initialRecord?.screenshotUrl ?? null}
+      initialShareUrl={
+        initialRecord?.shareEnabled && initialRecord.shareToken
+          ? `/share/${initialRecord.shareToken}`
+          : null
+      }
       initialSource={initialRecord?.source ?? "mock"}
       viewerUserId={user?.id ?? null}
     />

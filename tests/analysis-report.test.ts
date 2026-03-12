@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   analysisReportSchema,
   createMockAnalysisReport,
+  updateIssueTriage,
 } from "../lib/analysis-report";
 
 describe("analysis report schema", () => {
@@ -61,6 +62,25 @@ describe("analysis report schema", () => {
       evidence: [],
       heuristics: [],
       implementationComplexity: "medium",
+      triageNote: null,
+      triageStatus: "open",
+      triageUpdatedAt: null,
     });
+  });
+
+  it("updates issue triage without breaking the report contract", () => {
+    const report = createMockAnalysisReport();
+    const nextReport = updateIssueTriage(report, {
+      issueId: report.sections[0]!.issues[0]!.id,
+      triageNote: "CTA now matches the revised visual hierarchy.",
+      triageStatus: "fixed",
+    });
+
+    expect(analysisReportSchema.parse(nextReport)).toEqual(nextReport);
+    expect(nextReport.sections[0]?.issues[0]).toMatchObject({
+      triageNote: "CTA now matches the revised visual hierarchy.",
+      triageStatus: "fixed",
+    });
+    expect(nextReport.sections[0]?.issues[0]?.triageUpdatedAt).toBeTruthy();
   });
 });
