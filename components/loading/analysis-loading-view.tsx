@@ -9,7 +9,9 @@ import { getAnalysisModeLabel } from "@/lib/analysis-context";
 import {
   clearPendingAnalysisDraft,
   dataUrlToFile,
+  getPendingAnalysisScreenshots,
   loadPendingAnalysisDraft,
+  pendingScreenshotToFile,
 } from "@/lib/analysis-draft";
 import {
   analyzeResponseSchema,
@@ -33,6 +35,7 @@ export function AnalysisLoadingView({
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [attemptKey, setAttemptKey] = useState(0);
   const [draft, setDraft] = useState<ReturnType<typeof loadPendingAnalysisDraft>>(null);
+  const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,6 +54,7 @@ export function AnalysisLoadingView({
     }
 
     const currentDraft = draft;
+    const draftScreenshots = getPendingAnalysisScreenshots(currentDraft);
     const stepInterval = window.setInterval(() => {
       setActiveStepIndex((currentIndex) =>
         currentIndex >= loadingSteps.length - 1 ? currentIndex : currentIndex + 1,
@@ -61,63 +65,92 @@ export function AnalysisLoadingView({
 
     async function analyzeDraft() {
       try {
-        const file = await dataUrlToFile(currentDraft);
-        const formData = new FormData();
-        if (file) {
-          formData.append("file", file);
-        }
-        if (currentDraft.workspaceId) {
-          formData.append("workspaceId", currentDraft.workspaceId);
-        }
-        if (currentDraft.context) {
-          formData.append("analysisMode", currentDraft.context.analysisMode);
-          if (currentDraft.context.pageUrl) {
-            formData.append("pageUrl", currentDraft.context.pageUrl);
+        const selectedAnalysisIds: string[] = [];
+        const screenshotsToAnalyze =
+          draftScreenshots.length > 0
+            ? draftScreenshots
+            : [null];
+
+        for (const [screenIndex, screenshot] of screenshotsToAnalyze.entries()) {
+          setCurrentScreenIndex(screenIndex);
+          const file = screenshot
+            ? await pendingScreenshotToFile(screenshot)
+            : await dataUrlToFile(currentDraft);
+          const formData = new FormData();
+
+          if (file) {
+            formData.append("file", file);
           }
-          if (currentDraft.context.repoUrl) {
-            formData.append("repoUrl", currentDraft.context.repoUrl);
+          if (currentDraft.workspaceId) {
+            formData.append("workspaceId", currentDraft.workspaceId);
           }
-          if (currentDraft.context.productGoal) {
-            formData.append("productGoal", currentDraft.context.productGoal);
+          if (currentDraft.context) {
+            formData.append("analysisMode", currentDraft.context.analysisMode);
+            if (currentDraft.context.pageUrl) {
+              formData.append("pageUrl", currentDraft.context.pageUrl);
+            }
+            if (currentDraft.context.repoUrl) {
+              formData.append("repoUrl", currentDraft.context.repoUrl);
+            }
+            if (currentDraft.context.productGoal) {
+              formData.append("productGoal", currentDraft.context.productGoal);
+            }
+            if (currentDraft.context.targetAudience) {
+              formData.append("targetAudience", currentDraft.context.targetAudience);
+            }
+            if (currentDraft.context.techStack) {
+              formData.append("techStack", currentDraft.context.techStack);
+            }
+            if (currentDraft.context.notes) {
+              const notesSuffix =
+                draftScreenshots.length > 1
+                  ? `\nFlow screen ${screenIndex + 1} of ${draftScreenshots.length}: ${screenshot?.name ?? `screen-${screenIndex + 1}`}`
+                  : "";
+              formData.append("notes", `${currentDraft.context.notes}${notesSuffix}`);
+            } else if (draftScreenshots.length > 1) {
+              formData.append(
+                "notes",
+                `Flow screen ${screenIndex + 1} of ${draftScreenshots.length}: ${screenshot?.name ?? `screen-${screenIndex + 1}`}`,
+              );
+            }
           }
-          if (currentDraft.context.targetAudience) {
-            formData.append("targetAudience", currentDraft.context.targetAudience);
+
+          const response = await fetch("/api/analyze", {
+            body: formData,
+            method: "POST",
+            signal: controller.signal,
+          });
+
+          if (!response.ok) {
+            const errorPayload = (await response.json().catch(() => null)) as {
+              error?: string;
+            } | null;
+
+            throw new Error(
+              typeof errorPayload?.error === "string"
+                ? errorPayload.error
+                : "Analysis failed. Try uploading the screenshot again.",
+            );
           }
-          if (currentDraft.context.techStack) {
-            formData.append("techStack", currentDraft.context.techStack);
-          }
-          if (currentDraft.context.notes) {
-            formData.append("notes", currentDraft.context.notes);
-          }
+
+          const payload = analyzeResponseSchema.parse(await response.json());
+          saveLatestAnalysisResult(payload, {
+            screenshotDataUrl: payload.screenshotDataUrl ?? screenshot?.dataUrl ?? currentDraft.dataUrl,
+            viewerUserId,
+            workspaceId: currentDraft.workspaceId ?? null,
+            workspaceName: currentDraft.workspaceName ?? null,
+          });
+          selectedAnalysisIds.push(payload.analysis.id);
         }
 
-        const response = await fetch("/api/analyze", {
-          body: formData,
-          method: "POST",
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          const errorPayload = (await response.json().catch(() => null)) as {
-            error?: string;
-          } | null;
-
-          throw new Error(
-            typeof errorPayload?.error === "string"
-              ? errorPayload.error
-              : "Analysis failed. Try uploading the screenshot again.",
-          );
-        }
-
-        const payload = analyzeResponseSchema.parse(await response.json());
-        saveLatestAnalysisResult(payload, {
-          screenshotDataUrl: payload.screenshotDataUrl ?? currentDraft.dataUrl,
-          viewerUserId,
-          workspaceId: currentDraft.workspaceId ?? null,
-          workspaceName: currentDraft.workspaceName ?? null,
-        });
         clearPendingAnalysisDraft();
-        router.push(`/report/${payload.analysis.id}`);
+
+        if (selectedAnalysisIds.length > 1) {
+          router.push(`/history?selected=${selectedAnalysisIds.join(",")}`);
+          return;
+        }
+
+        router.push(`/report/${selectedAnalysisIds[0]}`);
       } catch (analyzeError) {
         if (controller.signal.aborted) {
           return;
@@ -138,6 +171,9 @@ export function AnalysisLoadingView({
       controller.abort();
     };
   }, [attemptKey, draft, router, viewerUserId]);
+
+  const draftScreenshots = draft ? getPendingAnalysisScreenshots(draft) : [];
+  const currentScreenshot = draftScreenshots[currentScreenIndex] ?? draftScreenshots[0] ?? null;
 
   if (!draft) {
     return (
@@ -160,9 +196,17 @@ export function AnalysisLoadingView({
         <p className="eyebrow">Analyzing</p>
         <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">Review in progress.</h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
-          The app is processing your screenshot now. When the report opens, it will clearly show
-          whether Ollama produced the result or fallback output was used.
+          The app is processing your input now. When the report opens, it will clearly show whether
+          the configured provider produced the result or fallback output was used.
         </p>
+        {draftScreenshots.length > 1 ? (
+          <div className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
+            <span className="app-chip">Flow batch</span>
+            <span className="app-chip">
+              Screen {Math.min(currentScreenIndex + 1, draftScreenshots.length)} of {draftScreenshots.length}
+            </span>
+          </div>
+        ) : null}
 
         {error ? (
           <div className="mt-6 space-y-4 rounded-2xl bg-[var(--color-error-soft)] px-4 py-4 text-sm text-[var(--color-error)]">
@@ -172,6 +216,7 @@ export function AnalysisLoadingView({
                 type="button"
                 onClick={() => {
                   setActiveStepIndex(0);
+                  setCurrentScreenIndex(0);
                   setError(null);
                   setAttemptKey((currentAttemptKey) => currentAttemptKey + 1);
                 }}
@@ -225,7 +270,7 @@ export function AnalysisLoadingView({
           </h2>
         </div>
 
-        {draft.dataUrl ? (
+        {currentScreenshot ? (
           <>
             <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-[var(--color-line)] bg-white">
               <Image
@@ -233,16 +278,16 @@ export function AnalysisLoadingView({
                 fill
                 className="object-cover"
                 sizes="(min-width: 1024px) 32rem, 100vw"
-                src={draft.dataUrl}
+                src={currentScreenshot.dataUrl}
                 unoptimized
               />
             </div>
 
             <div className="surface-muted p-4">
-              <p className="text-sm">{draft.name}</p>
+              <p className="text-sm">{currentScreenshot.name}</p>
               <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-                {draft.type ? <span className="app-chip">{draft.type}</span> : null}
-                {draft.size ? <span className="app-chip">{formatBytes(draft.size)}</span> : null}
+                <span className="app-chip">{currentScreenshot.type}</span>
+                <span className="app-chip">{formatBytes(currentScreenshot.size)}</span>
               </div>
             </div>
           </>
@@ -291,6 +336,12 @@ export function AnalysisLoadingView({
             {draft.context.productGoal ? (
               <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
                 Goal: {draft.context.productGoal}
+              </p>
+            ) : null}
+            {draftScreenshots.length > 1 ? (
+              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                This run will analyze {draftScreenshots.length} screenshots one by one, then open
+                history with the full batch selected for compare and flow review.
               </p>
             ) : null}
           </div>

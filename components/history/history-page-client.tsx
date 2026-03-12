@@ -155,6 +155,7 @@ function HistoryCard({
 
 export function HistoryPageClient({
   initialAnalyses,
+  initialSelectedIds,
   isPersistenceConfigured,
   isSignedIn,
   selectedWorkspaceId,
@@ -163,6 +164,7 @@ export function HistoryPageClient({
   workspaces,
 }: {
   initialAnalyses: PersistedAnalysisItem[];
+  initialSelectedIds: string[];
   isPersistenceConfigured: boolean;
   isSignedIn: boolean;
   selectedWorkspaceId: string | null;
@@ -174,8 +176,9 @@ export function HistoryPageClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [sourceFilter, setSourceFilter] = useState<AnalysisSource | "all">("all");
   const [scoreFilter, setScoreFilter] = useState<"all" | "high" | "mid" | "low">("all");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(initialSelectedIds);
   const [selectionMessage, setSelectionMessage] = useState<string | null>(null);
+  const [showBatchNotice, setShowBatchNotice] = useState(initialSelectedIds.length > 1);
 
   useEffect(() => {
     const frameId = window.requestAnimationFrame(() => {
@@ -186,6 +189,11 @@ export function HistoryPageClient({
       window.cancelAnimationFrame(frameId);
     };
   }, [viewerUserId]);
+
+  useEffect(() => {
+    setSelectedIds(initialSelectedIds);
+    setShowBatchNotice(initialSelectedIds.length > 1);
+  }, [initialSelectedIds]);
 
   const workspaceMap = new Map(workspaces.map((workspace) => [workspace.id, workspace]));
   const persistedIds = new Set(initialAnalyses.map((analysis) => analysis.id));
@@ -252,6 +260,7 @@ export function HistoryPageClient({
 
   function toggleSelectedId(entryId: string) {
     setSelectionMessage(null);
+    setShowBatchNotice(false);
     setSelectedIds((currentSelectedIds) => {
       if (currentSelectedIds.includes(entryId)) {
         return currentSelectedIds.filter((currentId) => currentId !== entryId);
@@ -384,7 +393,10 @@ export function HistoryPageClient({
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => setSelectedIds([])}
+              onClick={() => {
+                setSelectedIds([]);
+                setShowBatchNotice(false);
+              }}
               className="material-button material-button-secondary"
             >
               Clear selection
@@ -396,6 +408,12 @@ export function HistoryPageClient({
       {selectionMessage ? (
         <div className="surface-card px-5 py-4 text-sm text-[var(--color-muted)]">
           {selectionMessage}
+        </div>
+      ) : null}
+
+      {!selectionMessage && showBatchNotice ? (
+        <div className="surface-card px-5 py-4 text-sm text-[var(--color-muted)]">
+          Batch upload complete. The new reports are preselected below for compare and flow review.
         </div>
       ) : null}
 
