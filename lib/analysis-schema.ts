@@ -16,6 +16,7 @@ export const analysisReportContentJsonSchema = {
       additionalProperties: false,
       required: [
         "summary",
+        "estimatedScope",
         "frontendChanges",
         "backendChanges",
         "filesToInspect",
@@ -24,6 +25,10 @@ export const analysisReportContentJsonSchema = {
       ],
       properties: {
         summary: { type: "string" },
+        estimatedScope: {
+          type: "string",
+          enum: ["small", "medium", "large"],
+        },
         frontendChanges: {
           type: "array",
           items: { type: "string" },
@@ -92,6 +97,10 @@ export const analysisReportContentJsonSchema = {
                 "description",
                 "recommendation",
                 "severity",
+                "confidence",
+                "evidence",
+                "heuristics",
+                "implementationComplexity",
                 "highlights",
               ],
               properties: {
@@ -102,6 +111,19 @@ export const analysisReportContentJsonSchema = {
                 severity: {
                   type: "string",
                   enum: ["low", "medium", "high"],
+                },
+                confidence: { type: "number" },
+                evidence: {
+                  type: "array",
+                  items: { type: "string" },
+                },
+                heuristics: {
+                  type: "array",
+                  items: { type: "string" },
+                },
+                implementationComplexity: {
+                  type: "string",
+                  enum: ["small", "medium", "large"],
                 },
                 highlights: {
                   type: "array",
@@ -137,6 +159,7 @@ export const analysisReportContentJsonSchema = {
           "summary",
           "rationale",
           "priority",
+          "implementationComplexity",
           "actions",
           "expectedImpact",
         ],
@@ -148,6 +171,10 @@ export const analysisReportContentJsonSchema = {
           priority: {
             type: "string",
             enum: ["now", "next", "later"],
+          },
+          implementationComplexity: {
+            type: "string",
+            enum: ["small", "medium", "large"],
           },
           actions: {
             type: "array",
@@ -200,6 +227,10 @@ function normalizeSeverity(value: unknown) {
   return value === "low" || value === "medium" || value === "high" ? value : "medium";
 }
 
+function normalizeImplementationComplexity(value: unknown) {
+  return value === "small" || value === "medium" || value === "large" ? value : "medium";
+}
+
 function normalizeHighlight(
   value: unknown,
   issueId: string,
@@ -243,8 +274,22 @@ function normalizeIssue(value: unknown, sectionId: string, issueIndex: number) {
 
   return {
     ...value,
+    confidence: clamp(toFiniteNumber(value.confidence) ?? 0.72, 0, 1),
+    evidence: Array.isArray(value.evidence)
+      ? value.evidence.filter(
+          (item): item is string => typeof item === "string" && item.trim().length > 0,
+        )
+      : [],
     highlights: normalizeHighlights(value.highlights, issueId),
+    heuristics: Array.isArray(value.heuristics)
+      ? value.heuristics.filter(
+          (item): item is string => typeof item === "string" && item.trim().length > 0,
+        )
+      : [],
     id: issueId,
+    implementationComplexity: normalizeImplementationComplexity(
+      value.implementationComplexity,
+    ),
     severity: normalizeSeverity(value.severity),
   };
 }
@@ -295,6 +340,9 @@ function normalizeRedesignSuggestion(value: unknown, suggestionIndex: number) {
     ...value,
     actions,
     id: normalizeString(value.id, `redesign-${suggestionIndex + 1}`),
+    implementationComplexity: normalizeImplementationComplexity(
+      value.implementationComplexity,
+    ),
     priority:
       value.priority === "now" || value.priority === "next" || value.priority === "later"
         ? value.priority
@@ -324,6 +372,9 @@ export function normalizeAnalysisContent(value: unknown) {
                   typeof item === "string" && item.trim().length > 0,
               )
             : value.implementationPlan.backendChanges,
+          estimatedScope: normalizeImplementationComplexity(
+            value.implementationPlan.estimatedScope,
+          ),
           filesToInspect: Array.isArray(value.implementationPlan.filesToInspect)
             ? value.implementationPlan.filesToInspect.filter(
                 (item): item is string =>

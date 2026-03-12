@@ -55,5 +55,12 @@ describe("analysis report schema", () => {
     expect(parsed.context.analysisMode).toBe("ux-review");
     expect(parsed.redesignSuggestions).toEqual([]);
     expect(parsed.implementationPlan.summary).toBe("No implementation plan is available yet.");
+    expect(parsed.implementationPlan.estimatedScope).toBe("medium");
+    expect(parsed.sections[0]?.issues[0]).toMatchObject({
+      confidence: 0.72,
+      evidence: [],
+      heuristics: [],
+      implementationComplexity: "medium",
+    });
   });
 });

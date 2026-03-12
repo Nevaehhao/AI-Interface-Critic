@@ -2,6 +2,26 @@ import { getAnalysisModeLabel } from "@/lib/analysis-context";
 import type { AnalysisReport } from "@/lib/analysis-report";
 import type { AnalysisSource } from "@/lib/analysis-result";
 
+function formatAnalysisSource(source: AnalysisSource) {
+  if (source === "ollama") {
+    return "Ollama";
+  }
+
+  if (source === "openai-compatible") {
+    return "OpenAI-compatible API";
+  }
+
+  if (source === "anthropic") {
+    return "Anthropic";
+  }
+
+  if (source === "gemini") {
+    return "Gemini";
+  }
+
+  return "Fallback";
+}
+
 function formatList(title: string, items: string[]) {
   if (items.length === 0) {
     return `${title}\n- None`;
@@ -31,7 +51,7 @@ export function buildBuilderBrief({
 
   return [
     `Analysis ID: ${analysisId}`,
-    `Source: ${source}`,
+    `Source: ${formatAnalysisSource(source)}`,
     "",
     "Summary",
     `- Main finding: ${report.summary.mainFinding}`,
@@ -44,6 +64,7 @@ export function buildBuilderBrief({
     "",
     "Implementation plan",
     report.implementationPlan.summary,
+    `Estimated scope: ${report.implementationPlan.estimatedScope}`,
     "",
     formatList("Frontend changes", report.implementationPlan.frontendChanges),
     "",

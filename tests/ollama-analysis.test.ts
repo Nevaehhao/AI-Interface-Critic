@@ -20,6 +20,7 @@ describe("ollama analysis normalization", () => {
               ...suggestion,
               actions: [suggestion.actions[0], "", 123, suggestion.actions[1]],
               id: "",
+              implementationComplexity: "massive",
               priority: "soon",
             }
           : suggestion,
@@ -29,6 +30,11 @@ describe("ollama analysis normalization", () => {
         id: sectionIndex === 0 ? "" : section.id,
         issues: section.issues.map((issue, issueIndex) => ({
           ...issue,
+          confidence: sectionIndex === 0 && issueIndex === 0 ? 1.7 : issue.confidence,
+          evidence:
+            sectionIndex === 0 && issueIndex === 0
+              ? [issue.evidence[0], "", 123]
+              : issue.evidence,
           highlights:
             sectionIndex === 0 && issueIndex === 0
               ? [
@@ -43,6 +49,12 @@ describe("ollama analysis normalization", () => {
                   },
                 ]
               : issue.highlights,
+          heuristics:
+            sectionIndex === 0 && issueIndex === 0
+              ? [issue.heuristics[0], "", 456]
+              : issue.heuristics,
+          implementationComplexity:
+            sectionIndex === 0 && issueIndex === 0 ? "massive" : issue.implementationComplexity,
           severity: sectionIndex === 0 && issueIndex === 0 ? "urgent" : issue.severity,
         })),
         score: 130,
@@ -64,6 +76,8 @@ describe("ollama analysis normalization", () => {
     expect(firstSection?.id).toBe("section-1");
     expect(firstSection?.score).toBe(100);
     expect(firstIssue?.severity).toBe("medium");
+    expect(firstIssue?.confidence).toBe(1);
+    expect(firstIssue?.evidence).toEqual([report.sections[0]?.issues[0]?.evidence[0]]);
     expect(firstHighlight).toMatchObject({
       height: 2,
       id: "vh-primary-action-highlight-1",
@@ -72,9 +86,12 @@ describe("ollama analysis normalization", () => {
       x: 96,
       y: 98,
     });
+    expect(firstIssue?.heuristics).toEqual([report.sections[0]?.issues[0]?.heuristics[0]]);
+    expect(firstIssue?.implementationComplexity).toBe("medium");
     expect(firstSuggestion).toMatchObject({
       actions: [report.redesignSuggestions[0]?.actions[0], report.redesignSuggestions[0]?.actions[1]],
       id: "redesign-1",
+      implementationComplexity: "medium",
       priority: "next",
     });
   });

@@ -14,4 +14,15 @@ describe("analysis result contract", () => {
     expect(response.warning).toBeNull();
     expect(response.analysis.summary.overallScore).toBeGreaterThan(0);
   });
+
+  it("accepts hosted providers in the response contract", () => {
+    const response = createMockAnalyzeResponse();
+    response.source = "anthropic";
+
+    expect(analyzeResponseSchema.parse(response).source).toBe("anthropic");
+
+    response.source = "gemini";
+
+    expect(analyzeResponseSchema.parse(response).source).toBe("gemini");
+  });
 });

@@ -8,7 +8,13 @@ import {
 
 export const STORED_ANALYSIS_KEY = "ai-interface-critic.latest-analysis";
 export const STORED_ANALYSIS_HISTORY_KEY = "ai-interface-critic.analysis-history";
-export const ANALYSIS_SOURCE_VALUES = ["mock", "ollama", "openai-compatible"] as const;
+export const ANALYSIS_SOURCE_VALUES = [
+  "mock",
+  "ollama",
+  "openai-compatible",
+  "anthropic",
+  "gemini",
+] as const;
 export type AnalysisSource = (typeof ANALYSIS_SOURCE_VALUES)[number];
 const MAX_STORED_ANALYSES = 24;
 

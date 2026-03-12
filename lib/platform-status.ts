@@ -51,6 +51,51 @@ async function checkAnalysisProvider() {
       };
     }
 
+    if (providerConfig.provider === "anthropic") {
+      const response = await fetch(`${normalizeBaseUrl(providerConfig.baseUrl)}/models`, {
+        cache: "no-store",
+        headers: {
+          "anthropic-version": providerConfig.anthropicVersion,
+          "x-api-key": providerConfig.apiKey,
+        },
+        signal: AbortSignal.timeout(2500),
+      });
+
+      return {
+        detail: response.ok
+          ? `Connected to ${providerConfig.model} via Anthropic.`
+          : `Anthropic responded with ${response.status}.`,
+        id: "analysis-provider",
+        label: "Analysis provider",
+        nextAction: response.ok
+          ? "No action required."
+          : "Verify AI_API_KEY, AI_MODEL, AI_BASE_URL, and that the Anthropic API is reachable.",
+        status: response.ok ? ("ready" as const) : ("offline" as const),
+      };
+    }
+
+    if (providerConfig.provider === "gemini") {
+      const response = await fetch(
+        `${normalizeBaseUrl(providerConfig.baseUrl)}/models?key=${encodeURIComponent(providerConfig.apiKey)}`,
+        {
+          cache: "no-store",
+          signal: AbortSignal.timeout(2500),
+        },
+      );
+
+      return {
+        detail: response.ok
+          ? `Connected to ${providerConfig.model} via Gemini.`
+          : `Gemini responded with ${response.status}.`,
+        id: "analysis-provider",
+        label: "Analysis provider",
+        nextAction: response.ok
+          ? "No action required."
+          : "Verify AI_API_KEY, AI_MODEL, AI_BASE_URL, and that the Gemini API is reachable.",
+        status: response.ok ? ("ready" as const) : ("offline" as const),
+      };
+    }
+
     const tagsUrl = `${normalizeBaseUrl(providerConfig.baseUrl).replace(/\/api$/, "")}/api/tags`;
     const response = await fetch(tagsUrl, {
       cache: "no-store",

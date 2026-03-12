@@ -1,5 +1,7 @@
 import type { AnalysisContext } from "@/lib/analysis-context";
 import type { AnalysisReport } from "@/lib/analysis-report";
+import { analyzeScreenshotWithAnthropic } from "@/lib/anthropic-analysis";
+import { analyzeScreenshotWithGemini } from "@/lib/gemini-analysis";
 import {
   resolveAnalysisProvider,
   type AnalysisProvider,
@@ -21,6 +23,20 @@ export async function analyzeScreenshot(
   if (providerConfig.provider === "openai-compatible") {
     return {
       analysis: await analyzeScreenshotWithOpenAiCompatibleApi(file, context),
+      provider: providerConfig.provider,
+    };
+  }
+
+  if (providerConfig.provider === "anthropic") {
+    return {
+      analysis: await analyzeScreenshotWithAnthropic(file, context),
+      provider: providerConfig.provider,
+    };
+  }
+
+  if (providerConfig.provider === "gemini") {
+    return {
+      analysis: await analyzeScreenshotWithGemini(file, context),
       provider: providerConfig.provider,
     };
   }
