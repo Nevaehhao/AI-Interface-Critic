@@ -20,6 +20,7 @@ const MAX_STORED_ANALYSES = 24;
 
 export const analyzeResponseSchema = z.object({
   analysis: analysisReportSchema,
+  screenshotDataUrl: z.string().nullable().optional(),
   source: z.enum(ANALYSIS_SOURCE_VALUES),
   warning: z.string().nullable().optional(),
 });
@@ -30,7 +31,6 @@ const storedLatestAnalysisSchema = analyzeResponseSchema.extend({
 });
 
 export const storedAnalysisHistoryEntrySchema = analyzeResponseSchema.extend({
-  screenshotDataUrl: z.string().nullable().optional(),
   viewerUserId: z.string().nullable().optional(),
   workspaceId: z.string().nullable().optional(),
   workspaceName: z.string().nullable().optional(),
@@ -43,6 +43,7 @@ export type StoredAnalysisHistoryEntry = z.infer<typeof storedAnalysisHistoryEnt
 export function createMockAnalyzeResponse() {
   return analyzeResponseSchema.parse({
     analysis: createMockAnalysisReport(),
+    screenshotDataUrl: null,
     source: "mock",
     warning: null,
   });
@@ -102,7 +103,7 @@ export function saveLatestAnalysisResult(
 
   const historyEntry = storedAnalysisHistoryEntrySchema.parse({
     ...response,
-    screenshotDataUrl: options?.screenshotDataUrl ?? null,
+    screenshotDataUrl: options?.screenshotDataUrl ?? response.screenshotDataUrl ?? null,
     viewerUserId: options?.viewerUserId ?? null,
     workspaceId: options?.workspaceId ?? null,
     workspaceName: options?.workspaceName ?? null,
@@ -178,7 +179,7 @@ export function getAnalysisResultForId(
     matchesViewerUserId(latestAnalysis, options?.viewerUserId)
     ? storedAnalysisHistoryEntrySchema.parse({
         ...latestAnalysis,
-        screenshotDataUrl: null,
+        screenshotDataUrl: latestAnalysis.screenshotDataUrl ?? null,
         viewerUserId: latestAnalysis.viewerUserId ?? null,
         workspaceId: null,
         workspaceName: null,

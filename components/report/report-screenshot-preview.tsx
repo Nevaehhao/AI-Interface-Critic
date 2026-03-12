@@ -154,10 +154,14 @@ export function ReportScreenshotPreview({
           <>
             <p className="text-sm">{previewDraft.name}</p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-              <span className="app-chip px-3 py-1 text-xs">{previewDraft.type}</span>
-              <span className="app-chip px-3 py-1 text-xs">
-                {formatBytes(previewDraft.size)}
-              </span>
+              {previewDraft.type ? (
+                <span className="app-chip px-3 py-1 text-xs">{previewDraft.type}</span>
+              ) : null}
+              {typeof previewDraft.size === "number" ? (
+                <span className="app-chip px-3 py-1 text-xs">
+                  {formatBytes(previewDraft.size)}
+                </span>
+              ) : null}
             </div>
             <button
               type="button"

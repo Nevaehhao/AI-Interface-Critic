@@ -9,6 +9,8 @@ export const ANALYSIS_MODE_VALUES = [
 ] as const;
 
 export type AnalysisMode = (typeof ANALYSIS_MODE_VALUES)[number];
+export const PAGE_CAPTURE_MODE_VALUES = ["upload", "url-capture"] as const;
+export type PageCaptureMode = (typeof PAGE_CAPTURE_MODE_VALUES)[number];
 
 function normalizeOptionalString(value: unknown) {
   if (typeof value !== "string") {
@@ -34,8 +36,12 @@ export const analysisContextSchema = z.object({
   analysisMode: z.enum(ANALYSIS_MODE_VALUES).default("ux-review"),
   notes: optionalStringField(600),
   pageUrl: optionalUrlField,
+  pageCaptureMode: z.enum(PAGE_CAPTURE_MODE_VALUES).default("upload"),
+  pageTitle: optionalStringField(240),
   productGoal: optionalStringField(240),
+  repoEntryPoints: z.array(z.string().min(1)).max(16).default([]),
   repoUrl: optionalUrlField,
+  repoSummary: optionalStringField(1600),
   targetAudience: optionalStringField(240),
   techStack: optionalStringField(240),
 });

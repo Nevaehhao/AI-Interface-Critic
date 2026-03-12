@@ -3,11 +3,12 @@ import type { AnalysisContext } from "@/lib/analysis-context";
 export const PENDING_ANALYSIS_KEY = "ai-interface-critic.pending-analysis";
 
 export type PendingAnalysisDraft = {
+  captureMode: "upload" | "url-capture";
   context?: AnalysisContext;
-  dataUrl: string;
-  name: string;
-  size: number;
-  type: string;
+  dataUrl: string | null;
+  name: string | null;
+  size: number | null;
+  type: string | null;
   workspaceId?: string | null;
   workspaceName?: string | null;
 };
@@ -34,20 +35,20 @@ export function fileToDataUrl(file: File) {
 }
 
 export async function savePendingAnalysisDraft(
-  file: File,
+  file: File | null,
   options?: {
     context?: AnalysisContext;
     workspaceId?: string | null;
     workspaceName?: string | null;
   },
 ) {
-  const dataUrl = await fileToDataUrl(file);
   const draft: PendingAnalysisDraft = {
+    captureMode: file ? "upload" : "url-capture",
     context: options?.context,
-    dataUrl,
-    name: file.name,
-    size: file.size,
-    type: file.type,
+    dataUrl: file ? await fileToDataUrl(file) : null,
+    name: file?.name ?? null,
+    size: file?.size ?? null,
+    type: file?.type ?? null,
     workspaceId: options?.workspaceId ?? null,
     workspaceName: options?.workspaceName ?? null,
   };
@@ -70,6 +71,10 @@ export function clearPendingAnalysisDraft() {
 }
 
 export async function dataUrlToFile(draft: PendingAnalysisDraft) {
+  if (!draft.dataUrl || !draft.name || !draft.type) {
+    return null;
+  }
+
   const response = await fetch(draft.dataUrl);
   const blob = await response.blob();
 

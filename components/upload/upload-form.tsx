@@ -113,8 +113,8 @@ export function UploadForm({
   }
 
   async function handleSubmit() {
-    if (!selectedFile) {
-      setError("Choose a screenshot before starting analysis.");
+    if (!selectedFile && pageUrl.trim().length === 0) {
+      setError("Add a screenshot or enter a live page URL before starting analysis.");
       return;
     }
 
@@ -162,10 +162,13 @@ export function UploadForm({
     <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
       <section className="surface-card p-6 sm:p-8">
         <p className="eyebrow">Upload</p>
-        <h1 className="mt-4 text-4xl tracking-tight sm:text-5xl">Upload one screenshot.</h1>
+        <h1 className="mt-4 text-4xl tracking-tight sm:text-5xl">
+          Upload a screenshot or analyze a live URL.
+        </h1>
         <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--color-muted)]">
-          Use a single screen where the main layout and primary actions are visible. Supported
-          types: PNG, JPG, and WebP up to {MAX_UPLOAD_SIZE_MB}MB.
+          Use a single screen where the main layout and primary actions are visible, or provide a
+          page URL and let the app capture the page for you. Supported image types: PNG, JPG, and
+          WebP up to {MAX_UPLOAD_SIZE_MB}MB.
         </p>
 
         {isSignedIn && workspaces.length > 0 ? (
@@ -359,28 +362,38 @@ export function UploadForm({
               </div>
             </div>
           </div>
+        ) : pageUrl.trim().length > 0 ? (
+          <div className="surface-muted mt-6 p-6">
+            <p className="text-sm font-medium">Live page capture</p>
+            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+              The app will open <span className="font-medium">{pageUrl}</span> in a headless
+              browser, capture the visible viewport, and analyze that screenshot.
+            </p>
+          </div>
         ) : (
           <div className="surface-muted mt-6 p-6">
             <p className="text-sm leading-7 text-[var(--color-muted)]">
-              Your screenshot preview appears here after you choose a valid file.
+              Your screenshot preview or live URL capture summary appears here after you add a valid
+              input.
             </p>
           </div>
         )}
 
         <div className="surface-muted mt-6 p-4">
           <p className="text-sm leading-7 text-[var(--color-muted)]">
-            Next step: the app sends the screenshot to the analysis API and then opens a report.
-            The report will tell you whether Ollama ran successfully or fallback output was used.
+            Next step: the app sends the screenshot or captured URL to the analysis API and then
+            opens a report. The report will tell you whether your configured provider ran
+            successfully or fallback output was used.
           </p>
         </div>
 
         <button
           type="button"
-          disabled={!selectedFile || isSubmitting}
+          disabled={(!selectedFile && pageUrl.trim().length === 0) || isSubmitting}
           onClick={handleSubmit}
           className="material-button material-button-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSubmitting ? "Preparing..." : "Analyze screenshot"}
+          {isSubmitting ? "Preparing..." : "Analyze input"}
         </button>
       </aside>
     </div>
