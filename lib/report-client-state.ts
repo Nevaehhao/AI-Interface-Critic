@@ -29,6 +29,15 @@ export function resolveReportClientState({
   initialWarning?: string | null;
   storedResult?: StoredAnalysisHistoryEntry | null;
 }): ReportClientState {
+  if (initialReport) {
+    return {
+      report: initialReport,
+      screenshotUrl: initialScreenshotUrl ?? storedResult?.screenshotDataUrl ?? null,
+      source: initialSource,
+      warning: initialWarning ?? storedResult?.warning ?? null,
+    };
+  }
+
   if (storedResult) {
     return {
       report: storedResult.analysis,
@@ -38,15 +47,6 @@ export function resolveReportClientState({
         typeof storedResult.warning === "undefined"
           ? initialWarning
           : storedResult.warning,
-    };
-  }
-
-  if (initialReport) {
-    return {
-      report: initialReport,
-      screenshotUrl: initialScreenshotUrl,
-      source: initialSource,
-      warning: initialWarning,
     };
   }
 

@@ -138,6 +138,22 @@ function createAnalysisJsonFileName(report: AnalysisReport, analysisId: string) 
   return `ai-interface-critic-${normalizedType || "report"}-${analysisId}.json`;
 }
 
+function resolveAbsoluteShareUrl(shareUrl: string | null) {
+  if (!shareUrl) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(shareUrl)) {
+    return shareUrl;
+  }
+
+  if (typeof window === "undefined") {
+    return shareUrl;
+  }
+
+  return new URL(shareUrl, window.location.origin).toString();
+}
+
 export function ReportView({
   analysisId,
   report,
@@ -164,14 +180,20 @@ export function ReportView({
   const [exportError, setExportError] = useState<string | null>(null);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [shareState, setShareState] = useState<"idle" | "copied" | "error">("idle");
-  const [shareLink, setShareLink] = useState(initialShareUrl);
+  const [shareLink, setShareLink] = useState(() => resolveAbsoluteShareUrl(initialShareUrl));
   const [triageSavingId, setTriageSavingId] = useState<string | null>(null);
   const [triageMessage, setTriageMessage] = useState<string | null>(null);
   const highlightableIssues = flattenHighlightableIssues(currentReport);
 
   useEffect(() => {
     setCurrentReport(report);
-    setShareLink(initialShareUrl);
+    setSelectedIssueId(flattenHighlightableIssues(report)[0]?.id ?? null);
+    setShareLink(resolveAbsoluteShareUrl(initialShareUrl));
+    setCopyState("idle");
+    setShareState("idle");
+    setExportError(null);
+    setTriageSavingId(null);
+    setTriageMessage(null);
     setTriageNotes(
       Object.fromEntries(
         report.sections.flatMap((section) =>
@@ -199,7 +221,7 @@ export function ReportView({
       const link = document.createElement("a");
 
       link.href = downloadUrl;
-      link.download = createAnalysisPdfFileName(report, analysisId);
+      link.download = createAnalysisPdfFileName(currentReport, analysisId);
       link.click();
       URL.revokeObjectURL(downloadUrl);
     } catch (error) {
@@ -316,8 +338,14 @@ export function ReportView({
         throw new Error("Unable to create a share link for this report.");
       }
 
-      await navigator.clipboard.writeText(payload.shareUrl);
-      setShareLink(payload.shareUrl);
+      const resolvedShareUrl = resolveAbsoluteShareUrl(payload.shareUrl);
+
+      if (!resolvedShareUrl) {
+        throw new Error("Unable to create a share link for this report.");
+      }
+
+      await navigator.clipboard.writeText(resolvedShareUrl);
+      setShareLink(resolvedShareUrl);
       setShareState("copied");
     } catch {
       setShareState("error");
@@ -409,7 +437,15 @@ export function ReportView({
 
         {shareLink && !isReadOnly ? (
           <div className="surface-card px-5 py-4 text-sm text-[var(--color-muted)]">
-            Share link: {shareLink}
+            Share link:{" "}
+            <a
+              href={shareLink}
+              target="_blank"
+              rel="noreferrer"
+              className="break-all text-[var(--color-foreground)]"
+            >
+              {shareLink}
+            </a>
           </div>
         ) : null}
 

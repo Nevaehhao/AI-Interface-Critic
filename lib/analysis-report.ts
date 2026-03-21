@@ -3,7 +3,6 @@ import { z } from "zod";
 import {
   analysisContextSchema,
   createDefaultAnalysisContext,
-  type AnalysisContext,
 } from "@/lib/analysis-context";
 
 export const analysisIssueHighlightSchema = z.object({

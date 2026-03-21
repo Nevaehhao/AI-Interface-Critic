@@ -21,12 +21,6 @@ function normalizeIssueKey(title: string) {
   return title.trim().toLowerCase();
 }
 
-function getIssueKeys(report: AnalysisReport) {
-  return report.sections.flatMap((section) =>
-    section.issues.map((issue) => normalizeIssueKey(issue.title)),
-  );
-}
-
 function getRecurringIssueTitles(entries: HistoryAnalysisEntry[]) {
   const counts = new Map<string, number>();
   const labels = new Map<string, string>();

@@ -41,4 +41,50 @@ describe("report client state", () => {
     expect(state.source).toBe("ollama");
     expect(state.warning).toBeNull();
   });
+
+  it("prefers the server report when both server and browser copies exist", () => {
+    const serverBaseReport = createMockAnalysisReport({
+      createdAt: "2026-03-12T00:00:00.000Z",
+      id: "shared-report",
+    });
+    const storedBaseReport = createMockAnalysisReport({
+      createdAt: "2026-03-11T00:00:00.000Z",
+      id: "shared-report",
+    });
+    const serverReport = {
+      ...serverBaseReport,
+      summary: {
+        ...serverBaseReport.summary,
+        mainFinding: "Server report is newer",
+      },
+    };
+    const storedReport = {
+      ...storedBaseReport,
+      summary: {
+        ...storedBaseReport.summary,
+        mainFinding: "Stored browser copy is stale",
+      },
+    };
+
+    const state = resolveReportClientState({
+      analysisId: "shared-report",
+      initialReport: serverReport,
+      initialScreenshotUrl: null,
+      initialSource: "anthropic",
+      initialWarning: null,
+      storedResult: {
+        analysis: storedReport,
+        screenshotDataUrl: "data:image/png;base64,latest-browser-screenshot",
+        source: "ollama",
+        warning: "Local fallback warning",
+        workspaceId: "workspace-2",
+        workspaceName: "Marketing site",
+      },
+    });
+
+    expect(state.report?.summary.mainFinding).toBe("Server report is newer");
+    expect(state.screenshotUrl).toBe("data:image/png;base64,latest-browser-screenshot");
+    expect(state.source).toBe("anthropic");
+    expect(state.warning).toBe("Local fallback warning");
+  });
 });
