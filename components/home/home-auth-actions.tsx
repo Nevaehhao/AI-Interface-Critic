@@ -12,7 +12,7 @@ export function HomeHeroAuthAction() {
         aria-hidden="true"
         className="material-button material-button-secondary min-w-32 animate-pulse"
       >
-        Account
+        Sign in
       </span>
     );
   }
@@ -27,7 +27,7 @@ export function HomeHeroAuthAction() {
 
   return (
     <ButtonLink href="/auth/sign-in" variant="secondary">
-      Account
+      Sign in
     </ButtonLink>
   );
 }

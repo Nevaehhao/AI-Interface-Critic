@@ -99,6 +99,13 @@ export function SiteHeader() {
                 aria-hidden="true"
                 className="h-11 w-11 animate-pulse rounded-xl bg-white/80 shadow-[0_12px_30px_rgba(111,78,156,0.08)]"
               />
+            ) : !user ? (
+              <Link
+                href="/auth/sign-in"
+                className="glass-panel flex h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-[var(--color-accent)] shadow-[0_12px_30px_rgba(111,78,156,0.08)]"
+              >
+                Sign in
+              </Link>
             ) : (
               <button
                 type="button"
@@ -108,23 +115,20 @@ export function SiteHeader() {
                 aria-label="Open account menu"
                 className="glass-panel flex h-11 min-w-11 items-center justify-center rounded-xl px-3 text-sm font-semibold text-[var(--color-accent)] shadow-[0_12px_30px_rgba(111,78,156,0.08)]"
               >
-                {user ? userInitials : "Account"}
+                {userInitials}
               </button>
             )}
 
-            {isAccountMenuOpen ? (
+            {user && isAccountMenuOpen ? (
               <div
                 role="menu"
                 className="glass-panel absolute right-0 top-[calc(100%+14px)] w-72 rounded-[1.5rem] border border-white/50 p-5 shadow-[0_24px_60px_rgba(111,78,156,0.16)]"
               >
                 <div className="space-y-1">
                   <p className="eyebrow">Account</p>
-                  <p className="font-display text-xl font-bold">
-                    {user ? userName : "Sign in to sync"}
-                  </p>
+                  <p className="font-display text-xl font-bold">{userName}</p>
                   <p className="text-sm leading-7 text-[var(--color-muted)]">
-                    {user?.email ??
-                      "Keep workspaces, share links, and report history available across sessions."}
+                    {user.email}
                   </p>
                 </div>
 
@@ -153,20 +157,10 @@ export function SiteHeader() {
                 </div>
 
                 <div className="mt-5">
-                  {user ? (
-                    <SignOutButton
-                      className="w-full justify-center"
-                      onSignedOut={() => setIsAccountMenuOpen(false)}
-                    />
-                  ) : (
-                    <Link
-                      href="/auth/sign-in"
-                      onClick={() => setIsAccountMenuOpen(false)}
-                      className="material-button material-button-secondary w-full"
-                    >
-                      Sign in
-                    </Link>
-                  )}
+                  <SignOutButton
+                    className="w-full justify-center"
+                    onSignedOut={() => setIsAccountMenuOpen(false)}
+                  />
                 </div>
               </div>
             ) : null}
@@ -213,14 +207,14 @@ export function SiteHeader() {
                   </Link>
                 </div>
 
-                <div className="surface-muted mt-5 rounded-[1.25rem] p-4">
-                  <p className="eyebrow">Account</p>
-                  <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                    {user
-                      ? user?.email ?? userName
-                      : "Sign in to sync reports, workspaces, and share links across sessions."}
-                  </p>
-                </div>
+                {user ? (
+                  <div className="surface-muted mt-5 rounded-[1.25rem] p-4">
+                    <p className="eyebrow">Account</p>
+                    <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                      {user.email ?? userName}
+                    </p>
+                  </div>
+                ) : null}
 
                 <div className="mt-5">
                   {user ? (
