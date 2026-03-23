@@ -14,6 +14,10 @@ import {
 import { savePendingAnalysisDraft } from "@/lib/analysis-draft";
 import type { WorkspaceRecord } from "@/lib/data/workspace-store";
 import {
+  loadStoredAnalysisHistory,
+  type StoredAnalysisHistoryEntry,
+} from "@/lib/analysis-result";
+import {
   ACCEPTED_IMAGE_TYPES,
   MAX_FLOW_SCREENSHOTS,
   MAX_UPLOAD_SIZE_MB,
@@ -29,12 +33,12 @@ const inputMethodCards: Array<{
   title: string;
 }> = [
   {
-    description: "Use one screenshot or a short multi-screen batch when you already have the UI captured.",
+    description: "Drop one screenshot or a short flow batch when the UI is already captured.",
     id: "upload",
     title: "Upload screenshots",
   },
   {
-    description: "Paste a live page URL and let the app capture the visible viewport before analysis.",
+    description: "Paste a live URL when you want the critic to inspect the rendered page.",
     id: "url-capture",
     title: "Capture live URL",
   },
@@ -42,6 +46,85 @@ const inputMethodCards: Array<{
 
 function countBriefFields(values: string[]) {
   return values.filter((value) => value.trim().length > 0).length;
+}
+
+function getHistoryTone(entry: StoredAnalysisHistoryEntry) {
+  if (entry.analysis.summary.overallScore >= 80) {
+    return {
+      badgeClassName: "bg-[var(--color-success-soft)] text-[var(--color-success)]",
+      label: "Optimal",
+    };
+  }
+
+  if (entry.analysis.summary.overallScore >= 60) {
+    return {
+      badgeClassName: "bg-[var(--color-accent-soft)] text-[var(--color-accent)]",
+      label: "Review",
+    };
+  }
+
+  return {
+    badgeClassName: "bg-[var(--color-error-soft)] text-[var(--color-error)]",
+    label: "Critical",
+  };
+}
+
+function RecentUploadCard({ entry }: { entry: StoredAnalysisHistoryEntry }) {
+  const tone = getHistoryTone(entry);
+
+  return (
+    <article className="surface-card overflow-hidden p-4">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-[1.25rem] bg-[var(--color-surface-muted)]">
+        {entry.screenshotDataUrl ? (
+          <div
+            aria-label="Recent upload screenshot"
+            className="absolute inset-0 bg-cover bg-center"
+            role="img"
+            style={{ backgroundImage: `url("${entry.screenshotDataUrl}")` }}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(237,220,255,0.55),rgba(255,255,255,0.9))]" />
+        )}
+        <div className="absolute right-3 top-3">
+          <span
+            className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${tone.badgeClassName}`}
+          >
+            {tone.label}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-5 flex items-start justify-between gap-4">
+        <div>
+          <h3 className="font-display text-xl font-bold tracking-[-0.04em]">
+            {entry.analysis.summary.productType}
+          </h3>
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
+            Uploaded {new Date(entry.analysis.createdAt).toLocaleDateString()}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="font-display text-2xl font-extrabold tracking-[-0.05em] text-[var(--color-accent)]">
+            {entry.analysis.summary.overallScore}
+            <span className="ml-0.5 text-xs font-bold">/100</span>
+          </p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--color-muted)]">
+            UI health
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 flex items-center justify-between border-t border-white/50 pt-4">
+        <span className="app-chip">{getAnalysisModeLabel(entry.analysis.context.analysisMode)}</span>
+        <Link
+          href={`/report/${entry.analysis.id}`}
+          className="font-display text-sm font-bold text-[var(--color-accent)] transition hover:opacity-80"
+        >
+          View report
+        </Link>
+      </div>
+    </article>
+  );
 }
 
 export function UploadForm({
@@ -68,6 +151,7 @@ export function UploadForm({
   const [targetAudience, setTargetAudience] = useState("");
   const [techStack, setTechStack] = useState("");
   const [notes, setNotes] = useState("");
+  const [recentUploads, setRecentUploads] = useState<StoredAnalysisHistoryEntry[]>([]);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>(
     workspaces.some((workspace) => workspace.id === initialWorkspaceId)
       ? initialWorkspaceId ?? ""
@@ -95,6 +179,16 @@ export function UploadForm({
       });
     };
   }, [previewUrls]);
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      setRecentUploads(loadStoredAnalysisHistory().slice(0, 3));
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, []);
 
   function clearSelectedFiles() {
     setSelectedFiles([]);
@@ -210,228 +304,259 @@ export function UploadForm({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-      <section className="surface-card p-6 sm:p-8">
+    <div className="space-y-20">
+      <header className="mx-auto max-w-3xl text-center">
         <p className="eyebrow">Upload</p>
-        <h1 className="mt-4 max-w-4xl text-4xl tracking-tight sm:text-5xl">
-          Start with the input you want reviewed.
+        <h1 className="mt-4 text-5xl font-extrabold tracking-[-0.05em] md:text-[3.65rem]">
+          The Digital Curator.
         </h1>
-        <p className="mt-4 max-w-3xl text-base leading-8 text-[var(--color-muted)]">
-          Pick one capture method, then add optional product and repository context only if it
-          helps the critique. The selected method is the only input that will be analyzed.
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
+          Upload your interface and let our intelligence observe, analyze, and elevate your
+          design.
         </p>
+      </header>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {inputMethodCards.map((card) => {
-            const isActive = card.id === inputMode;
-            const isPrepared =
-              card.id === "upload" ? selectedFiles.length > 0 : pageUrl.trim().length > 0;
+      <section className="surface-card p-6 sm:p-8">
+        <div className="grid gap-10 xl:grid-cols-[1.08fr_0.92fr]">
+          <div>
+            <div className="mb-5 flex flex-wrap justify-center gap-3 xl:justify-start">
+              {inputMethodCards.map((card) => {
+                const isActive = inputMode === card.id;
 
-            return (
-              <button
-                key={card.id}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => {
-                  setInputMode(card.id);
-                  setError(null);
-                }}
-                className={`rounded-[1.5rem] border p-5 text-left transition ${
-                  isActive
-                    ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
-                    : "border-[var(--color-line)] bg-white hover:border-[rgba(17,17,17,0.16)]"
+                return (
+                  <button
+                    key={card.id}
+                    type="button"
+                    aria-pressed={isActive}
+                    onClick={() => {
+                      setInputMode(card.id);
+                      setError(null);
+                    }}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      isActive
+                        ? "bg-[var(--color-accent-soft)] text-[var(--color-accent)]"
+                        : "bg-white/80 text-[var(--color-muted)] hover:text-[var(--color-accent)]"
+                    }`}
+                  >
+                    {card.title}
+                  </button>
+                );
+              })}
+            </div>
+
+            {isUploadMode ? (
+              <div
+                role="presentation"
+                onDrop={handleDrop}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                className={`rounded-[2rem] border border-dashed px-6 py-14 text-center transition ${
+                  isDragging
+                    ? "border-[rgba(111,78,156,0.42)] bg-[rgba(237,220,255,0.56)]"
+                    : "border-[rgba(175,177,188,0.34)] bg-[var(--color-surface-muted)]"
                 }`}
               >
-                <div className="flex items-center justify-between gap-3">
-                  <p className="eyebrow">{card.id === "upload" ? "Method 1" : "Method 2"}</p>
-                  {isPrepared ? <span className="app-chip">Ready</span> : null}
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.2rem] bg-white text-[var(--color-accent)] shadow-[0_16px_30px_rgba(111,78,156,0.08)]">
+                  <span className="font-display text-4xl font-extrabold">+</span>
                 </div>
-                <h2 className="mt-3 text-xl tracking-tight">{card.title}</h2>
+                <h2 className="mt-7 text-3xl font-bold tracking-[-0.04em]">
+                  {selectedFiles.length > 0 ? "Screenshots ready to analyze" : "Drop your interface here"}
+                </h2>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                  {card.description}
+                  PNG, JPG, or WebP up to {MAX_UPLOAD_SIZE_MB}MB. Multi-screen flows support up to{" "}
+                  {MAX_FLOW_SCREENSHOTS} screenshots.
                 </p>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="surface-muted mt-6 p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-2xl">
-              <p className="eyebrow">1. Primary input</p>
-              <h2 className="mt-3 text-2xl tracking-tight">
-                {isUploadMode ? "Choose screenshots" : "Paste a page URL"}
-              </h2>
-              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                {isUploadMode
-                  ? `Use PNG, JPG, or WebP files up to ${MAX_UPLOAD_SIZE_MB}MB each. Multi-screen batches support up to ${MAX_FLOW_SCREENSHOTS} screenshots.`
-                  : "Provide the page you want captured. The app will open it in a headless browser and analyze the visible viewport."}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-              <span className="app-chip">{getAnalysisModeLabel(analysisMode)}</span>
-              <span className="app-chip">
-                {isUploadMode ? "Screenshot upload" : "Live URL capture"}
-              </span>
-            </div>
-          </div>
-
-          {isUploadMode ? (
-            <div
-              role="presentation"
-              onDrop={handleDrop}
-              onDragLeave={handleDragLeave}
-              onDragOver={handleDragOver}
-              className={`mt-6 rounded-[1.5rem] border border-dashed p-8 text-center transition ${
-                isDragging
-                  ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
-                  : "border-[var(--color-line)] bg-white"
-              }`}
-            >
-              <p className="text-base font-medium">
-                {selectedFiles.length > 0 ? "Replace screenshots" : "Drag screenshots here"}
-              </p>
-              <p className="mt-2 text-sm text-[var(--color-muted)]">
-                or choose up to {MAX_FLOW_SCREENSHOTS} files from your computer
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => inputRef.current?.click()}
-                  className="material-button material-button-primary"
-                >
-                  {selectedFiles.length > 0 ? "Replace files" : "Choose files"}
-                </button>
-                {selectedFiles.length > 0 ? (
+                <div className="mt-8 flex flex-wrap justify-center gap-3">
                   <button
                     type="button"
-                    onClick={clearSelectedFiles}
-                    className="material-button material-button-secondary"
+                    onClick={() => inputRef.current?.click()}
+                    className="material-button material-button-primary"
                   >
-                    Clear files
+                    {selectedFiles.length > 0 ? "Replace files" : "Browse files"}
                   </button>
-                ) : null}
-              </div>
-              <p className="mt-4 text-xs text-[var(--color-muted)]">PNG, JPG, WebP</p>
+                  {selectedFiles.length > 0 ? (
+                    <button
+                      type="button"
+                      onClick={clearSelectedFiles}
+                      className="material-button material-button-secondary"
+                    >
+                      Clear files
+                    </button>
+                  ) : null}
+                </div>
 
-              <input
-                ref={inputRef}
-                accept={ACCEPTED_IMAGE_TYPES.join(",")}
-                className="sr-only"
-                onChange={handleInputChange}
-                multiple
-                type="file"
-              />
-            </div>
-          ) : (
-            <div className="mt-6 space-y-4">
-              <label className="block space-y-2">
-                <span className="text-sm text-[var(--color-muted)]">Page URL</span>
                 <input
-                  type="url"
-                  value={pageUrl}
-                  onChange={(event) => setPageUrl(event.target.value)}
-                  placeholder="https://example.com/pricing"
-                  className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+                  ref={inputRef}
+                  accept={ACCEPTED_IMAGE_TYPES.join(",")}
+                  className="sr-only"
+                  onChange={handleInputChange}
+                  multiple
+                  type="file"
                 />
-              </label>
+              </div>
+            ) : (
+              <div className="surface-muted rounded-[2rem] p-8">
+                <h2 className="text-3xl font-bold tracking-[-0.04em]">Capture a live page</h2>
+                <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                  Paste the page you want analyzed. Lumina Critic will open it in a headless
+                  browser and critique the captured viewport.
+                </p>
+                <label className="mt-6 block space-y-2">
+                  <span className="text-sm text-[var(--color-muted)]">Page URL</span>
+                  <input
+                    type="url"
+                    value={pageUrl}
+                    onChange={(event) => setPageUrl(event.target.value)}
+                    placeholder="https://example.com/pricing"
+                    className="w-full rounded-[1rem] px-4 py-3 text-sm"
+                  />
+                </label>
+              </div>
+            )}
 
-              <div className="rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-4 text-sm leading-7 text-[var(--color-muted)]">
-                The app captures the final rendered page, so use this mode when you want the review
-                to reflect a live environment instead of a saved screenshot.
+            {error ? (
+              <div className="mt-5 rounded-[1rem] bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
+                {error}
+              </div>
+            ) : null}
+
+            <div className="mt-6 flex flex-wrap items-center gap-4">
+              <button
+                type="button"
+                disabled={!activeHasInput || isSubmitting}
+                onClick={() => void handleSubmit()}
+                className="material-button material-button-primary disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting
+                  ? "Preparing..."
+                  : isUploadMode && selectedFiles.length > 1
+                    ? "Analyze flow batch"
+                    : "Start analysis"}
+              </button>
+              <p className="text-sm leading-7 text-[var(--color-muted)]">
+                The selected input is the only source that will be analyzed for this run.
+              </p>
+            </div>
+          </div>
+
+          <aside className="space-y-5">
+            <div className="surface-muted p-6">
+              <p className="eyebrow">Run setup</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="app-chip">{getAnalysisModeLabel(analysisMode)}</span>
+                <span className="app-chip">
+                  {isUploadMode ? "Screenshot upload" : "Live URL capture"}
+                </span>
+                {briefFieldCount > 0 ? (
+                  <span className="app-chip">{briefFieldCount} brief fields</span>
+                ) : (
+                  <span className="app-chip">Brief optional</span>
+                )}
               </div>
             </div>
-          )}
+
+            <div className="surface-muted p-6">
+              <p className="eyebrow">Workspace</p>
+              {isSignedIn && workspaces.length > 0 ? (
+                <label className="mt-4 block space-y-2">
+                  <span className="text-sm text-[var(--color-muted)]">Project bucket</span>
+                  <select
+                    value={selectedWorkspaceId}
+                    onChange={(event) => setSelectedWorkspaceId(event.target.value)}
+                    className="w-full rounded-[1rem] px-4 py-3 text-sm"
+                  >
+                    {workspaces.map((workspace) => (
+                      <option key={workspace.id} value={workspace.id}>
+                        {workspace.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : (
+                <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+                  {isSignedIn
+                    ? "Create a workspace later if you want synced project buckets."
+                    : "Sign in later if you want synced workspaces and cloud history."}
+                </p>
+              )}
+            </div>
+
+            <div className="surface-muted p-6">
+              <p className="eyebrow">Preview</p>
+              {isUploadMode && previewUrls.length > 0 ? (
+                <div className="mt-4 space-y-4">
+                  <div className={`grid gap-3 ${previewUrls.length > 1 ? "sm:grid-cols-2" : ""}`}>
+                    {previewUrls.map((previewUrl, index) => (
+                      <div
+                        key={`${previewUrl}-${index}`}
+                        className="relative aspect-[4/3] overflow-hidden rounded-[1rem] bg-white"
+                      >
+                        <Image
+                          alt={`Selected screenshot ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          sizes="(min-width: 1024px) 20rem, 100vw"
+                          src={previewUrl}
+                          unoptimized
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedFiles.length === 1 ? (
+                      <>
+                        <span className="app-chip">{selectedFiles[0]?.type}</span>
+                        <span className="app-chip">{formatBytes(selectedFiles[0]?.size ?? 0)}</span>
+                      </>
+                    ) : (
+                      <span className="app-chip">
+                        {formatBytes(selectedFiles.reduce((sum, file) => sum + file.size, 0))} total
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ) : !isUploadMode && pageUrl.trim().length > 0 ? (
+                <p className="mt-4 break-all text-sm leading-7 text-[var(--color-muted)]">
+                  {pageUrl}
+                </p>
+              ) : (
+                <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+                  Add a screenshot or live URL and the current run preview will appear here.
+                </p>
+              )}
+            </div>
+          </aside>
         </div>
+      </section>
 
-        {isSignedIn && workspaces.length > 0 ? (
-          <label className="mt-6 block space-y-2">
-            <span className="text-sm text-[var(--color-muted)]">Workspace</span>
-            <select
-              value={selectedWorkspaceId}
-              onChange={(event) => setSelectedWorkspaceId(event.target.value)}
-              className="w-full rounded-2xl border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
-            >
-              {workspaces.map((workspace) => (
-                <option key={workspace.id} value={workspace.id}>
-                  {workspace.name}
-                </option>
-              ))}
-            </select>
-            {selectedWorkspace?.description ? (
-              <p className="text-sm leading-7 text-[var(--color-muted)]">
-                {selectedWorkspace.description}
-              </p>
-            ) : null}
-          </label>
-        ) : !isSignedIn ? (
-          <div className="surface-muted mt-6 p-4 text-sm leading-7 text-[var(--color-muted)]">
-            History still works locally without sign-in. If you want synced workspaces later, use{" "}
-            <Link href="/auth/sign-in" className="text-[var(--color-accent)]">
-              sign in
-            </Link>
-            .
-          </div>
-        ) : (
-          <div className="surface-muted mt-6 p-4 text-sm leading-7 text-[var(--color-muted)]">
-            No workspace selected yet. You can still run analyses now and create shared project
-            buckets later in{" "}
-            <Link href="/workspaces" className="text-[var(--color-accent)]">
-              workspaces
-            </Link>
-            .
-          </div>
-        )}
-
-        {error ? (
-          <div className="mt-6 rounded-2xl bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
-            {error}
-          </div>
-        ) : null}
-
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="button"
-            disabled={!activeHasInput || isSubmitting}
-            onClick={() => void handleSubmit()}
-            className="material-button material-button-primary disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isSubmitting
-              ? "Preparing..."
-              : isUploadMode && selectedFiles.length > 1
-                ? "Analyze flow batch"
-                : "Start analysis"}
-          </button>
-          <p className="max-w-2xl text-sm leading-7 text-[var(--color-muted)]">
-            The optional brief below improves issue prioritization, redesign suggestions, and the
-            builder handoff.
-          </p>
-        </div>
-
-        <div className="mt-8 border-t border-[var(--color-line)] pt-8">
+      <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+        <div className="surface-card p-6 sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-2xl">
-              <p className="eyebrow">2. Review brief</p>
-              <h2 className="mt-3 text-3xl tracking-tight">Add extra context if you have it.</h2>
-              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                These fields are optional, but they help the critique land closer to your product
-                goal and make the engineering handoff more concrete.
+              <p className="eyebrow">Review brief</p>
+              <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em]">
+                Add context for a sharper critique.
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+                These fields are optional, but they make the analysis more specific and improve the
+                builder handoff.
               </p>
             </div>
-
-            <div className="surface-muted min-w-44 px-4 py-4 text-right">
-              <p className="eyebrow">Brief coverage</p>
-              <p className="mt-3 text-3xl tracking-tight">{briefFieldCount}/5</p>
+            <div className="surface-muted min-w-40 px-5 py-4 text-right">
+              <p className="eyebrow">Coverage</p>
+              <p className="mt-3 font-display text-4xl font-extrabold tracking-[-0.05em]">
+                {briefFieldCount}/5
+              </p>
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4">
+          <div className="mt-8 grid gap-4">
             <label className="block space-y-2">
               <span className="text-sm text-[var(--color-muted)]">Review mode</span>
               <select
                 value={analysisMode}
                 onChange={(event) => setAnalysisMode(event.target.value as AnalysisMode)}
-                className="w-full rounded-2xl border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
+                className="w-full rounded-[1rem] px-4 py-3 text-sm"
               >
                 {ANALYSIS_MODE_VALUES.map((mode) => (
                   <option key={mode} value={mode}>
@@ -449,18 +574,17 @@ export function UploadForm({
                   value={repoUrl}
                   onChange={(event) => setRepoUrl(event.target.value)}
                   placeholder="https://github.com/you/product"
-                  className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+                  className="w-full rounded-[1rem] px-4 py-3 text-sm"
                 />
               </label>
-
               <label className="block space-y-2">
                 <span className="text-sm text-[var(--color-muted)]">Product goal</span>
                 <input
                   type="text"
                   value={productGoal}
                   onChange={(event) => setProductGoal(event.target.value)}
-                  placeholder="Drive trial signups from the hero"
-                  className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+                  placeholder="Drive signups from the hero"
+                  className="w-full rounded-[1rem] px-4 py-3 text-sm"
                 />
               </label>
             </div>
@@ -473,10 +597,9 @@ export function UploadForm({
                   value={targetAudience}
                   onChange={(event) => setTargetAudience(event.target.value)}
                   placeholder="First-time founders on mobile"
-                  className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+                  className="w-full rounded-[1rem] px-4 py-3 text-sm"
                 />
               </label>
-
               <label className="block space-y-2">
                 <span className="text-sm text-[var(--color-muted)]">Tech stack</span>
                 <input
@@ -484,7 +607,7 @@ export function UploadForm({
                   value={techStack}
                   onChange={(event) => setTechStack(event.target.value)}
                   placeholder="Next.js, Tailwind, shadcn/ui"
-                  className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+                  className="w-full rounded-[1rem] px-4 py-3 text-sm"
                 />
               </label>
             </div>
@@ -496,103 +619,44 @@ export function UploadForm({
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
                 placeholder="The hero was recently redesigned and the CTA is underperforming."
-                className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+                className="w-full rounded-[1rem] px-4 py-3 text-sm"
               />
             </label>
           </div>
         </div>
-      </section>
 
-      <aside className="surface-card self-start p-6 lg:sticky lg:top-24">
-        <p className="eyebrow">Preview</p>
-        <h2 className="mt-4 text-2xl tracking-tight">What will be analyzed.</h2>
-        <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-          The active capture method on the left controls this preview and the final analysis input.
-        </p>
+        <div className="surface-card p-6 sm:p-8">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="eyebrow">Recent uploads</p>
+              <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em]">Archive preview</h2>
+            </div>
+            <Link href="/history" className="eyebrow text-[var(--color-accent)]">
+              View all
+            </Link>
+          </div>
 
-        {isUploadMode && selectedFiles.length > 0 && previewUrls.length > 0 ? (
-          <div className="mt-6 space-y-4">
-            <div className={`grid gap-3 ${previewUrls.length > 1 ? "sm:grid-cols-2" : ""}`}>
-              {previewUrls.map((previewUrl, index) => (
-                <div
-                  key={`${selectedFiles[index]?.name ?? previewUrl}-${index}`}
-                  className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] border border-[var(--color-line)] bg-white"
-                >
-                  <Image
-                    alt={`Selected UI screenshot preview ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="(min-width: 1024px) 20rem, 100vw"
-                    src={previewUrl}
-                    unoptimized
-                  />
-                  {previewUrls.length > 1 ? (
-                    <div className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs text-[var(--color-foreground)] shadow-sm">
-                      Screen {index + 1}
-                    </div>
-                  ) : null}
-                </div>
+          {recentUploads.length > 0 ? (
+            <div className="mt-8 grid gap-5">
+              {recentUploads.map((entry) => (
+                <RecentUploadCard key={entry.analysis.id} entry={entry} />
               ))}
             </div>
-
-            <div className="surface-muted p-4">
-              <p className="text-sm font-medium">
-                {selectedFiles.length === 1
-                  ? selectedFiles[0]?.name
-                  : `${selectedFiles.length} screenshots ready for one batch`}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-                {selectedFiles.length === 1 ? (
-                  <>
-                    <span className="app-chip">{selectedFiles[0]?.type}</span>
-                    <span className="app-chip">{formatBytes(selectedFiles[0]?.size ?? 0)}</span>
-                  </>
-                ) : (
-                  <span className="app-chip">
-                    {formatBytes(selectedFiles.reduce((sum, file) => sum + file.size, 0))} total
-                  </span>
-                )}
-                {selectedFiles.length > 1 ? <span className="app-chip">Flow batch</span> : null}
+          ) : (
+            <div className="surface-muted mt-8 flex min-h-72 flex-col items-center justify-center rounded-[1.75rem] border border-dashed border-[rgba(175,177,188,0.34)] p-8 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[var(--color-accent)] shadow-[0_12px_30px_rgba(111,78,156,0.08)]">
+                <span className="font-display text-3xl font-extrabold">+</span>
               </div>
+              <h3 className="mt-5 font-display text-2xl font-bold tracking-[-0.04em]">
+                Analyze new UI
+              </h3>
+              <p className="mt-3 max-w-xs text-sm leading-7 text-[var(--color-muted)]">
+                Your recent runs from this browser will appear here after the first analysis.
+              </p>
             </div>
-          </div>
-        ) : !isUploadMode && pageUrl.trim().length > 0 ? (
-          <div className="surface-muted mt-6 p-6">
-            <p className="text-sm font-medium">Live page capture</p>
-            <p className="mt-3 break-all text-sm leading-7 text-[var(--color-muted)]">
-              The app will open <span className="font-medium">{pageUrl}</span>, capture the visible
-              viewport, and analyze that screenshot.
-            </p>
-          </div>
-        ) : (
-          <div className="surface-muted mt-6 p-6">
-            <p className="text-sm leading-7 text-[var(--color-muted)]">
-              Add the active screenshot or live URL input on the left to see the run preview here.
-            </p>
-          </div>
-        )}
-
-        <div className="surface-muted mt-6 p-4">
-          <p className="eyebrow">Run summary</p>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-            <span className="app-chip">{getAnalysisModeLabel(analysisMode)}</span>
-            <span className="app-chip">
-              {isUploadMode ? "Screenshot upload" : "Live URL capture"}
-            </span>
-            {selectedWorkspace ? <span className="app-chip">{selectedWorkspace.name}</span> : null}
-            {briefFieldCount > 0 ? (
-              <span className="app-chip">{briefFieldCount} brief fields filled</span>
-            ) : (
-              <span className="app-chip">Brief optional</span>
-            )}
-          </div>
-          <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-            After submission, the app sends the active input to the analysis API and opens a report
-            that clearly labels whether the configured provider succeeded or fallback output was
-            used.
-          </p>
+          )}
         </div>
-      </aside>
+      </section>
     </div>
   );
 }
