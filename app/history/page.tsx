@@ -37,7 +37,6 @@ export default async function HistoryPage({
         isPersistenceConfigured={persistenceConfigured}
         isSignedIn={Boolean(user)}
         selectedWorkspaceId={selectedWorkspaceId}
-        userEmail={user?.email ?? null}
         viewerUserId={user?.id ?? null}
         workspaces={(workspaces ?? []).map((workspace) => ({
           id: workspace.id,

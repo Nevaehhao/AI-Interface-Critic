@@ -200,7 +200,6 @@ export function HistoryPageClient({
   isPersistenceConfigured,
   isSignedIn,
   selectedWorkspaceId,
-  userEmail,
   viewerUserId,
   workspaces,
 }: {
@@ -209,7 +208,6 @@ export function HistoryPageClient({
   isPersistenceConfigured: boolean;
   isSignedIn: boolean;
   selectedWorkspaceId: string | null;
-  userEmail: string | null;
   viewerUserId: string | null;
   workspaces: WorkspaceOption[];
 }) {
@@ -322,11 +320,6 @@ export function HistoryPageClient({
           <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
             Review your past interface evaluations and track your design evolution through the eyes
             of the Digital Curator.
-          </p>
-          <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-            {userEmail
-              ? `Signed in as ${userEmail}`
-              : "Recent reports from this browser appear here automatically."}
           </p>
         </div>
 
