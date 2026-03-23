@@ -1,4 +1,3 @@
-import { HomeHeroAuthAction } from "@/components/home/home-auth-actions";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -146,7 +145,6 @@ export default function Home() {
 
               <div className="mt-10 flex flex-wrap gap-4">
                 <ButtonLink href="/upload">Start free analysis</ButtonLink>
-                <HomeHeroAuthAction />
                 <ButtonLink
                   href="/report/demo"
                   variant="text"
