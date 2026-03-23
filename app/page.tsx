@@ -7,16 +7,19 @@ const categories = [
   {
     description:
       "AI-driven type and spacing analysis for scanability, hierarchy, and long-form clarity.",
+    icon: "readability",
     title: "Readability",
   },
   {
     description:
       "Eye-path review that checks whether your CTA, supporting content, and layout rhythm are weighted correctly.",
+    icon: "visual-hierarchy",
     title: "Visual Hierarchy",
   },
   {
     description:
       "Accessibility and WCAG contrast review that flags color pairings before they reach implementation.",
+    icon: "color-contrast",
     title: "Color Contrast",
   },
 ];
@@ -38,6 +41,77 @@ const steps = [
     title: "Refine & Export",
   },
 ];
+
+function CategoryIcon({
+  icon,
+}: {
+  icon: "color-contrast" | "readability" | "visual-hierarchy";
+}) {
+  if (icon === "readability") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 fill-none">
+        <path
+          d="M7 6h10M7 11h10M7 16h6M7 21h10"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth="2"
+        />
+        <path
+          d="M16 8V4h3"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+        />
+      </svg>
+    );
+  }
+
+  if (icon === "visual-hierarchy") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 fill-none">
+        <rect
+          x="4"
+          y="5"
+          width="16"
+          height="4"
+          rx="1.5"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <rect
+          x="4"
+          y="11"
+          width="10"
+          height="4"
+          rx="1.5"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <rect
+          x="4"
+          y="17"
+          width="6"
+          height="3"
+          rx="1.5"
+          fill="currentColor"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 fill-none">
+      <circle cx="9" cy="12" r="4.5" stroke="currentColor" strokeWidth="2" />
+      <circle cx="15" cy="12" r="4.5" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="M12 7.5a4.5 4.5 0 0 1 0 9"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+    </svg>
+  );
+}
 
 export default function Home() {
   return (
@@ -109,9 +183,7 @@ export default function Home() {
                   }`}
                 >
                   <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-[1rem] bg-[var(--color-accent-soft)] text-[var(--color-accent)]">
-                    <span className="font-display text-lg font-extrabold">
-                      {index + 1}
-                    </span>
+                    <CategoryIcon icon={category.icon} />
                   </div>
                   <h3 className="text-2xl font-bold tracking-[-0.04em]">{category.title}</h3>
                   <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
