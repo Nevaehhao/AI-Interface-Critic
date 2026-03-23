@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter, Manrope } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
+const inter = Inter({
+  variable: "--font-body",
+  subsets: ["latin"],
+});
+
+const manrope = Manrope({
   variable: "--font-display",
   subsets: ["latin"],
 });
@@ -14,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Interface Critic",
+  title: "Lumina Critic",
   description:
     "Analyze UI screenshots and turn them into structured UX feedback.",
 };
@@ -27,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${manrope.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>
