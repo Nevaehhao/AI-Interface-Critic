@@ -51,22 +51,23 @@ function CategoryIcon({
     return (
       <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 fill-none">
         <path
-          d="M4.5 6.8c0-.72.58-1.3 1.3-1.3h4.1c1.03 0 2.04.32 2.9.92v10.88a4.82 4.82 0 0 0-2.9-.98H5.8c-.72 0-1.3.58-1.3 1.3V6.8Z"
+          d="M4.5 6.5c0-.55.45-1 1-1h4.9c1 0 1.96.28 2.8.82V18.5a5.16 5.16 0 0 0-2.8-.82H5.5c-.55 0-1 .45-1 1V6.5Z"
           stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth="2"
         />
         <path
-          d="M19.5 8.1V16.2c0 .72-.58 1.3-1.3 1.3h-4.1c-1.03 0-2.04.34-2.9.98V7.62c.86-.6 1.87-.92 2.9-.92h1.35"
+          d="M19.5 6.5c0-.55-.45-1-1-1h-4.9c-1 0-1.96.28-2.8.82V18.5a5.16 5.16 0 0 1 2.8-.82h4.9c.55 0 1 .45 1 1V6.5Z"
           stroke="currentColor"
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth="2"
         />
         <path
-          d="M15 4.5v5.4l4-3.1V4.5h-4Z"
+          d="M12 7v11.2"
           stroke="currentColor"
+          strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth="2"
         />
