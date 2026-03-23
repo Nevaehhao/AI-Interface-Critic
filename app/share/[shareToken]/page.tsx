@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ReportView } from "@/components/report/report-view";
 import { getSharedAnalysisByToken } from "@/lib/data/analysis-store";
@@ -19,10 +20,10 @@ export default async function SharedReportPage({
       <div className="page-shell">
         <SiteHeader />
 
-        <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 sm:px-10 lg:px-12 lg:py-14">
-          <section className="surface-card p-6 sm:p-8">
+        <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-6 px-6 pb-20 pt-32 sm:px-8">
+          <section className="surface-card p-8">
             <p className="eyebrow">Shared report</p>
-            <h1 className="mt-4 text-4xl tracking-tight sm:text-5xl">
+            <h1 className="mt-4 text-5xl font-extrabold tracking-[-0.05em]">
               This shared link is no longer available.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--color-muted)]">
@@ -33,6 +34,8 @@ export default async function SharedReportPage({
             </Link>
           </section>
         </main>
+
+        <SiteFooter />
       </div>
     );
   }

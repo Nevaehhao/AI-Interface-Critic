@@ -1,22 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
-import { SiteHeader } from "@/components/layout/site-header";
-import { getAnalysisModeLabel } from "@/lib/analysis-context";
-import { buildBuilderBrief } from "@/lib/builder-brief";
-import {
-  buildAnalysisReportPdf,
-  createAnalysisPdfFileName,
-} from "@/lib/report-pdf";
-import { updateIssueTriage, type AnalysisReport } from "@/lib/analysis-report";
-import type { AnalysisSource } from "@/lib/analysis-result";
-import { updateStoredAnalysisReport } from "@/lib/analysis-result";
 import {
   ReportScreenshotPreview,
   type HighlightableIssue,
 } from "@/components/report/report-screenshot-preview";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { getAnalysisModeLabel } from "@/lib/analysis-context";
+import { updateIssueTriage, type AnalysisReport } from "@/lib/analysis-report";
+import { buildBuilderBrief } from "@/lib/builder-brief";
+import type { AnalysisSource } from "@/lib/analysis-result";
+import { updateStoredAnalysisReport } from "@/lib/analysis-result";
+import {
+  buildAnalysisReportPdf,
+  createAnalysisPdfFileName,
+} from "@/lib/report-pdf";
 
 function DetailListCard({
   emptyLabel,
@@ -83,22 +84,22 @@ function sourceLabel(source: AnalysisSource) {
 
 function sourceDescription(source: AnalysisSource) {
   if (source === "ollama") {
-    return "This report was generated from the local Ollama model.";
+    return "Generated from the local Ollama model.";
   }
 
   if (source === "openai-compatible") {
-    return "This report was generated through a user-configured OpenAI-compatible API.";
+    return "Generated through a configured OpenAI-compatible API.";
   }
 
   if (source === "anthropic") {
-    return "This report was generated through a user-configured Anthropic model.";
+    return "Generated through a configured Anthropic model.";
   }
 
   if (source === "gemini") {
-    return "This report was generated through a user-configured Gemini model.";
+    return "Generated through a configured Gemini model.";
   }
 
-  return "The configured provider did not complete this run, so the app showed fallback output instead.";
+  return "The configured provider did not complete the run, so fallback output was used.";
 }
 
 function isLiveResult(source: AnalysisSource) {
@@ -111,7 +112,7 @@ function isLiveResult(source: AnalysisSource) {
 }
 
 function fallbackDescription() {
-  return "The configured provider did not complete this run, so the app showed fallback output instead.";
+  return "The configured provider did not complete the run, so fallback output was used.";
 }
 
 function flattenHighlightableIssues(report: AnalysisReport): HighlightableIssue[] {
@@ -152,6 +153,61 @@ function resolveAbsoluteShareUrl(shareUrl: string | null) {
   }
 
   return new URL(shareUrl, window.location.origin).toString();
+}
+
+function ScoreRing({ score }: { score: number }) {
+  const radius = 42;
+  const circumference = 2 * Math.PI * radius;
+  const dashOffset = circumference - (Math.max(Math.min(score, 100), 0) / 100) * circumference;
+
+  return (
+    <div className="relative h-24 w-24">
+      <svg className="h-24 w-24 -rotate-90" viewBox="0 0 96 96">
+        <circle
+          cx="48"
+          cy="48"
+          r={radius}
+          stroke="rgba(224,226,236,0.95)"
+          strokeWidth="6"
+          fill="transparent"
+        />
+        <circle
+          cx="48"
+          cy="48"
+          r={radius}
+          stroke="var(--color-accent)"
+          strokeWidth="6"
+          fill="transparent"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="font-display text-2xl font-extrabold tracking-[-0.05em]">
+          {(score / 10).toFixed(1)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ActionMessage({
+  children,
+  tone = "default",
+}: {
+  children: ReactNode;
+  tone?: "default" | "error";
+}) {
+  return (
+    <div
+      className={`surface-card px-5 py-4 text-sm ${
+        tone === "error" ? "bg-[var(--color-error-soft)] text-[var(--color-error)]" : "text-[var(--color-muted)]"
+      }`}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function ReportView({
@@ -204,7 +260,9 @@ export function ReportView({
   }, [initialShareUrl, report]);
 
   const selectedIssue =
-    highlightableIssues.find((issue) => issue.id === selectedIssueId) ?? highlightableIssues[0] ?? null;
+    highlightableIssues.find((issue) => issue.id === selectedIssueId) ??
+    highlightableIssues[0] ??
+    null;
 
   async function handleExportPdf() {
     try {
@@ -306,7 +364,9 @@ export function ReportView({
       setTriageMessage("Issue triage updated.");
     } catch (error) {
       setTriageMessage(
-        error instanceof Error ? error.message : "Saved locally, but the server copy could not be updated.",
+        error instanceof Error
+          ? error.message
+          : "Saved locally, but the server copy could not be updated.",
       );
     } finally {
       setTriageSavingId(null);
@@ -356,12 +416,23 @@ export function ReportView({
     <div className="page-shell">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 sm:px-10 lg:px-12 lg:py-14">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link href="/upload" className="material-button material-button-text w-fit px-0">
-            Back to upload
-          </Link>
+      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-6 pb-20 pt-32 sm:px-8">
+        <header className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div>
+            <p className="eyebrow">Analysis session #{analysisId.slice(0, 8)}</p>
+            <h1 className="mt-4 text-5xl font-extrabold tracking-[-0.05em]">
+              Design Critique:{" "}
+              <span className="text-[var(--color-accent)]">{currentReport.summary.productType}</span>
+            </h1>
+            <p className="mt-4 max-w-3xl text-lg leading-8 text-[var(--color-muted)]">
+              {currentReport.summary.mainFinding}
+            </p>
+          </div>
+
           <div className="flex flex-wrap gap-3">
+            <Link href="/upload" className="material-button material-button-text">
+              Back to upload
+            </Link>
             <button
               type="button"
               onClick={() => void handleCopyBuilderBrief()}
@@ -397,119 +468,166 @@ export function ReportView({
               type="button"
               onClick={() => void handleExportPdf()}
               disabled={isExportingPdf}
-              className="material-button material-button-secondary disabled:cursor-not-allowed disabled:opacity-60"
+              className="material-button material-button-primary disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isExportingPdf ? "Exporting..." : "Export PDF"}
+              {isExportingPdf ? "Exporting..." : "Download report"}
             </button>
           </div>
-        </div>
+        </header>
 
-        {isLiveResult(source) ? (
-          <div className="surface-card px-5 py-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className={sourceTone(source)}>{sourceLabel(source)}</span>
-              <p className="text-sm text-[var(--color-muted)]">
-                {sourceDescription(source)}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="surface-card border-[rgba(234,134,0,0.24)] bg-[var(--color-warning-soft)] px-5 py-4">
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className={sourceTone(source)}>{sourceLabel(source)}</span>
-                <p className="text-sm text-[var(--color-muted)]">
-                  {fallbackDescription()}
-                </p>
-              </div>
-              {warning ? (
-                <p className="text-sm leading-7 text-[var(--color-foreground)]">Reason: {warning}</p>
-              ) : null}
-            </div>
-          </div>
-        )}
-
-        {exportError ? (
-          <div className="rounded-2xl bg-[var(--color-error-soft)] px-4 py-3 text-sm text-[var(--color-error)]">
-            {exportError}
-          </div>
-        ) : null}
-
+        {exportError ? <ActionMessage tone="error">{exportError}</ActionMessage> : null}
+        {triageMessage ? <ActionMessage>{triageMessage}</ActionMessage> : null}
         {shareLink && !isReadOnly ? (
-          <div className="surface-card px-5 py-4 text-sm text-[var(--color-muted)]">
+          <ActionMessage>
             Share link:{" "}
             <a
               href={shareLink}
               target="_blank"
               rel="noreferrer"
-              className="break-all text-[var(--color-foreground)]"
+              className="break-all text-[var(--color-accent)]"
             >
               {shareLink}
             </a>
-          </div>
+          </ActionMessage>
         ) : null}
 
-        {triageMessage ? (
-          <div className="surface-card px-5 py-4 text-sm text-[var(--color-muted)]">
-            {triageMessage}
-          </div>
-        ) : null}
-
-        <section className="surface-card p-6 sm:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-3xl">
-              <p className="eyebrow">Report</p>
-              <h1 className="mt-4 text-4xl tracking-tight sm:text-5xl">
-                {currentReport.summary.mainFinding}
-              </h1>
-              <p className="mt-4 text-base leading-8 text-[var(--color-muted)]">
-                Product type: {currentReport.summary.productType}
-              </p>
+        <div className="grid gap-8 xl:grid-cols-[1.04fr_0.96fr]">
+          <section className="surface-card p-6 xl:sticky xl:top-28 xl:self-start">
+            <ReportScreenshotPreview
+              fallbackImageUrl={screenshotUrl}
+              issues={highlightableIssues}
+              selectedIssueId={selectedIssue?.id ?? null}
+              onSelectIssue={setSelectedIssueId}
+            />
+            <div className="mt-6 flex items-center gap-4 px-2">
+              <p className="eyebrow text-[var(--color-muted)]">Hover numbers to view detailed AI notes</p>
+              <div className="h-px flex-1 bg-white/60" />
             </div>
-            <div className="surface-muted min-w-40 p-5 text-center">
-              <p className="eyebrow">Overall score</p>
-              <p className="mt-3 text-5xl font-medium tracking-tight text-[var(--color-accent)]">
-                {currentReport.summary.overallScore}
-              </p>
-            </div>
-          </div>
+          </section>
 
-          <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr]">
-            <div className="surface-muted p-5">
-              <p className="eyebrow">Strengths</p>
-              <ul className="mt-4 space-y-3 text-sm leading-7 text-[var(--color-muted)]">
-                {currentReport.summary.strengths.map((strength) => (
-                  <li key={strength}>{strength}</li>
-                ))}
-              </ul>
-            </div>
+          <section className="space-y-5">
+            <div className="surface-card p-6">
+              <div className="flex items-center justify-between gap-6">
+                <div>
+                  <h2 className="text-3xl font-bold tracking-[-0.04em]">Curator&apos;s Rating</h2>
+                  <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                    {currentReport.summary.nextAction}
+                  </p>
+                </div>
+                <ScoreRing score={currentReport.summary.overallScore} />
+              </div>
 
-            <div className="surface-muted p-5">
-              <p className="eyebrow">Next action</p>
-              <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-                {currentReport.summary.nextAction}
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <div className="surface-muted p-4">
+                  <p className="eyebrow text-[var(--color-muted)]">Accessibility</p>
+                  <p className="mt-3 text-lg font-bold text-[var(--color-error)]">
+                    {currentReport.sections.find((section) => section.id === "accessibility")?.score &&
+                    currentReport.sections.find((section) => section.id === "accessibility")!.score < 80
+                      ? "Fail (AA)"
+                      : "Passing"}
+                  </p>
+                </div>
+                <div className="surface-muted p-4">
+                  <p className="eyebrow text-[var(--color-muted)]">Consistency</p>
+                  <p className="mt-3 text-lg font-bold text-[var(--color-accent)]">
+                    {currentReport.summary.strengths[0] ?? "Strong"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <span className="app-chip">{getAnalysisModeLabel(currentReport.context.analysisMode)}</span>
+                <span className="app-chip">
+                  {currentReport.context.pageCaptureMode === "url-capture"
+                    ? "Captured from URL"
+                    : "Uploaded screenshot"}
+                </span>
                 <span className="app-chip">Analysis {analysisId}</span>
-                <span className="app-chip">{new Date(currentReport.createdAt).toLocaleString()}</span>
               </div>
             </div>
-          </div>
 
-          <div className="mt-6 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-            <span className="app-chip">{getAnalysisModeLabel(currentReport.context.analysisMode)}</span>
-            <span className="app-chip">
-              {currentReport.context.pageCaptureMode === "url-capture" ? "Captured from URL" : "Uploaded screenshot"}
-            </span>
-            {currentReport.context.pageUrl ? <span className="app-chip">Page URL attached</span> : null}
-            {currentReport.context.repoUrl ? <span className="app-chip">Repo URL attached</span> : null}
-            {currentReport.context.techStack ? <span className="app-chip">{currentReport.context.techStack}</span> : null}
-          </div>
-        </section>
+            {isLiveResult(source) ? (
+              <div className="surface-card p-5">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className={sourceTone(source)}>{sourceLabel(source)}</span>
+                  <p className="text-sm leading-7 text-[var(--color-muted)]">
+                    {sourceDescription(source)}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="surface-card bg-[var(--color-warning-soft)] p-5">
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className={sourceTone(source)}>{sourceLabel(source)}</span>
+                    <p className="text-sm leading-7 text-[var(--color-muted)]">
+                      {fallbackDescription()}
+                    </p>
+                  </div>
+                  {warning ? (
+                    <p className="text-sm leading-7 text-[var(--color-foreground)]">Reason: {warning}</p>
+                  ) : null}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              {currentReport.sections.map((section) => (
+                <section key={section.id} className="surface-card p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-[var(--color-accent-soft)]" />
+                      <div>
+                        <h3 className="text-xl font-bold tracking-[-0.04em]">{section.title}</h3>
+                        <p className="mt-1 text-sm leading-7 text-[var(--color-muted)]">
+                          {section.summary}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="app-chip">{section.score}/100</span>
+                  </div>
+
+                  <div className="mt-4 rounded-[1rem] bg-[rgba(255,255,255,0.66)] px-4 py-3 text-sm leading-7 text-[var(--color-muted)]">
+                    {section.issues[0]?.description ?? "No issues highlighted in this section."}
+                  </div>
+                </section>
+              ))}
+            </div>
+
+            <div className="surface-muted p-6">
+              <p className="eyebrow">Expert mode</p>
+              <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+                {isReadOnly
+                  ? "This shared report is read-only. Open the original report to update triage or copy implementation handoff."
+                  : "Copy the builder brief or share link when you want to move this critique into implementation."}
+              </p>
+              {!isReadOnly ? (
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleCopyBuilderBrief()}
+                    className="material-button material-button-secondary w-full"
+                  >
+                    Copy builder brief
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleCopyShareLink()}
+                    className="material-button material-button-secondary w-full"
+                  >
+                    Copy share link
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        </div>
 
         <section className="surface-card p-6 sm:p-8">
           <p className="eyebrow">Review brief</p>
-          <h2 className="mt-4 text-3xl tracking-tight">What the model was optimizing for.</h2>
+          <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em]">
+            What the model was optimizing for.
+          </h2>
 
           <div className="mt-6 grid gap-4 lg:grid-cols-3">
             <DetailListCard
@@ -543,146 +661,143 @@ export function ReportView({
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-          <aside className="surface-card p-6">
-            <p className="eyebrow">Screenshot</p>
-            <h2 className="mt-4 text-2xl tracking-tight">Issue map</h2>
-            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-              Select an issue to see its mapped region on the screenshot.
-            </p>
-
-            <div className="mt-6">
-              <ReportScreenshotPreview
-                fallbackImageUrl={screenshotUrl}
-                issues={highlightableIssues}
-                selectedIssueId={selectedIssue?.id ?? null}
-                onSelectIssue={setSelectedIssueId}
-              />
-            </div>
-          </aside>
-
-          <div className="grid gap-4">
-            {currentReport.sections.map((section) => (
-              <section key={section.id} className="surface-card p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="eyebrow">{section.title}</p>
-                    <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                      {section.summary}
-                    </p>
-                  </div>
-                  <span className="app-chip">Score {section.score}</span>
+        <section className="grid gap-6">
+          {currentReport.sections.map((section) => (
+            <section key={section.id} className="surface-card p-6 sm:p-8">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="eyebrow">{section.title}</p>
+                  <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em]">
+                    Detailed findings
+                  </h2>
+                  <p className="mt-4 max-w-4xl text-base leading-8 text-[var(--color-muted)]">
+                    {section.summary}
+                  </p>
                 </div>
+                <span className="app-chip">Score {section.score}</span>
+              </div>
 
-                <div className="mt-5 grid gap-3">
-                  {section.issues.map((issue) => {
-                    const isSelected = selectedIssue?.id === issue.id;
+              <div className="mt-6 grid gap-4">
+                {section.issues.map((issue) => {
+                  const isSelected = selectedIssue?.id === issue.id;
 
-                    return (
-                      <article
-                        key={issue.id}
-                        className={`surface-muted p-4 ${isSelected ? "ring-2 ring-[var(--color-accent)]" : ""}`}
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <h3 className="text-lg font-medium">{issue.title}</h3>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="app-chip">{issue.implementationComplexity}</span>
-                            <span className="app-chip">
-                              Confidence {Math.round(issue.confidence * 100)}%
-                            </span>
-                            <span className={severityTone(issue.severity)}>{issue.severity}</span>
-                          </div>
+                  return (
+                    <article
+                      key={issue.id}
+                      className={`surface-muted p-5 ${
+                        isSelected ? "ring-2 ring-[var(--color-accent)] ring-offset-2 ring-offset-white/40" : ""
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h3 className="text-2xl font-bold tracking-[-0.04em]">{issue.title}</h3>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="app-chip">{issue.implementationComplexity}</span>
+                          <span className="app-chip">
+                            Confidence {Math.round(issue.confidence * 100)}%
+                          </span>
+                          <span className={severityTone(issue.severity)}>{issue.severity}</span>
                         </div>
-                        <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                          {issue.description}
-                        </p>
-                        {issue.heuristics.length > 0 ? (
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {issue.heuristics.map((heuristic) => (
-                              <span key={`${issue.id}-${heuristic}`} className="app-chip">
-                                {heuristic}
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
-                        {issue.evidence.length > 0 ? (
-                          <ul className="mt-3 space-y-2 text-sm leading-7 text-[var(--color-muted)]">
-                            {issue.evidence.map((evidence) => (
-                              <li key={`${issue.id}-${evidence}`}>{evidence}</li>
-                            ))}
-                          </ul>
-                        ) : null}
-                        <p className="mt-3 text-sm leading-7">{issue.recommendation}</p>
+                      </div>
+
+                      <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+                        {issue.description}
+                      </p>
+
+                      {issue.heuristics.length > 0 ? (
                         <div className="mt-4 flex flex-wrap gap-2">
-                          <span className="app-chip">Status {issue.triageStatus}</span>
-                          {issue.triageUpdatedAt ? (
-                            <span className="app-chip">
-                              Updated {new Date(issue.triageUpdatedAt).toLocaleDateString()}
+                          {issue.heuristics.map((heuristic) => (
+                            <span key={`${issue.id}-${heuristic}`} className="app-chip">
+                              {heuristic}
                             </span>
-                          ) : null}
+                          ))}
                         </div>
-                        {!isReadOnly ? (
-                          <div className="mt-4 space-y-3">
-                            <div className="flex flex-wrap gap-2">
-                              {(["open", "fixed", "ignored", "revisit"] as const).map((status) => (
-                                <button
-                                  key={`${issue.id}-${status}`}
-                                  type="button"
-                                  disabled={triageSavingId === issue.id}
-                                  onClick={() => void handleSaveIssueTriage(issue.id, status)}
-                                  className={`material-button px-3 py-2 text-sm ${
-                                    issue.triageStatus === status
-                                      ? "material-button-primary"
-                                      : "material-button-secondary"
-                                  } disabled:cursor-not-allowed disabled:opacity-60`}
-                                >
-                                  {status}
-                                </button>
-                              ))}
-                            </div>
-                            <textarea
-                              rows={3}
-                              value={triageNotes[issue.id] ?? ""}
-                              onChange={(event) =>
-                                setTriageNotes((currentNotes) => ({
-                                  ...currentNotes,
-                                  [issue.id]: event.target.value,
-                                }))
-                              }
-                              placeholder="Add a note for follow-up, rationale, or implementation context."
-                              className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
-                            />
-                            <button
-                              type="button"
-                              disabled={triageSavingId === issue.id}
-                              onClick={() => void handleSaveIssueTriage(issue.id, issue.triageStatus)}
-                              className="material-button material-button-secondary disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              {triageSavingId === issue.id ? "Saving..." : "Save note"}
-                            </button>
-                          </div>
+                      ) : null}
+
+                      {issue.evidence.length > 0 ? (
+                        <ul className="mt-4 space-y-2 text-sm leading-7 text-[var(--color-muted)]">
+                          {issue.evidence.map((evidence) => (
+                            <li key={`${issue.id}-${evidence}`}>{evidence}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+
+                      <div className="mt-4 rounded-[1rem] bg-white/70 px-4 py-4 text-sm leading-7">
+                        {issue.recommendation}
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <span className="app-chip">Status {issue.triageStatus}</span>
+                        {issue.triageUpdatedAt ? (
+                          <span className="app-chip">
+                            Updated {new Date(issue.triageUpdatedAt).toLocaleDateString()}
+                          </span>
                         ) : null}
-                        {issue.highlights.length > 0 ? (
+                      </div>
+
+                      {!isReadOnly ? (
+                        <div className="mt-5 space-y-3">
+                          <div className="flex flex-wrap gap-2">
+                            {(["open", "fixed", "ignored", "revisit"] as const).map((status) => (
+                              <button
+                                key={`${issue.id}-${status}`}
+                                type="button"
+                                disabled={triageSavingId === issue.id}
+                                onClick={() => void handleSaveIssueTriage(issue.id, status)}
+                                className={`material-button px-3 py-2 text-sm ${
+                                  issue.triageStatus === status
+                                    ? "material-button-primary"
+                                    : "material-button-secondary"
+                                } disabled:cursor-not-allowed disabled:opacity-60`}
+                              >
+                                {status}
+                              </button>
+                            ))}
+                          </div>
+                          <textarea
+                            rows={3}
+                            value={triageNotes[issue.id] ?? ""}
+                            onChange={(event) =>
+                              setTriageNotes((currentNotes) => ({
+                                ...currentNotes,
+                                [issue.id]: event.target.value,
+                              }))
+                            }
+                            placeholder="Add a note for follow-up, rationale, or implementation context."
+                            className="w-full rounded-[1rem] px-4 py-3 text-sm"
+                          />
                           <button
                             type="button"
-                            onClick={() => setSelectedIssueId(issue.id)}
-                            className="material-button material-button-secondary mt-4 px-4 py-2 text-sm"
+                            disabled={triageSavingId === issue.id}
+                            onClick={() => void handleSaveIssueTriage(issue.id, issue.triageStatus)}
+                            className="material-button material-button-secondary disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            Show on screenshot
+                            {triageSavingId === issue.id ? "Saving..." : "Save note"}
                           </button>
-                        ) : null}
-                      </article>
-                    );
-                  })}
-                </div>
-              </section>
-            ))}
-          </div>
+                        </div>
+                      ) : null}
+
+                      {issue.highlights.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedIssueId(issue.id)}
+                          className="material-button material-button-text mt-4 px-0"
+                        >
+                          Show on screenshot
+                        </button>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
         </section>
 
         <section className="surface-card p-6 sm:p-8">
           <p className="eyebrow">Builder handoff</p>
-          <h2 className="mt-4 text-3xl tracking-tight">Implementation plan for a full-stack pass.</h2>
+          <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em]">
+            Implementation plan for a full-stack pass.
+          </h2>
           <p className="mt-4 max-w-4xl text-base leading-8 text-[var(--color-muted)]">
             {currentReport.implementationPlan.summary}
           </p>
@@ -727,28 +842,30 @@ export function ReportView({
         {currentReport.redesignSuggestions.length > 0 ? (
           <section className="surface-card p-6 sm:p-8">
             <p className="eyebrow">Redesign suggestions</p>
-            <h2 className="mt-4 text-3xl tracking-tight">What to improve next.</h2>
+            <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em]">What to improve next.</h2>
 
             <div className="mt-6 grid gap-4 lg:grid-cols-3">
               {currentReport.redesignSuggestions.map((suggestion) => (
                 <article key={suggestion.id} className="surface-muted p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h3 className="text-lg font-medium">{suggestion.title}</h3>
+                    <h3 className="text-xl font-bold tracking-[-0.04em]">{suggestion.title}</h3>
                     <div className="flex flex-wrap gap-2">
                       <span className="app-chip">{suggestion.priority}</span>
                       <span className="app-chip">{suggestion.implementationComplexity}</span>
                     </div>
                   </div>
-                  <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                  <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
                     {suggestion.summary}
                   </p>
-                  <p className="mt-3 text-sm leading-7">{suggestion.expectedImpact}</p>
+                  <p className="mt-4 text-sm leading-7">{suggestion.expectedImpact}</p>
                 </article>
               ))}
             </div>
           </section>
         ) : null}
       </main>
+
+      <SiteFooter />
     </div>
   );
 }
