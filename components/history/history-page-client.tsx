@@ -35,26 +35,6 @@ type WorkspaceOption = {
   name: string;
 };
 
-function formatAnalysisSource(source: AnalysisSource) {
-  if (source === "ollama") {
-    return "Ollama";
-  }
-
-  if (source === "openai-compatible") {
-    return "API model";
-  }
-
-  if (source === "anthropic") {
-    return "Anthropic";
-  }
-
-  if (source === "gemini") {
-    return "Gemini";
-  }
-
-  return "Fallback";
-}
-
 function normalizeSearchValue(value: string) {
   return value.trim().toLowerCase();
 }
@@ -101,6 +81,30 @@ function toLocalEntry(
   };
 }
 
+function getHistoryTone(entry: HistoryAnalysisEntry) {
+  if (entry.overallScore >= 80) {
+    return {
+      badgeClassName: "bg-[var(--color-success-soft)] text-[var(--color-success)]",
+      label: "Optimal",
+      scoreClassName: "text-[var(--color-accent)]",
+    };
+  }
+
+  if (entry.overallScore >= 60) {
+    return {
+      badgeClassName: "bg-[var(--color-accent-soft)] text-[var(--color-accent)]",
+      label: "Review",
+      scoreClassName: "text-[var(--color-accent)]",
+    };
+  }
+
+  return {
+    badgeClassName: "bg-[var(--color-error-soft)] text-[var(--color-error)]",
+    label: "Critical",
+    scoreClassName: "text-[var(--color-error)]",
+  };
+}
+
 function HistoryCard({
   entry,
   isSelected,
@@ -110,42 +114,79 @@ function HistoryCard({
   isSelected: boolean;
   onToggleSelect: () => void;
 }) {
+  const tone = getHistoryTone(entry);
+
   return (
-    <article className="surface-card p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <article className="surface-card group flex h-full flex-col overflow-hidden p-4 transition duration-300 hover:-translate-y-1 hover:shadow-[0_30px_60px_rgba(111,78,156,0.12)]">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-[1.5rem] bg-[var(--color-surface-muted)]">
         {entry.screenshotUrl ? (
           <div
             aria-label="Saved analysis screenshot"
-            className="aspect-[4/3] overflow-hidden rounded-[1.25rem] border border-[var(--color-line)] bg-white bg-cover bg-center lg:w-52"
+            className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-[1.03]"
             role="img"
             style={{ backgroundImage: `url("${entry.screenshotUrl}")` }}
           />
-        ) : null}
+        ) : (
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(237,220,255,0.56),rgba(255,255,255,0.92))]" />
+        )}
 
-        <div className="flex-1">
-          <div className="flex flex-wrap gap-2 text-xs uppercase tracking-[0.08em] text-[var(--color-muted)]">
-            <span>{entry.productType}</span>
-            <span>{formatAnalysisSource(entry.source)}</span>
-            <span>{entry.isLocal ? "Local" : "Synced"}</span>
-            {entry.workspaceName ? <span>{entry.workspaceName}</span> : null}
-            {entry.shareEnabled ? <span>Shared</span> : null}
-            <span>{new Date(entry.createdAt).toLocaleString()}</span>
+        <div className="absolute right-4 top-4">
+          <span
+            className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${tone.badgeClassName}`}
+          >
+            {tone.label}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col p-4 pb-2">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="font-display text-xl font-bold tracking-[-0.04em]">
+              {entry.productType}
+            </h2>
+            <p className="mt-1 text-sm text-[var(--color-muted)]">
+              Analyzed {new Date(entry.createdAt).toLocaleDateString()}
+            </p>
           </div>
-          <h2 className="mt-3 text-xl tracking-tight">{entry.mainFinding}</h2>
-          <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">{entry.nextAction}</p>
+          <div className="text-right">
+            <p
+              className={`font-display text-3xl font-extrabold tracking-[-0.05em] ${tone.scoreClassName}`}
+            >
+              {entry.overallScore}
+              <span className="ml-0.5 text-xs font-bold">/100</span>
+            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--color-muted)]">
+              UI health
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="app-chip">Score {entry.overallScore}</span>
+        <p className="mt-4 line-clamp-3 text-sm leading-7 text-[var(--color-muted)]">
+          {entry.mainFinding}
+        </p>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          <span className="app-chip">{entry.isLocal ? "Local" : "Synced"}</span>
+          {entry.workspaceName ? <span className="app-chip">{entry.workspaceName}</span> : null}
+          {entry.shareEnabled ? <span className="app-chip">Shared</span> : null}
+        </div>
+
+        <div className="mt-auto flex items-center justify-between border-t border-white/50 pt-5">
           <button
             type="button"
             onClick={onToggleSelect}
-            className={`material-button ${isSelected ? "material-button-primary" : "material-button-secondary"}`}
+            className={`font-display text-sm font-bold transition ${
+              isSelected ? "text-[var(--color-accent)]" : "text-[var(--color-muted)]"
+            }`}
           >
             {isSelected ? "Selected" : "Select"}
           </button>
-          <Link href={`/report/${entry.id}`} className="material-button material-button-secondary">
-            Open report
+          <Link
+            href={`/report/${entry.id}`}
+            className="font-display text-sm font-bold text-[var(--color-accent)] transition hover:opacity-80"
+          >
+            View report
           </Link>
         </div>
       </div>
@@ -208,7 +249,9 @@ export function HistoryPageClient({
     .map((entry) =>
       toLocalEntry(
         entry,
-        entry.workspaceId ? (workspaceMap.get(entry.workspaceId)?.name ?? entry.workspaceName ?? null) : null,
+        entry.workspaceId
+          ? (workspaceMap.get(entry.workspaceId)?.name ?? entry.workspaceName ?? null)
+          : null,
       ),
     );
   const allEntries = [...persistedEntries, ...localEntries]
@@ -237,12 +280,7 @@ export function HistoryPageClient({
     }
 
     const haystack = normalizeSearchValue(
-      [
-        entry.mainFinding,
-        entry.nextAction,
-        entry.productType,
-        entry.workspaceName,
-      ]
+      [entry.mainFinding, entry.nextAction, entry.productType, entry.workspaceName]
         .filter(Boolean)
         .join(" "),
     );
@@ -276,68 +314,41 @@ export function HistoryPageClient({
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10 sm:px-10 lg:px-12 lg:py-14">
-      <section className="surface-card p-6 sm:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="eyebrow">History</p>
-            <h1 className="mt-4 text-4xl tracking-tight sm:text-5xl">Past analyses.</h1>
-            <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
-              {userEmail
-                ? `Signed in as ${userEmail}`
-                : "Recent reports from this browser appear here automatically."}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            {isSignedIn ? <SignOutButton /> : null}
-            <Link href="/upload" className="material-button material-button-primary">
-              New analysis
-            </Link>
-          </div>
+    <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-6 pb-20 pt-32 sm:px-8">
+      <header className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <p className="eyebrow">Archive</p>
+          <h1 className="mt-4 text-5xl font-extrabold tracking-[-0.05em]">Project History</h1>
+          <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
+            Review your past interface evaluations and track your design evolution through the eyes
+            of the Digital Curator.
+          </p>
+          <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+            {userEmail
+              ? `Signed in as ${userEmail}`
+              : "Recent reports from this browser appear here automatically."}
+          </p>
         </div>
-      </section>
 
-      {isSignedIn && workspaces.length > 0 ? (
-        <section className="surface-card p-5">
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/history"
-              className={`material-button px-4 py-2 text-sm ${
-                !selectedWorkspaceId ? "material-button-primary" : "material-button-secondary"
-              }`}
-            >
-              All
-            </Link>
-            {workspaces.map((workspace) => (
-              <Link
-                key={workspace.id}
-                href={`/history?workspaceId=${workspace.id}`}
-                className={`material-button px-4 py-2 text-sm ${
-                  selectedWorkspaceId === workspace.id
-                    ? "material-button-primary"
-                    : "material-button-secondary"
-                }`}
-              >
-                {workspace.name}
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
+        <div className="flex flex-wrap items-center gap-3">
+          {isSignedIn ? <SignOutButton /> : null}
+          <Link href="/upload" className="material-button material-button-primary">
+            Upload UI
+          </Link>
+        </div>
+      </header>
 
-      <section className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="grid gap-4 xl:grid-cols-[1fr_auto]">
         <div className="surface-card p-5">
-          <p className="eyebrow">Filters</p>
-          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-4 lg:grid-cols-3">
             <label className="block space-y-2">
               <span className="text-sm text-[var(--color-muted)]">Search</span>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search finding, next action, or workspace"
-                className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+                placeholder="Search projects..."
+                className="w-full rounded-[1rem] px-4 py-3 text-sm"
               />
             </label>
             <label className="block space-y-2">
@@ -347,7 +358,7 @@ export function HistoryPageClient({
                 onChange={(event) =>
                   setSourceFilter(event.target.value as AnalysisSource | "all")
                 }
-                className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
+                className="w-full rounded-[1rem] px-4 py-3 text-sm"
               >
                 <option value="all">All</option>
                 <option value="ollama">Ollama</option>
@@ -364,7 +375,7 @@ export function HistoryPageClient({
                 onChange={(event) =>
                   setScoreFilter(event.target.value as "all" | "high" | "mid" | "low")
                 }
-                className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
+                className="w-full rounded-[1rem] px-4 py-3 text-sm"
               >
                 <option value="all">All</option>
                 <option value="high">80 and up</option>
@@ -375,35 +386,49 @@ export function HistoryPageClient({
           </div>
         </div>
 
-        <TrendSparkline entries={visibleEntries} />
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-3">
-        <div className="surface-muted p-5">
-          <p className="eyebrow">Visible reports</p>
-          <p className="mt-3 text-4xl tracking-tight">{visibleEntries.length}</p>
-        </div>
-        <div className="surface-muted p-5">
-          <p className="eyebrow">Average score</p>
-          <p className="mt-3 text-4xl tracking-tight">{averageScore ?? "--"}</p>
-        </div>
-        <div className="surface-muted p-5">
-          <p className="eyebrow">Selection</p>
-          <p className="mt-3 text-4xl tracking-tight">{selectedEntries.length}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedIds([]);
-                setShowBatchNotice(false);
-              }}
-              className="material-button material-button-secondary"
-            >
-              Clear selection
-            </button>
+        <div className="surface-card flex min-w-72 items-center justify-between gap-6 p-5">
+          <div>
+            <p className="eyebrow">Visible reports</p>
+            <p className="mt-3 font-display text-4xl font-extrabold tracking-[-0.05em]">
+              {visibleEntries.length}
+            </p>
+          </div>
+          <div>
+            <p className="eyebrow">Average score</p>
+            <p className="mt-3 font-display text-4xl font-extrabold tracking-[-0.05em]">
+              {averageScore ?? "--"}
+            </p>
           </div>
         </div>
       </section>
+
+      {isSignedIn && workspaces.length > 0 ? (
+        <section className="flex flex-wrap gap-3">
+          <Link
+            href="/history"
+            className={`material-button ${
+              !selectedWorkspaceId ? "material-button-primary" : "material-button-secondary"
+            }`}
+          >
+            All
+          </Link>
+          {workspaces.map((workspace) => (
+            <Link
+              key={workspace.id}
+              href={`/history?workspaceId=${workspace.id}`}
+              className={`material-button ${
+                selectedWorkspaceId === workspace.id
+                  ? "material-button-primary"
+                  : "material-button-secondary"
+              }`}
+            >
+              {workspace.name}
+            </Link>
+          ))}
+        </section>
+      ) : null}
+
+      <TrendSparkline entries={visibleEntries} />
 
       {selectionMessage ? (
         <div className="surface-card px-5 py-4 text-sm text-[var(--color-muted)]">
@@ -421,7 +446,7 @@ export function HistoryPageClient({
       <HistoryFlowPanel entries={selectedEntries} />
 
       {visibleEntries.length > 0 ? (
-        <section className="grid gap-4">
+        <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {visibleEntries.map((entry) => (
             <HistoryCard
               key={entry.id}
@@ -430,12 +455,29 @@ export function HistoryPageClient({
               onToggleSelect={() => toggleSelectedId(entry.id)}
             />
           ))}
+
+          <Link
+            href="/upload"
+            className="surface-card flex min-h-[26rem] flex-col items-center justify-center rounded-[1.75rem] border border-dashed border-[rgba(175,177,188,0.34)] p-8 text-center transition hover:bg-[rgba(237,220,255,0.34)]"
+          >
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[var(--color-accent)] shadow-[0_12px_30px_rgba(111,78,156,0.08)]">
+              <span className="font-display text-3xl font-extrabold">+</span>
+            </div>
+            <h2 className="mt-5 font-display text-2xl font-bold tracking-[-0.04em]">
+              Analyze New UI
+            </h2>
+            <p className="mt-3 max-w-xs text-sm leading-7 text-[var(--color-muted)]">
+              Get expert AI feedback on your latest design or product surface.
+            </p>
+          </Link>
         </section>
       ) : (
-        <section className="surface-card p-6 sm:p-8">
+        <section className="surface-card p-8">
           <p className="eyebrow">No matching history</p>
-          <h2 className="mt-4 text-3xl tracking-tight">Nothing matches the current filters.</h2>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
+          <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em]">
+            Nothing matches the current filters.
+          </h2>
+          <p className="mt-4 max-w-2xl text-base leading-8 text-[var(--color-muted)]">
             Adjust the workspace, source, score, or keyword filters to widen the result set.
           </p>
         </section>
