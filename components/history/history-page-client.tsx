@@ -7,7 +7,6 @@ import { SignOutButton } from "@/components/auth/sign-out-button";
 import {
   HistoryComparePanel,
   HistoryFlowPanel,
-  TrendSparkline,
   type HistoryAnalysisEntry,
 } from "@/components/history/history-insights";
 import type { AnalysisReport } from "@/lib/analysis-report";
@@ -420,8 +419,6 @@ export function HistoryPageClient({
           ))}
         </section>
       ) : null}
-
-      <TrendSparkline entries={visibleEntries} />
 
       {selectionMessage ? (
         <div className="surface-card px-5 py-4 text-sm text-[var(--color-muted)]">
