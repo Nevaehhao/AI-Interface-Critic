@@ -102,13 +102,17 @@ function CategoryIcon({
 
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7 fill-none">
-      <circle cx="9" cy="12" r="4.5" stroke="currentColor" strokeWidth="2" />
-      <circle cx="15" cy="12" r="4.5" stroke="currentColor" strokeWidth="2" />
       <path
-        d="M12 7.5a4.5 4.5 0 0 1 0 9"
+        d="M12 4C7.03 4 3 7.58 3 12c0 4.08 3.2 7.41 7.24 7.9.82.1 1.44-.61 1.2-1.4a1.94 1.94 0 0 1-.08-.53c0-1.09.88-1.97 1.97-1.97h1.12A6.55 6.55 0 0 0 21 9.45C21 6.44 16.97 4 12 4Z"
         stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         strokeWidth="2"
       />
+      <circle cx="8" cy="10" r="1.1" fill="currentColor" />
+      <circle cx="11.2" cy="7.6" r="1.1" fill="currentColor" />
+      <circle cx="15.1" cy="7.8" r="1.1" fill="currentColor" />
+      <circle cx="16.8" cy="11.2" r="1.1" fill="currentColor" />
     </svg>
   );
 }
