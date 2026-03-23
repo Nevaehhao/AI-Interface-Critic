@@ -147,7 +147,11 @@ export default function Home() {
               <div className="mt-10 flex flex-wrap gap-4">
                 <ButtonLink href="/upload">Start free analysis</ButtonLink>
                 <HomeHeroAuthAction />
-                <ButtonLink href="/report/demo" variant="text">
+                <ButtonLink
+                  href="/report/demo"
+                  variant="text"
+                  className="rounded-[1rem] border border-[rgba(111,78,156,0.16)] bg-[var(--color-accent-soft)] px-5 py-3 text-[var(--color-accent)] shadow-[0_12px_28px_rgba(111,78,156,0.08)] hover:bg-[var(--color-accent-soft-strong)]"
+                >
                   View demo report
                 </ButtonLink>
               </div>
