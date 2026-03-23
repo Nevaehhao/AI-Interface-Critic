@@ -159,7 +159,8 @@ export default function Home() {
               <div className="mt-10 flex flex-wrap justify-center gap-4">
                 <ButtonLink
                   href="/upload"
-                  className="!bg-white !text-[var(--color-accent)] shadow-[0_18px_40px_rgba(46,32,78,0.24)] hover:!bg-[#f8f4ff]"
+                  variant="secondary"
+                  className="!bg-white !text-[var(--color-accent)] border border-white/70 px-8 py-4 text-base shadow-[0_22px_44px_rgba(46,32,78,0.24)] hover:!bg-[#f8f4ff]"
                 >
                   Get started for free
                 </ButtonLink>
