@@ -13,7 +13,7 @@ export function SiteFooter() {
       <div className="mx-auto grid w-full max-w-7xl gap-8 md:grid-cols-2 md:items-center">
         <div>
           <p className="font-display text-2xl font-extrabold tracking-[-0.04em] text-[var(--color-accent)]">
-            LuminaCritic
+            UXCritic
           </p>
           <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
             The Digital Curator for UI reviews, critique archives, and implementation handoff.

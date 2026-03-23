@@ -69,7 +69,7 @@ export function SiteHeader() {
           href="/"
           className="font-display text-lg font-extrabold tracking-[-0.04em] text-[var(--color-accent)]"
         >
-          LuminaCritic
+          UXCritic
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm text-[var(--color-muted)] md:flex">

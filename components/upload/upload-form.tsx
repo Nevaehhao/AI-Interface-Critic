@@ -398,7 +398,7 @@ export function UploadForm({
               <div className="surface-muted rounded-[2rem] p-8">
                 <h2 className="text-3xl font-bold tracking-[-0.04em]">Capture a live page</h2>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                  Paste the page you want analyzed. Lumina Critic will open it in a headless
+                  Paste the page you want analyzed. UXCritic will open it in a headless
                   browser and critique the captured viewport.
                 </p>
                 <label className="mt-6 block space-y-2">

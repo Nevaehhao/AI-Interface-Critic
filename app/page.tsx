@@ -54,7 +54,7 @@ export default function Home() {
                 <span className="text-[var(--color-accent)] italic">interface deserves</span>
               </h1>
               <p className="mt-6 text-lg leading-8 text-[var(--color-muted)]">
-                Elevate your design standards with autonomous UX reviews. Lumina Critic analyzes
+                Elevate your design standards with autonomous UX reviews. UXCritic analyzes
                 hierarchy, contrast, readability, and implementation risk in seconds.
               </p>
 
@@ -74,7 +74,7 @@ export default function Home() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbEgmro2A3RJk7rgrSuo9aiVqm35-xH5069o_ehM6AoOJMBDHZdMTOAlqQX0DNIpf0Zg5JEz8F0Xr2JU0UG6qqVwlsapkBGy_quFCfNq2Nlp5sD3EPs-bKFhrdU2C7Jp7R8QabFxfNcqe8Lo9POMpeZX1hvkBoVc0N5a5VRHEAYPvP1EEiAb3Bourj2jP60e68st4kTdLpb_6iW00emuvaJDx6IZ7wHGQXVKk2_QEP5BGADA0wBMSpwFZNNA_hQ2GA68vUUZOOL9SH"
-                    alt="Lumina Critic dashboard preview"
+                    alt="UXCritic dashboard preview"
                     className="w-full rounded-[1.5rem] object-cover"
                   />
                 </div>

@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lumina Critic",
+  title: "UXCritic",
   description:
     "Analyze UI screenshots and turn them into structured UX feedback.",
 };
