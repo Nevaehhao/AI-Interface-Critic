@@ -19,6 +19,8 @@ export function WorkspaceCreateForm() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fieldClassName =
+    "w-full rounded-[1.25rem] border border-[rgba(175,177,188,0.24)] bg-white/80 px-4 py-3 text-sm text-[var(--color-foreground)] outline-none transition placeholder:text-[var(--color-muted)]";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -68,14 +70,43 @@ export function WorkspaceCreateForm() {
   }
 
   return (
-    <form onSubmit={(event) => void handleSubmit(event)} className="surface-card p-6">
+    <form onSubmit={(event) => void handleSubmit(event)} className="surface-card p-6 sm:p-8">
       <p className="eyebrow">Create workspace</p>
-      <h2 className="mt-3 text-2xl tracking-tight">Group analyses by project</h2>
-      <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-        Use one workspace per case study, product line, client, or design stream.
+      <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em]">Open a new project stream</h2>
+      <p className="mt-4 text-sm leading-7 text-[var(--color-muted)]">
+        Use one workspace per case study, product line, client, or design stream so upload,
+        history, and triage stay readable.
       </p>
 
-      <div className="mt-5 space-y-4">
+      <div className="surface-tonal mt-6 p-5">
+        <p className="eyebrow">Preview</p>
+        <div className="mt-4 flex items-center gap-4">
+          <span
+            aria-hidden="true"
+            className="h-12 w-12 rounded-full shadow-[0_12px_28px_rgba(111,78,156,0.12)]"
+            style={{ backgroundColor: accentColor }}
+          />
+          <div>
+            <p className="text-lg font-semibold tracking-[-0.03em]">
+              {name.trim() || "Untitled workspace"}
+            </p>
+            <p className="mt-1 text-sm leading-7 text-[var(--color-muted)]">
+              {description.trim() || "Add a short note so future critiques have context."}
+            </p>
+          </div>
+        </div>
+        {tags.trim() ? (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {parseTags(tags).map((tag) => (
+              <span key={tag} className="app-chip">
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-6 space-y-4">
         <label className="block space-y-2">
           <span className="text-sm text-[var(--color-muted)]">Workspace name</span>
           <input
@@ -84,7 +115,7 @@ export function WorkspaceCreateForm() {
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Onboarding audit"
-            className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+            className={fieldClassName}
           />
         </label>
 
@@ -95,7 +126,7 @@ export function WorkspaceCreateForm() {
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             placeholder="Critiques for the marketing site redesign."
-            className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+            className={fieldClassName}
           />
         </label>
 
@@ -106,7 +137,7 @@ export function WorkspaceCreateForm() {
               type="color"
               value={accentColor}
               onChange={(event) => setAccentColor(event.target.value)}
-              className="h-12 w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-2 py-2"
+              className="h-12 w-full rounded-[1.25rem] border border-[rgba(175,177,188,0.24)] bg-white/80 px-2 py-2"
             />
           </label>
 
@@ -117,7 +148,7 @@ export function WorkspaceCreateForm() {
               value={tags}
               onChange={(event) => setTags(event.target.value)}
               placeholder="marketing, onboarding, mobile"
-              className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none placeholder:text-[var(--color-muted)] focus:border-[var(--color-accent)]"
+              className={fieldClassName}
             />
           </label>
         </div>
@@ -138,7 +169,7 @@ export function WorkspaceCreateForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="material-button material-button-primary mt-5 disabled:cursor-not-allowed disabled:opacity-60"
+        className="material-button material-button-primary mt-6 w-full justify-center disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting ? "Creating workspace..." : "Create workspace"}
       </button>

@@ -44,11 +44,32 @@ export function ReportScreenshotPreview({
 
   if (!draft && !fallbackImageUrl) {
     return (
-      <div className="surface-muted border-dashed p-5">
-        <p className="text-sm leading-7 text-[var(--color-muted)]">
-          No screenshot preview is available yet. Once the upload flow runs, the
-          report will show the analyzed image here.
-        </p>
+      <div className="space-y-4">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem] bg-[radial-gradient(circle_at_top_left,rgba(227,203,255,0.92),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.88),transparent_38%),linear-gradient(160deg,#f4eefc_0%,#f7f4fb_44%,#ebe7f2_100%)]">
+          <div className="absolute inset-5 rounded-[1.5rem] bg-white/55 backdrop-blur-[10px]" />
+          <div className="absolute inset-x-8 top-8 flex items-center justify-between gap-3">
+            <span className="app-chip">Preview unavailable</span>
+            <span className="app-chip">Upload required</span>
+          </div>
+          <div className="absolute inset-x-8 bottom-8 max-w-sm rounded-[1.5rem] bg-white/78 p-5 shadow-[var(--shadow-soft)] backdrop-blur">
+            <p className="eyebrow">Screenshot panel</p>
+            <h3 className="mt-3 text-2xl font-semibold tracking-[-0.04em]">
+              This report does not have a stored visual capture.
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+              Run a new upload or URL capture to pin issue highlights back onto the analyzed
+              interface.
+            </p>
+          </div>
+        </div>
+
+        <div className="surface-card rounded-[1.5rem] p-4 shadow-none">
+          <p className="eyebrow">How to enable preview</p>
+          <div className="mt-4 grid gap-3 text-sm leading-7 text-[var(--color-muted)] sm:grid-cols-2">
+            <p className="surface-muted p-4">Upload a screenshot when starting a new critique.</p>
+            <p className="surface-muted p-4">Or capture a live URL so the report can store it.</p>
+          </div>
+        </div>
       </div>
     );
   }

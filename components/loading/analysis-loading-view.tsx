@@ -26,6 +26,24 @@ const loadingSteps = [
   "Preparing structured critique",
 ] as const;
 
+function stepToneClassName({
+  isActive,
+  isComplete,
+}: {
+  isActive: boolean;
+  isComplete: boolean;
+}) {
+  if (isActive) {
+    return "surface-tonal";
+  }
+
+  if (isComplete) {
+    return "bg-[var(--color-success-soft)]";
+  }
+
+  return "bg-white/72";
+}
+
 export function AnalysisLoadingView({
   viewerUserId = null,
 }: {
@@ -177,28 +195,65 @@ export function AnalysisLoadingView({
 
   if (!draft) {
     return (
-      <div className="surface-card p-6 sm:p-8">
-        <p className="eyebrow text-[var(--color-accent)]">Missing screenshot</p>
-        <h1 className="mt-4 text-3xl tracking-tight sm:text-4xl">There is no upload to analyze.</h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-          Start from the upload page so the analysis step has a screenshot to process.
-        </p>
-        <Link href="/upload" className="material-button material-button-secondary mt-6">
-          Go to upload
-        </Link>
-      </div>
+      <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <div className="surface-card p-7 sm:p-10">
+          <p className="eyebrow text-[var(--color-accent)]">Missing upload</p>
+          <h1 className="mt-4 max-w-3xl text-5xl font-extrabold tracking-[-0.05em] sm:text-6xl">
+            There is no input queued for analysis.
+          </h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
+            Start from the upload page so this step has a screenshot or captured URL to process.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/upload" className="material-button material-button-primary">
+              Go to upload
+            </Link>
+            <Link href="/" className="material-button material-button-secondary">
+              Return to landing
+            </Link>
+          </div>
+        </div>
+
+        <aside className="surface-tonal p-7 sm:p-8">
+          <p className="eyebrow">Before retrying</p>
+          <div className="mt-5 grid gap-4">
+            <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+              <p className="text-sm leading-7 text-[var(--color-muted)]">
+                Upload a screenshot if you want exact issue highlights and annotation mapping in the
+                report.
+              </p>
+            </div>
+            <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+              <p className="text-sm leading-7 text-[var(--color-muted)]">
+                Or use URL capture if Playwright with Chromium is installed on the server.
+              </p>
+            </div>
+          </div>
+        </aside>
+      </section>
     );
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-      <section className="surface-card p-6 sm:p-8">
+    <div className="grid gap-8 xl:grid-cols-[0.98fr_1.02fr]">
+      <section className="surface-card p-6 sm:p-8 lg:p-10">
         <p className="eyebrow">Analyzing</p>
-        <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">Review in progress.</h1>
+        <h1 className="mt-4 text-5xl font-extrabold tracking-[-0.05em] sm:text-6xl">
+          Review in progress.
+        </h1>
         <p className="mt-4 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
           The app is processing your input now. When the report opens, it will clearly show whether
           the configured provider produced the result or fallback output was used.
         </p>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <span className="app-chip">{loadingSteps.length} critique passes</span>
+          <span className="app-chip">Automatic report handoff</span>
+          {draft.captureMode === "url-capture" ? (
+            <span className="app-chip">Live page capture</span>
+          ) : (
+            <span className="app-chip">Screenshot upload</span>
+          )}
+        </div>
         {draftScreenshots.length > 1 ? (
           <div className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
             <span className="app-chip">Flow batch</span>
@@ -209,7 +264,7 @@ export function AnalysisLoadingView({
         ) : null}
 
         {error ? (
-          <div className="mt-6 space-y-4 rounded-2xl bg-[var(--color-error-soft)] px-4 py-4 text-sm text-[var(--color-error)]">
+          <div className="mt-6 space-y-4 rounded-[1.5rem] bg-[var(--color-error-soft)] px-5 py-5 text-sm text-[var(--color-error)]">
             <p>{error}</p>
             <div className="flex flex-wrap gap-3">
               <button
@@ -231,7 +286,7 @@ export function AnalysisLoadingView({
           </div>
         ) : null}
 
-        <div className="mt-8 space-y-3">
+        <div className="mt-8 grid gap-3">
           {loadingSteps.map((step, index) => {
             const isActive = index === activeStepIndex;
             const isComplete = index < activeStepIndex;
@@ -239,13 +294,7 @@ export function AnalysisLoadingView({
             return (
               <div
                 key={step}
-                className={`rounded-[1.25rem] border px-4 py-4 transition ${
-                  isActive
-                    ? "border-[var(--color-accent)] bg-[var(--color-accent-soft)]"
-                    : isComplete
-                      ? "border-[rgba(24,128,56,0.18)] bg-[var(--color-success-soft)]"
-                      : "border-[var(--color-line)] bg-white"
-                }`}
+                className={`rounded-[1.5rem] px-5 py-5 transition ${stepToneClassName({ isActive, isComplete })}`}
               >
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-sm uppercase tracking-[0.24em] text-[var(--color-muted)]">
@@ -255,58 +304,72 @@ export function AnalysisLoadingView({
                     0{index + 1}
                   </span>
                 </div>
-                <p className="mt-3 text-base">{step}</p>
+                <div className="mt-4 flex items-center gap-4">
+                  <span
+                    aria-hidden="true"
+                    className={`h-3.5 w-3.5 rounded-full ${
+                      isActive
+                        ? "bg-[var(--color-accent)]"
+                        : isComplete
+                          ? "bg-[var(--color-success)]"
+                          : "bg-[rgba(175,177,188,0.48)]"
+                    }`}
+                  />
+                  <p className="text-base">{step}</p>
+                </div>
               </div>
             );
           })}
         </div>
       </section>
 
-      <aside className="surface-card space-y-5 p-6">
-        <div>
-          <p className="eyebrow">Input</p>
-          <h2 className="mt-3 text-3xl tracking-tight">
-            {draft.captureMode === "url-capture" ? "Current page" : "Current screenshot"}
-          </h2>
-        </div>
-
-        {currentScreenshot ? (
-          <>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-[var(--color-line)] bg-white">
-              <Image
-                alt="Screenshot being analyzed"
-                fill
-                className="object-cover"
-                sizes="(min-width: 1024px) 32rem, 100vw"
-                src={currentScreenshot.dataUrl}
-                unoptimized
-              />
-            </div>
-
-            <div className="surface-muted p-4">
-              <p className="text-sm">{currentScreenshot.name}</p>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-                <span className="app-chip">{currentScreenshot.type}</span>
-                <span className="app-chip">{formatBytes(currentScreenshot.size)}</span>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="surface-muted p-5">
-            <p className="text-sm font-medium">Server capture pending</p>
-            <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-              The app will open the provided URL in a headless browser, capture the visible
-              viewport, and use that screenshot for analysis.
-            </p>
-            {draft.context?.pageUrl ? (
-              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                URL: {draft.context.pageUrl}
-              </p>
-            ) : null}
+      <aside className="space-y-5">
+        <section className="surface-card space-y-5 p-6 sm:p-8">
+          <div>
+            <p className="eyebrow">Input</p>
+            <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em]">
+              {draft.captureMode === "url-capture" ? "Current page" : "Current screenshot"}
+            </h2>
           </div>
-        )}
 
-        <div className="surface-muted p-5">
+          {currentScreenshot ? (
+            <>
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] border border-[var(--color-line)] bg-white">
+                <Image
+                  alt="Screenshot being analyzed"
+                  fill
+                  className="object-cover"
+                  sizes="(min-width: 1024px) 32rem, 100vw"
+                  src={currentScreenshot.dataUrl}
+                  unoptimized
+                />
+              </div>
+
+              <div className="surface-muted p-4">
+                <p className="text-sm">{currentScreenshot.name}</p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
+                  <span className="app-chip">{currentScreenshot.type}</span>
+                  <span className="app-chip">{formatBytes(currentScreenshot.size)}</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="surface-muted p-5">
+              <p className="text-sm font-medium">Server capture pending</p>
+              <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                The app will open the provided URL in a headless browser, capture the visible
+                viewport, and use that screenshot for analysis.
+              </p>
+              {draft.context?.pageUrl ? (
+                <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                  URL: {draft.context.pageUrl}
+                </p>
+              ) : null}
+            </div>
+          )}
+        </section>
+
+        <section className="surface-tonal p-6">
           <p className="eyebrow text-[var(--color-accent)]">Engine</p>
           <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
             The app tries your configured analysis provider first. If that fails, the final report
@@ -322,10 +385,10 @@ export function AnalysisLoadingView({
               URL capture requires Playwright with Chromium installed on the server.
             </p>
           ) : null}
-        </div>
+        </section>
 
         {draft.context ? (
-          <div className="surface-muted p-5">
+          <section className="surface-card p-6">
             <p className="eyebrow text-[var(--color-accent)]">Review context</p>
             <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
               <span className="app-chip">{getAnalysisModeLabel(draft.context.analysisMode)}</span>
@@ -344,7 +407,7 @@ export function AnalysisLoadingView({
                 history with the full batch selected for compare and flow review.
               </p>
             ) : null}
-          </div>
+          </section>
         ) : null}
       </aside>
     </div>

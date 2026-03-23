@@ -61,7 +61,7 @@ export function SignInPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const inputClassName =
-    "w-full rounded-[1rem] border border-[var(--color-line)] bg-white px-4 py-3.5 text-sm text-[var(--color-foreground)] outline-none transition focus:border-[var(--color-accent)] focus:shadow-[0_0_0_4px_rgba(26,115,232,0.12)] placeholder:text-[var(--color-muted)]";
+    "w-full rounded-[1.1rem] border border-[rgba(175,177,188,0.24)] bg-white/84 px-4 py-3.5 text-sm text-[var(--color-foreground)] outline-none transition placeholder:text-[var(--color-muted)]";
 
   async function handleGoogleSignIn() {
     if (!isConfigured) {
@@ -180,14 +180,14 @@ export function SignInPanel({
   }
 
   return (
-    <section className="surface-card mx-auto w-full max-w-5xl overflow-hidden rounded-[2rem] shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+    <section className="surface-card mx-auto w-full max-w-5xl overflow-hidden rounded-[2rem] shadow-[0_24px_70px_rgba(111,78,156,0.08)]">
       <div className="grid lg:grid-cols-[0.92fr_1.08fr]">
-        <div className="border-b border-[var(--color-line)] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-8 sm:p-10 lg:border-b-0 lg:border-r lg:p-12">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-[var(--color-line)] bg-white text-sm font-semibold text-[var(--color-accent)]">
-            AI
+        <div className="surface-tonal p-8 sm:p-10 lg:p-12">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white text-sm font-semibold text-[var(--color-accent)] shadow-[0_10px_24px_rgba(111,78,156,0.08)]">
+            LC
           </div>
           <p className="mt-8 text-sm font-medium text-[var(--color-muted)]">Sign in to continue</p>
-          <h1 className="mt-4 text-4xl tracking-tight sm:text-[3.25rem] sm:leading-[1.02]">
+          <h1 className="mt-4 text-4xl font-bold tracking-[-0.05em] sm:text-[3.25rem] sm:leading-[1.02]">
             Use Google or email to sync your critiques.
           </h1>
           <p className="mt-5 max-w-md text-base leading-8 text-[var(--color-muted)]">
@@ -195,7 +195,13 @@ export function SignInPanel({
             workspaces to follow you across devices.
           </p>
 
-          <div className="surface-muted mt-8 p-5">
+          <div className="mt-8 flex flex-wrap gap-2">
+            <span className="app-chip">Google sign-in</span>
+            <span className="app-chip">Email sign-up</span>
+            <span className="app-chip">History sync</span>
+          </div>
+
+          <div className="surface-card mt-8 rounded-[1.75rem] p-5 shadow-none">
             <p className="eyebrow text-[var(--color-accent)]">Before you sign in</p>
             <ul className="mt-3 space-y-3 text-sm leading-7 text-[var(--color-muted)]">
               <li>Google is the fastest path if you just want synced history.</li>
@@ -210,7 +216,7 @@ export function SignInPanel({
           </div>
         </div>
 
-        <div className="p-8 sm:p-10 lg:p-12">
+        <div className="bg-white/30 p-8 sm:p-10 lg:p-12">
           <div className="max-w-xl">
             <p className="text-sm text-[var(--color-muted)]">
               Sign in to unlock synced history and workspace grouping.
@@ -219,25 +225,25 @@ export function SignInPanel({
             <button
               type="button"
               onClick={() => void handleGoogleSignIn()}
-              className="mt-6 flex w-full items-center justify-center gap-3 rounded-full border border-[var(--color-line)] bg-white px-5 py-3.5 text-sm font-medium text-[var(--color-foreground)] shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:border-[rgba(26,115,232,0.3)] hover:bg-[var(--color-surface-tonal)]"
+              className="material-button material-button-secondary mt-6 flex w-full items-center justify-center gap-3 rounded-[1rem] px-5 py-3.5 text-sm"
             >
               <GoogleMark />
               {pendingAction === "google" ? "Connecting to Google..." : "Continue with Google"}
             </button>
 
             <div className="mt-6 flex items-center gap-4 text-xs uppercase tracking-[0.14em] text-[var(--color-muted)]">
-              <span className="h-px flex-1 bg-[var(--color-line)]" />
+              <span className="h-px flex-1 bg-white/60" />
               <span>Email</span>
-              <span className="h-px flex-1 bg-[var(--color-line)]" />
+              <span className="h-px flex-1 bg-white/60" />
             </div>
 
-            <div className="mt-6 inline-flex rounded-full border border-[var(--color-line)] bg-[var(--color-surface-muted)] p-1">
+            <div className="mt-6 inline-flex rounded-full bg-[var(--color-surface-muted)] p-1">
               <button
                 type="button"
                 onClick={() => setMode("sign-in")}
                 className={`rounded-full px-5 py-2.5 text-sm font-medium transition ${
                   mode === "sign-in"
-                    ? "bg-white text-[var(--color-foreground)] shadow-[0_1px_3px_rgba(15,23,42,0.08)]"
+                    ? "bg-white text-[var(--color-foreground)] shadow-[0_8px_20px_rgba(111,78,156,0.08)]"
                     : "text-[var(--color-muted)]"
                 }`}
               >

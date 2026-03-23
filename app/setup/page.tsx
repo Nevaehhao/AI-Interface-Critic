@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getPlatformStatus } from "@/lib/platform-status";
 
@@ -19,42 +20,79 @@ export const dynamic = "force-dynamic";
 
 export default async function SetupPage() {
   const platformStatus = await getPlatformStatus();
+  const actionRequiredCount = platformStatus.checks.filter(
+    (check) => check.status === "action-required",
+  ).length;
+  const offlineCount = platformStatus.checks.filter((check) => check.status === "offline").length;
 
   return (
     <div className="page-shell">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12 lg:py-14">
-        <div className="surface-card flex flex-wrap items-center justify-between gap-4 p-6 sm:p-8">
-          <div>
+      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-6 pb-20 pt-32 sm:px-8">
+        <section className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
+          <div className="surface-card p-7 sm:p-10">
             <p className="eyebrow">Platform setup</p>
-            <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">
+            <h1 className="mt-4 max-w-4xl text-5xl font-extrabold tracking-[-0.05em] sm:text-6xl">
               Readiness for your AI provider, Neon, local storage, and deployment.
             </h1>
-            <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-muted)]">
-              This page checks the services and environment variables your app needs before you
-              call the stack “live”, whether you use Ollama, a hosted OpenAI-compatible API,
-              Anthropic, or Gemini.
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-[var(--color-muted)]">
+              Use this page as the operational checklist before you call the stack live, whether
+              the analysis engine runs through Ollama, a hosted OpenAI-compatible API, Anthropic,
+              or Gemini.
             </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/api/health" className="material-button material-button-primary">
+                Open JSON health check
+              </Link>
+              <Link href="/upload" className="material-button material-button-secondary">
+                Return to upload
+              </Link>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <span className="app-chip">
-              {platformStatus.readyCount} / {platformStatus.checks.length} ready
-            </span>
-            <Link href="/api/health" className="material-button material-button-secondary">
-              Open JSON health check
-            </Link>
-          </div>
-        </div>
+          <aside className="surface-tonal p-7 sm:p-8">
+            <p className="eyebrow">Readiness snapshot</p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+              <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+                <p className="eyebrow text-[var(--color-muted)]">Ready</p>
+                <p className="mt-3 text-4xl font-bold tracking-[-0.05em]">
+                  {platformStatus.readyCount}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                  Checks currently passing.
+                </p>
+              </div>
+              <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+                <p className="eyebrow text-[var(--color-muted)]">Action required</p>
+                <p className="mt-3 text-4xl font-bold tracking-[-0.05em]">
+                  {actionRequiredCount}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                  Config present but incomplete.
+                </p>
+              </div>
+              <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+                <p className="eyebrow text-[var(--color-muted)]">Offline</p>
+                <p className="mt-3 text-4xl font-bold tracking-[-0.05em]">{offlineCount}</p>
+                <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                  Missing or unreachable services.
+                </p>
+              </div>
+            </div>
+          </aside>
+        </section>
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 xl:grid-cols-2">
           {platformStatus.checks.map((check) => (
-            <article key={check.id} className="surface-card p-6">
+            <article key={check.id} className="surface-card p-6 sm:p-7">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="eyebrow">{check.label}</p>
-                  <h2 className="mt-3 text-2xl tracking-tight">{check.detail}</h2>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em]">
+                    {check.detail}
+                  </h2>
                 </div>
                 <span className={toneClasses(check.status)}>{check.status}</span>
               </div>
@@ -71,7 +109,9 @@ export default async function SetupPage() {
 
         <section className="surface-card p-6 sm:p-8">
           <p className="eyebrow">Extra setup</p>
-          <h2 className="mt-3 text-3xl tracking-tight">Optional capabilities to unlock.</h2>
+          <h2 className="mt-4 text-3xl font-bold tracking-[-0.04em]">
+            Optional capabilities to unlock.
+          </h2>
           <div className="mt-6 grid gap-4 lg:grid-cols-3">
             <div className="surface-muted p-5">
               <p className="eyebrow">URL capture</p>
@@ -96,6 +136,8 @@ export default async function SetupPage() {
           </div>
         </section>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

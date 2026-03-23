@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { WorkspaceCreateForm } from "@/components/workspaces/workspace-create-form";
 import { WorkspaceManagerCard } from "@/components/workspaces/workspace-manager-card";
@@ -19,6 +20,7 @@ export default async function WorkspacesPage() {
   const analysisCounts = new Map<string, number>();
   const activeWorkspaces = (workspaces ?? []).filter((workspace) => !workspace.archived_at);
   const archivedWorkspaces = (workspaces ?? []).filter((workspace) => Boolean(workspace.archived_at));
+  const totalAnalyses = analyses?.length ?? 0;
 
   for (const analysis of analyses ?? []) {
     if (!analysis.workspace_id) {
@@ -35,61 +37,128 @@ export default async function WorkspacesPage() {
     <div className="page-shell">
       <SiteHeader />
 
-      <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-10 sm:px-10 lg:px-12 lg:py-14">
-        <div className="surface-card flex flex-wrap items-center justify-between gap-4 p-6 sm:p-8">
-          <div>
-            <p className="eyebrow">Workspaces</p>
-            <h1 className="mt-3 text-4xl tracking-tight sm:text-5xl">
-              Organize critiques by project.
+      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-6 pb-20 pt-32 sm:px-8">
+        <section className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+          <div className="surface-card p-7 sm:p-10">
+            <p className="eyebrow">Workspace atelier</p>
+            <h1 className="mt-4 max-w-4xl text-5xl font-extrabold tracking-[-0.05em] sm:text-6xl">
+              Organize critiques into clean project streams.
             </h1>
-            <p className="mt-3 max-w-3xl text-base leading-7 text-[var(--color-muted)]">
-              Create a workspace for each case study or product stream, then route uploads into the
-              right bucket before analysis begins.
+            <p className="mt-5 max-w-3xl text-lg leading-8 text-[var(--color-muted)]">
+              Keep marketing audits, product flows, and client reviews separated before they turn
+              into a crowded report archive. Each workspace becomes a durable bucket for uploads,
+              history, and follow-up.
             </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/upload" className="material-button material-button-primary">
+                Start new analysis
+              </Link>
+              <Link href="/history" className="material-button material-button-secondary">
+                Open archive
+              </Link>
+              {user ? <SignOutButton /> : null}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            {user ? <SignOutButton /> : null}
-            <Link href="/upload" className="material-button material-button-primary">
-              New analysis
-            </Link>
-          </div>
-        </div>
+
+          <aside className="surface-tonal p-7 sm:p-8">
+            <p className="eyebrow">Portfolio snapshot</p>
+            <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+              <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+                <p className="eyebrow text-[var(--color-muted)]">Active</p>
+                <p className="mt-3 text-4xl font-bold tracking-[-0.05em]">
+                  {activeWorkspaces.length}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                  Project spaces ready for new critiques.
+                </p>
+              </div>
+              <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+                <p className="eyebrow text-[var(--color-muted)]">Archived</p>
+                <p className="mt-3 text-4xl font-bold tracking-[-0.05em]">
+                  {archivedWorkspaces.length}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                  Stored safely for historical comparison.
+                </p>
+              </div>
+              <div className="surface-card rounded-[1.5rem] p-5 shadow-none">
+                <p className="eyebrow text-[var(--color-muted)]">Analyses</p>
+                <p className="mt-3 text-4xl font-bold tracking-[-0.05em]">{totalAnalyses}</p>
+                <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                  Reports currently routed across the archive.
+                </p>
+              </div>
+            </div>
+          </aside>
+        </section>
 
         {!persistenceConfigured || workspaces === null ? (
-          <div className="surface-card p-6 sm:p-8">
+          <section className="surface-card p-7 sm:p-10">
             <p className="eyebrow text-[var(--color-accent)]">Platform setup required</p>
-            <h2 className="mt-3 text-3xl tracking-tight">
-              Add Neon Auth and Neon Postgres to enable workspace persistence.
+            <h2 className="mt-4 max-w-3xl text-4xl font-bold tracking-[-0.05em]">
+              Connect Neon Auth and Neon Postgres before turning workspaces on.
             </h2>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-              Workspaces are stored in Neon and tied to the signed-in account. They stay inactive
-              until the app has `DATABASE_URL` and `NEON_AUTH_BASE_URL`.
-            </p>
-            <Link href="/setup" className="material-button material-button-secondary mt-6">
-              Open setup checklist
-            </Link>
-          </div>
+            <div className="mt-6 grid gap-4 lg:grid-cols-[1.12fr_0.88fr]">
+              <div className="surface-muted p-5">
+                <p className="text-sm leading-7 text-[var(--color-muted)]">
+                  Workspaces are stored in Neon and tied to the signed-in account. Until
+                  `DATABASE_URL` and `NEON_AUTH_BASE_URL` are configured, uploads can still run,
+                  but project grouping will stay unavailable.
+                </p>
+              </div>
+              <div className="surface-tonal p-5">
+                <p className="eyebrow">Next step</p>
+                <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                  Open setup to verify auth, database, and local health in one pass.
+                </p>
+                <Link href="/setup" className="material-button material-button-primary mt-5">
+                  Open setup checklist
+                </Link>
+              </div>
+            </div>
+          </section>
         ) : !user ? (
-          <div className="surface-card p-6 sm:p-8">
+          <section className="surface-card p-7 sm:p-10">
             <p className="eyebrow text-[var(--color-accent)]">Sign-in required</p>
-            <h2 className="mt-3 text-3xl tracking-tight">
-              Sign in to create shared project buckets.
+            <h2 className="mt-4 max-w-3xl text-4xl font-bold tracking-[-0.05em]">
+              Sign in before creating shared project buckets.
             </h2>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--color-muted)]">
-              Workspaces are attached to your Neon Auth account so your history, uploads, and
-              reports stay grouped correctly.
-            </p>
-            <Link href="/auth/sign-in" className="material-button material-button-secondary mt-6">
-              Open sign-in
-            </Link>
-          </div>
+            <div className="mt-6 grid gap-4 lg:grid-cols-[1.12fr_0.88fr]">
+              <div className="surface-muted p-5">
+                <p className="text-sm leading-7 text-[var(--color-muted)]">
+                  Workspace ownership lives on the Neon Auth account so critique history, triage,
+                  and uploads stay attached to the right project stream across devices.
+                </p>
+              </div>
+              <div className="surface-tonal p-5">
+                <p className="eyebrow">Continue</p>
+                <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
+                  Sign in first, then come back here to create and manage workspace buckets.
+                </p>
+                <Link href="/auth/sign-in" className="material-button material-button-primary mt-5">
+                  Open sign-in
+                </Link>
+              </div>
+            </div>
+          </section>
         ) : (
-          <div className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr]">
+          <section className="grid gap-8 xl:grid-cols-[0.92fr_1.08fr]">
             <WorkspaceCreateForm />
 
-            <section className="surface-tonal p-6">
-              <p className="eyebrow">Your workspaces</p>
-              <h2 className="mt-3 text-3xl tracking-tight">Project groups</h2>
+            <section className="surface-tonal p-6 sm:p-8">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="eyebrow">Your workspaces</p>
+                  <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em]">Project groups</h2>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="app-chip">{activeWorkspaces.length} active</span>
+                  {archivedWorkspaces.length > 0 ? (
+                    <span className="app-chip">{archivedWorkspaces.length} archived</span>
+                  ) : null}
+                </div>
+              </div>
 
               {workspaces.length > 0 ? (
                 <div className="mt-6 grid gap-4">
@@ -136,17 +205,20 @@ export default async function WorkspacesPage() {
                   ) : null}
                 </div>
               ) : (
-                <div className="surface-card mt-6 rounded-[1.5rem] p-5 shadow-none">
-                  <p className="text-sm leading-7 text-[var(--color-muted)]">
-                    No workspaces yet. Create one on the left, then use it during upload to keep
-                    analyses grouped by project.
+                <div className="surface-card mt-6 rounded-[1.75rem] p-6 shadow-none">
+                  <p className="eyebrow">No workspaces yet</p>
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--color-muted)]">
+                    Create one on the left, then choose it during upload so each critique lands in
+                    the right project stream from the start.
                   </p>
                 </div>
               )}
             </section>
-          </div>
+          </section>
         )}
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

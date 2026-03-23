@@ -27,6 +27,8 @@ export function WorkspaceManagerCard({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const fieldClassName =
+    "w-full rounded-[1.25rem] border border-[rgba(175,177,188,0.24)] bg-white/80 px-4 py-3 text-sm text-[var(--color-foreground)] outline-none transition";
 
   async function updateWorkspace(payload: Record<string, unknown>) {
     setIsSubmitting(true);
@@ -88,70 +90,101 @@ export function WorkspaceManagerCard({
   }
 
   return (
-    <article className="surface-card rounded-[1.5rem] p-5 shadow-none">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+    <article className="surface-card rounded-[1.75rem] p-5 sm:p-6 shadow-none">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
           <span
             aria-hidden="true"
-            className="h-3 w-3 rounded-full"
-            style={{ backgroundColor: workspace.accent_color ?? accentColor }}
+            className="mt-1 h-4 w-4 rounded-full shadow-[0_10px_20px_rgba(111,78,156,0.14)]"
+            style={{ backgroundColor: accentColor }}
           />
-          <h3 className="text-xl tracking-tight">{workspace.name}</h3>
+          <div>
+            <h3 className="text-2xl font-semibold tracking-[-0.04em]">
+              {name.trim() || workspace.name}
+            </h3>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-[var(--color-muted)]">
+              {description.trim() ||
+                workspace.description ||
+                "No description yet. Add one to clarify what belongs here."}
+            </p>
+          </div>
         </div>
-        <span className="app-chip">{analysisCount} analyses</span>
+        <div className="flex flex-wrap gap-2">
+          <span className="app-chip">{analysisCount} analyses</span>
+          {workspace.archived_at ? <span className="app-chip">Archived</span> : null}
+        </div>
       </div>
 
-      <div className="mt-5 grid gap-4">
-        <label className="block space-y-2">
-          <span className="text-sm text-[var(--color-muted)]">Workspace name</span>
-          <input
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
-          />
-        </label>
-
-        <label className="block space-y-2">
-          <span className="text-sm text-[var(--color-muted)]">Description</span>
-          <textarea
-            rows={3}
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
-          />
-        </label>
-
-        <div className="grid gap-4 lg:grid-cols-[0.7fr_1.3fr]">
-          <label className="block space-y-2">
-            <span className="text-sm text-[var(--color-muted)]">Accent color</span>
-            <input
-              type="color"
-              value={accentColor}
-              onChange={(event) => setAccentColor(event.target.value)}
-              className="h-12 w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-2 py-2"
+      <div className="mt-5 grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="surface-tonal p-5">
+          <p className="eyebrow">Workspace preview</p>
+          <div className="mt-4 flex items-center gap-4">
+            <span
+              aria-hidden="true"
+              className="h-12 w-12 rounded-full shadow-[0_12px_28px_rgba(111,78,156,0.12)]"
+              style={{ backgroundColor: accentColor }}
             />
-          </label>
+            <div>
+              <p className="text-lg font-semibold tracking-[-0.03em]">
+                {name.trim() || "Untitled workspace"}
+              </p>
+              <p className="mt-1 text-sm leading-7 text-[var(--color-muted)]">
+                {description.trim() || "Add a short summary so other critiques can be routed here."}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {(parseTags(tags).length > 0 ? parseTags(tags) : workspace.tags).map((tag) => (
+              <span key={`${workspace.id}-${tag}`} className="app-chip">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
 
+        <div className="grid gap-4">
           <label className="block space-y-2">
-            <span className="text-sm text-[var(--color-muted)]">Tags</span>
+            <span className="text-sm text-[var(--color-muted)]">Workspace name</span>
             <input
               type="text"
-              value={tags}
-              onChange={(event) => setTags(event.target.value)}
-              className="w-full rounded-[1.25rem] border border-[var(--color-line)] bg-white px-4 py-3 text-sm text-[var(--color-foreground)] outline-none focus:border-[var(--color-accent)]"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className={fieldClassName}
             />
           </label>
-        </div>
-      </div>
 
-      <div className="mt-4 flex flex-wrap gap-2 text-xs text-[var(--color-muted)]">
-        {workspace.tags.map((tag) => (
-          <span key={`${workspace.id}-${tag}`} className="app-chip">
-            {tag}
-          </span>
-        ))}
-        {workspace.archived_at ? <span className="app-chip">Archived</span> : null}
+          <label className="block space-y-2">
+            <span className="text-sm text-[var(--color-muted)]">Description</span>
+            <textarea
+              rows={3}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              className={fieldClassName}
+            />
+          </label>
+
+          <div className="grid gap-4 lg:grid-cols-[0.7fr_1.3fr]">
+            <label className="block space-y-2">
+              <span className="text-sm text-[var(--color-muted)]">Accent color</span>
+              <input
+                type="color"
+                value={accentColor}
+                onChange={(event) => setAccentColor(event.target.value)}
+                className="h-12 w-full rounded-[1.25rem] border border-[rgba(175,177,188,0.24)] bg-white/80 px-2 py-2"
+              />
+            </label>
+
+            <label className="block space-y-2">
+              <span className="text-sm text-[var(--color-muted)]">Tags</span>
+              <input
+                type="text"
+                value={tags}
+                onChange={(event) => setTags(event.target.value)}
+                className={fieldClassName}
+              />
+            </label>
+          </div>
+        </div>
       </div>
 
       {message ? (
@@ -199,7 +232,7 @@ export function WorkspaceManagerCard({
           type="button"
           disabled={isSubmitting}
           onClick={() => void handleDelete()}
-          className="material-button material-button-secondary disabled:cursor-not-allowed disabled:opacity-60"
+          className="material-button material-button-secondary text-[var(--color-error)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           Delete
         </button>
