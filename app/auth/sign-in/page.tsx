@@ -11,14 +11,10 @@ export default function SignInPage() {
       <SiteHeader />
 
       <main className="mx-auto flex min-h-[calc(100vh-5.5rem)] w-full max-w-screen-2xl flex-col gap-8 px-6 pb-20 pt-32 sm:px-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Link href="/" className="material-button material-button-text px-0">
             Back to landing
           </Link>
-          <div className="flex flex-wrap gap-2">
-            <span className="app-chip">Synced history</span>
-            <span className="app-chip">Shared workspaces</span>
-          </div>
         </div>
 
         <section className="grid gap-6 xl:grid-cols-[0.84fr_1.16fr] xl:items-start">
