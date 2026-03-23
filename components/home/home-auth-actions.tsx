@@ -20,14 +20,14 @@ export function HomeHeroAuthAction() {
   if (sessionData?.user) {
     return (
       <ButtonLink href="/workspaces" variant="secondary">
-        Open workspaces
+        Workspace
       </ButtonLink>
     );
   }
 
   return (
     <ButtonLink href="/auth/sign-in" variant="secondary">
-      Sign in
+      Account
     </ButtonLink>
   );
 }
