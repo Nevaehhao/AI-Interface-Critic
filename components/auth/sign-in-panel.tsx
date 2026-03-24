@@ -229,7 +229,7 @@ export function SignInPanel({
                 type="text"
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                placeholder="Ruiyao Hao"
+                placeholder="Your name"
                 className={inputClassName}
               />
             </label>
