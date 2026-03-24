@@ -181,27 +181,10 @@ export function SignInPanel({
   return (
     <section className="surface-card mx-auto w-full max-w-3xl rounded-[2rem] p-8 shadow-[0_24px_70px_rgba(111,78,156,0.08)] sm:p-10 lg:p-12">
       <div className="max-w-2xl">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="eyebrow">Sign in</p>
-            <h2 className="mt-4 text-4xl font-bold tracking-[-0.05em] sm:text-5xl">
-              Use Google or email to sync your critiques.
-            </h2>
-          </div>
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-accent-soft)] text-sm font-semibold text-[var(--color-accent)] shadow-[0_10px_24px_rgba(111,78,156,0.08)]">
-            UX
-          </div>
-        </div>
-
-        <p className="mt-5 max-w-xl text-base leading-8 text-[var(--color-muted)]">
-          Sign in only when you want synced history and shared workspaces. If you just need a
-          one-off review, you can continue without an account.
-        </p>
-
         <button
           type="button"
           onClick={() => void handleGoogleSignIn()}
-          className="material-button material-button-secondary mt-8 flex w-full items-center justify-center gap-3 rounded-[1rem] px-5 py-3.5 text-sm"
+          className="material-button material-button-secondary flex w-full items-center justify-center gap-3 rounded-[1rem] px-5 py-3.5 text-sm"
         >
           <GoogleMark />
           {pendingAction === "google" ? "Connecting to Google..." : "Continue with Google"}
