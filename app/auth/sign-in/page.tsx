@@ -17,30 +17,36 @@ export default function SignInPage() {
           </Link>
         </div>
 
-        <section className="grid gap-6 xl:grid-cols-[0.84fr_1.16fr] xl:items-start">
-          <div className="surface-card p-7 sm:p-10">
+        <section className="surface-card grid gap-6 p-7 sm:p-10 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
+          <div>
             <p className="eyebrow">Account access</p>
             <h1 className="mt-4 max-w-3xl text-5xl font-extrabold tracking-[-0.05em] sm:text-6xl">
-              Sync critiques across devices only when you need to.
+              Sign in only if you want your critiques to follow you.
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">
-              Local analysis works without an account. Sign in only when you want durable history,
-              shared workspace buckets, and report continuity across machines.
+              The shortest path is simple: sign in to keep synced history and shared workspaces, or
+              continue straight to upload if this is just a local one-off review.
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <div className="surface-muted p-5">
                 <p className="eyebrow">Use account</p>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                  Save critiques to Neon and reopen them from history with full workspace context.
+                  Save critiques to Neon and reopen them later from history with workspace context.
                 </p>
               </div>
               <div className="surface-muted p-5">
                 <p className="eyebrow">Skip account</p>
                 <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
-                  Continue directly to upload if you only need a local one-off review.
+                  Go directly to upload when you only need a quick local critique.
                 </p>
               </div>
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/upload" className="material-button material-button-secondary">
+                Continue without account
+              </Link>
             </div>
           </div>
 
