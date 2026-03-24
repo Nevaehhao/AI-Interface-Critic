@@ -23,6 +23,35 @@ function getAuthErrorMessage<T>(result: AuthResponse<T>, fallbackMessage: string
   return result.error?.message || fallbackMessage;
 }
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function getPasswordChecks(password: string) {
+  return [
+    {
+      id: "length",
+      label: "At least 8 characters",
+      passed: password.length >= 8,
+    },
+    {
+      id: "uppercase",
+      label: "One uppercase letter",
+      passed: /[A-Z]/.test(password),
+    },
+    {
+      id: "lowercase",
+      label: "One lowercase letter",
+      passed: /[a-z]/.test(password),
+    },
+    {
+      id: "number",
+      label: "One number",
+      passed: /\d/.test(password),
+    },
+  ];
+}
+
 function GoogleMark() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
@@ -59,8 +88,45 @@ export function SignInPanel({
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
-  const inputClassName =
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const baseInputClassName =
     "w-full rounded-[1.1rem] border border-[rgba(175,177,188,0.24)] bg-white/84 px-4 py-3.5 text-sm text-[var(--color-foreground)] outline-none transition placeholder:text-[var(--color-muted)]";
+  const normalizedEmail = email.trim();
+  const passwordChecks = getPasswordChecks(password);
+  const passwordIsStrong = passwordChecks.every((check) => check.passed);
+  const shouldShowEmailError =
+    (normalizedEmail.length > 0 && !isValidEmail(normalizedEmail)) ||
+    (submitAttempted && normalizedEmail.length === 0);
+  const emailErrorMessage =
+    normalizedEmail.length === 0
+      ? "Enter your email address."
+      : "Email format is incorrect. Use something like you@example.com.";
+  const shouldShowPasswordError =
+    (mode === "sign-up" && password.length > 0 && !passwordIsStrong) ||
+    (submitAttempted && password.length === 0);
+  const passwordErrorMessage =
+    password.length === 0
+      ? mode === "sign-up"
+        ? "Create a password to continue."
+        : "Enter your password."
+      : "Password does not meet the requirements yet.";
+  const shouldShowPasswordRequirements = mode === "sign-up" && password.length > 0;
+  const isCreateAccountDisabled =
+    pendingAction !== null ||
+    !name.trim() ||
+    normalizedEmail.length === 0 ||
+    !isValidEmail(normalizedEmail) ||
+    !passwordIsStrong;
+  const isSignInDisabled =
+    pendingAction !== null || normalizedEmail.length === 0 || !isValidEmail(normalizedEmail) || password.length === 0;
+
+  function getInputClassName(isInvalid: boolean) {
+    if (!isInvalid) {
+      return baseInputClassName;
+    }
+
+    return `${baseInputClassName} border-[rgba(158,63,78,0.52)] bg-[rgba(255,231,235,0.48)]`;
+  }
 
   async function handleGoogleSignIn() {
     if (!isConfigured) {
@@ -101,18 +167,30 @@ export function SignInPanel({
   }
 
   async function handleEmailSubmit() {
+    setSubmitAttempted(true);
+
     if (!isConfigured) {
       setError("Neon Auth env is missing. Add NEON_AUTH_BASE_URL to enable auth.");
       return;
     }
 
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       setError("Enter an email address and password first.");
+      return;
+    }
+
+    if (!isValidEmail(normalizedEmail)) {
+      setError("Email format is incorrect.");
       return;
     }
 
     if (mode === "sign-up" && !name.trim()) {
       setError("Enter your name before creating an account.");
+      return;
+    }
+
+    if (mode === "sign-up" && !passwordIsStrong) {
+      setError("Password does not meet the account requirements.");
       return;
     }
 
@@ -124,7 +202,7 @@ export function SignInPanel({
       if (mode === "sign-up") {
         const result = (await authClient.signUp.email({
           callbackURL: "/history",
-          email,
+          email: normalizedEmail,
           name: name.trim(),
           password,
         })) as AuthResponse<{
@@ -148,7 +226,7 @@ export function SignInPanel({
       } else {
         const result = (await authClient.signIn.email({
           callbackURL: "/history",
-          email,
+          email: normalizedEmail,
           password,
         })) as AuthResponse<{
           redirect: boolean;
@@ -167,6 +245,7 @@ export function SignInPanel({
       setName("");
       setEmail("");
       setPassword("");
+      setSubmitAttempted(false);
       startTransition(() => {
         router.push("/history");
         router.refresh();
@@ -199,7 +278,11 @@ export function SignInPanel({
         <div className="mt-6 inline-flex rounded-full bg-[var(--color-surface-muted)] p-1">
           <button
             type="button"
-            onClick={() => setMode("sign-in")}
+            onClick={() => {
+              setMode("sign-in");
+              setSubmitAttempted(false);
+              setError(null);
+            }}
             className={`rounded-full px-5 py-2.5 text-sm font-medium transition ${
               mode === "sign-in"
                 ? "bg-white text-[var(--color-foreground)] shadow-[0_8px_20px_rgba(111,78,156,0.08)]"
@@ -210,7 +293,11 @@ export function SignInPanel({
           </button>
           <button
             type="button"
-            onClick={() => setMode("sign-up")}
+            onClick={() => {
+              setMode("sign-up");
+              setSubmitAttempted(false);
+              setError(null);
+            }}
             className={`rounded-full px-5 py-2.5 text-sm font-medium transition ${
               mode === "sign-up"
                 ? "bg-white text-[var(--color-foreground)] shadow-[0_1px_3px_rgba(15,23,42,0.08)]"
@@ -230,7 +317,7 @@ export function SignInPanel({
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 placeholder="Your name"
-                className={inputClassName}
+                className={getInputClassName(submitAttempted && !name.trim())}
               />
             </label>
           ) : null}
@@ -242,8 +329,14 @@ export function SignInPanel({
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="you@example.com"
-              className={inputClassName}
+              aria-invalid={shouldShowEmailError}
+              className={getInputClassName(shouldShowEmailError)}
             />
+            {shouldShowEmailError ? (
+              <span className="text-sm leading-6 text-[var(--color-error)]">
+                {emailErrorMessage}
+              </span>
+            ) : null}
           </label>
 
           <label className="block space-y-2">
@@ -253,8 +346,39 @@ export function SignInPanel({
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder={mode === "sign-up" ? "Create a password" : "Enter your password"}
-              className={inputClassName}
+              aria-invalid={shouldShowPasswordError}
+              className={getInputClassName(shouldShowPasswordError)}
             />
+            {shouldShowPasswordError ? (
+              <span className="text-sm leading-6 text-[var(--color-error)]">
+                {passwordErrorMessage}
+              </span>
+            ) : null}
+            {shouldShowPasswordRequirements ? (
+              <div className="surface-muted p-4">
+                <p className="eyebrow text-[var(--color-muted)]">Password requirements</p>
+                <div className="mt-3 grid gap-2">
+                  {passwordChecks.map((check) => (
+                    <div
+                      key={check.id}
+                      className={`flex items-center gap-2 text-sm ${
+                        check.passed ? "text-[var(--color-accent)]" : "text-[var(--color-muted)]"
+                      }`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`h-2.5 w-2.5 rounded-full ${
+                          check.passed
+                            ? "bg-[var(--color-accent)]"
+                            : "bg-[rgba(175,177,188,0.48)]"
+                        }`}
+                      />
+                      <span>{check.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </label>
         </div>
 
@@ -268,7 +392,8 @@ export function SignInPanel({
           <button
             type="button"
             onClick={() => void handleEmailSubmit()}
-            className="material-button material-button-primary min-w-40"
+            disabled={mode === "sign-up" ? isCreateAccountDisabled : isSignInDisabled}
+            className="material-button material-button-primary min-w-40 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pendingAction === mode
               ? mode === "sign-up"
