@@ -1,4 +1,5 @@
 import { HistoryPageClient } from "@/components/history/history-page-client";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { listPersistedAnalyses } from "@/lib/data/analysis-store";
 import { listWorkspaces } from "@/lib/data/workspace-store";
@@ -42,6 +43,8 @@ export default async function HistoryPage({
           name: workspace.name,
         }))}
       />
+
+      <SiteFooter />
     </div>
   );
 }

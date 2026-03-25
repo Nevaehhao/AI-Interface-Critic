@@ -7,6 +7,7 @@ import {
   ReportScreenshotPreview,
   type HighlightableIssue,
 } from "@/components/report/report-screenshot-preview";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getAnalysisModeLabel } from "@/lib/analysis-context";
 import { updateIssueTriage, type AnalysisReport } from "@/lib/analysis-report";
@@ -863,6 +864,8 @@ export function ReportView({
           </section>
         ) : null}
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

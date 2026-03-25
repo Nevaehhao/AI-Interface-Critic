@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ReportView } from "@/components/report/report-view";
 import { getSharedAnalysisByToken } from "@/lib/data/analysis-store";
@@ -33,6 +34,8 @@ export default async function SharedReportPage({
             </Link>
           </section>
         </main>
+
+        <SiteFooter />
       </div>
     );
   }
