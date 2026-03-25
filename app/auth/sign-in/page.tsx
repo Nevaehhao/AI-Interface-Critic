@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SignInPanel } from "@/components/auth/sign-in-panel";
 import { hasNeonAuthConfig } from "@/lib/env";
@@ -41,8 +40,6 @@ export default function SignInPage() {
 
         <SignInPanel isConfigured={hasNeonAuthConfig()} />
       </main>
-
-      <SiteFooter />
     </div>
   );
 }
