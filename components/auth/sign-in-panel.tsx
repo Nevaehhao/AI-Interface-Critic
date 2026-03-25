@@ -385,13 +385,7 @@ export function SignInPanel({
           </label>
         </div>
 
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm leading-7 text-[var(--color-muted)]">
-            {mode === "sign-up"
-              ? "Create an account for synced critiques and workspace grouping."
-              : "Use your existing account to reopen saved critiques."}
-          </p>
-
+        <div className="mt-8 flex flex-wrap justify-end gap-3">
           <button
             type="button"
             onClick={() => void handleEmailSubmit()}
