@@ -258,8 +258,11 @@ export function SignInPanel({
   }
 
   return (
-    <section className="surface-card mx-auto w-full max-w-3xl rounded-[2rem] p-8 shadow-[0_24px_70px_rgba(111,78,156,0.08)] sm:p-10 lg:p-12">
-      <div className="max-w-2xl">
+    <section
+      id="auth-panel"
+      className="surface-card w-full rounded-[2rem] p-8 shadow-[0_24px_70px_rgba(111,78,156,0.08)] sm:p-10 lg:p-12"
+    >
+      <div className="w-full">
         <button
           type="button"
           onClick={() => void handleGoogleSignIn()}
