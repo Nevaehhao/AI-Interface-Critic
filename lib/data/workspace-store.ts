@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { getCurrentAuthSession } from "@/lib/auth/server";
-import { getDb } from "@/lib/db";
+import { getDbWithSchema } from "@/lib/db";
 import { hasDatabaseConfig, hasNeonAuthConfig } from "@/lib/env";
 
 const workspaceTagSchema = z
@@ -42,7 +42,7 @@ async function requireWorkspaceAccess() {
     return { sql: null, user: null as Awaited<ReturnType<typeof getCurrentAuthSession>>["user"] };
   }
 
-  const sql = getDb();
+  const sql = await getDbWithSchema();
 
   if (!sql) {
     return { sql: null, user: null as Awaited<ReturnType<typeof getCurrentAuthSession>>["user"] };

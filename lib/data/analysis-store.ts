@@ -2,7 +2,7 @@ import type { AnalysisReport } from "@/lib/analysis-report";
 import { analysisReportSchema } from "@/lib/analysis-report";
 import type { AnalysisSource } from "@/lib/analysis-result";
 import { getCurrentAuthSession } from "@/lib/auth/server";
-import { getDb } from "@/lib/db";
+import { getDbWithSchema } from "@/lib/db";
 import { hasDatabaseConfig, hasNeonAuthConfig } from "@/lib/env";
 import { writeScreenshotToLocalStorage } from "@/lib/storage/local";
 
@@ -90,7 +90,7 @@ export async function persistAnalysis({
     return null;
   }
 
-  const sql = getDb();
+  const sql = await getDbWithSchema();
 
   if (!sql) {
     return null;
@@ -164,7 +164,7 @@ export async function getPersistedAnalysisById(
     return null;
   }
 
-  const sql = getDb();
+  const sql = await getDbWithSchema();
 
   if (!sql) {
     return null;
@@ -214,7 +214,7 @@ export async function getStoredScreenshotKeyForAnalysis(analysisId: string) {
     return null;
   }
 
-  const sql = getDb();
+  const sql = await getDbWithSchema();
 
   if (!sql) {
     return null;
@@ -242,7 +242,7 @@ export async function getStoredScreenshotKeyForSharedToken(shareToken: string) {
     return null;
   }
 
-  const sql = getDb();
+  const sql = await getDbWithSchema();
 
   if (!sql) {
     return null;
@@ -264,7 +264,7 @@ export async function listPersistedAnalyses(workspaceId?: string | null) {
     return { analyses: null, user: null };
   }
 
-  const sql = getDb();
+  const sql = await getDbWithSchema();
 
   if (!sql) {
     return { analyses: null, user: null };
@@ -331,7 +331,7 @@ export async function updatePersistedAnalysisReport(
     throw new Error("Database persistence is not configured.");
   }
 
-  const sql = getDb();
+  const sql = await getDbWithSchema();
 
   if (!sql) {
     throw new Error("Database env is missing.");
@@ -388,7 +388,7 @@ export async function setAnalysisShareEnabled(
     throw new Error("Database persistence is not configured.");
   }
 
-  const sql = getDb();
+  const sql = await getDbWithSchema();
 
   if (!sql) {
     throw new Error("Database env is missing.");
@@ -463,7 +463,7 @@ export async function getSharedAnalysisByToken(shareToken: string) {
     return null;
   }
 
-  const sql = getDb();
+  const sql = await getDbWithSchema();
 
   if (!sql) {
     return null;

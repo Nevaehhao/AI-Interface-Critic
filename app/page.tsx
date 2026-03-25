@@ -21,7 +21,7 @@ const categories = [
     icon: "color-contrast",
     title: "Color Contrast",
   },
-];
+] as const;
 
 const steps = [
   {
