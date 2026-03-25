@@ -1,4 +1,3 @@
-import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ButtonLink } from "@/components/ui/button-link";
 
@@ -256,7 +255,6 @@ export default function Home() {
         </section>
       </main>
 
-      <SiteFooter />
     </div>
   );
 }

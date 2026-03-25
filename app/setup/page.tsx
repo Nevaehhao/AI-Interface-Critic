@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getPlatformStatus } from "@/lib/platform-status";
 
@@ -136,8 +135,6 @@ export default async function SetupPage() {
           </div>
         </section>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }

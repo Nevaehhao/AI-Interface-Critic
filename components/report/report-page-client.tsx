@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { getAnalysisResultForId, type AnalysisSource } from "@/lib/analysis-result";
 import type { AnalysisReport } from "@/lib/analysis-report";
@@ -82,8 +81,6 @@ export function ReportPageClient({
             </div>
           </section>
         </main>
-
-        <SiteFooter />
       </div>
     );
   }

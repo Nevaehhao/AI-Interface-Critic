@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
-import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { WorkspaceCreateForm } from "@/components/workspaces/workspace-create-form";
 import { WorkspaceManagerCard } from "@/components/workspaces/workspace-manager-card";
@@ -217,8 +216,6 @@ export default async function WorkspacesPage() {
           </section>
         )}
       </main>
-
-      <SiteFooter />
     </div>
   );
 }

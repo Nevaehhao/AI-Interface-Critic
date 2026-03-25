@@ -1,4 +1,3 @@
-import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { UploadForm } from "@/components/upload/upload-form";
 import { listWorkspaces } from "@/lib/data/workspace-store";
@@ -23,8 +22,6 @@ export default async function UploadPage({
           workspaces={workspaces ?? []}
         />
       </main>
-
-      <SiteFooter />
     </div>
   );
 }
