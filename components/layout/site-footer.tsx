@@ -8,6 +8,12 @@ const footerLinks = [
 ];
 
 export function SiteFooter() {
+  const footerVisible = false;
+
+  if (!footerVisible) {
+    return null;
+  }
+
   return (
     <footer className="border-t border-white/40 bg-[rgba(250,249,252,0.84)] px-6 py-16 sm:px-8">
       <div className="mx-auto grid w-full max-w-7xl gap-8 md:grid-cols-2 md:items-center">
