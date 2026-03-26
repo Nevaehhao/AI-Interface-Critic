@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { SignInTrigger } from "@/components/auth/sign-in-modal";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { authClient } from "@/lib/auth/client";
 import { getUserProfileInitials, getUserProfileName } from "@/lib/auth/user-profile";
@@ -101,11 +100,12 @@ export function SiteHeader() {
                 className="h-11 w-11 animate-pulse rounded-xl bg-white/80 shadow-[0_12px_30px_rgba(111,78,156,0.08)]"
               />
             ) : !user ? (
-              <SignInTrigger
+              <Link
+                href="/auth/sign-in"
                 className="glass-panel flex h-11 items-center justify-center rounded-xl px-4 text-sm font-semibold text-[var(--color-accent)] shadow-[0_12px_30px_rgba(111,78,156,0.08)]"
               >
                 Sign in
-              </SignInTrigger>
+              </Link>
             ) : (
               <button
                 type="button"
@@ -223,12 +223,13 @@ export function SiteHeader() {
                       onSignedOut={() => setIsMobileMenuOpen(false)}
                     />
                   ) : (
-                    <SignInTrigger
-                      onOpen={() => setIsMobileMenuOpen(false)}
+                    <Link
+                      href="/auth/sign-in"
+                      onClick={() => setIsMobileMenuOpen(false)}
                       className="material-button material-button-secondary w-full"
                     >
                       Sign in
-                    </SignInTrigger>
+                    </Link>
                   )}
                 </div>
               </div>

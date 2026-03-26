@@ -1,6 +1,5 @@
 "use client";
 
-import { SignInTrigger } from "@/components/auth/sign-in-modal";
 import { authClient } from "@/lib/auth/client";
 import { ButtonLink } from "@/components/ui/button-link";
 
@@ -27,9 +26,9 @@ export function HomeHeroAuthAction() {
   }
 
   return (
-    <SignInTrigger className="material-button material-button-secondary">
+    <ButtonLink href="/auth/sign-in" variant="secondary">
       Sign in
-    </SignInTrigger>
+    </ButtonLink>
   );
 }
 
