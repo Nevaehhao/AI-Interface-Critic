@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
 
 import { authClient } from "@/lib/auth/client";
+import { cn } from "@/lib/utils";
 
 type AuthResponse<T> =
   | {
@@ -76,9 +77,11 @@ function GoogleMark() {
 }
 
 export function SignInPanel({
-  isConfigured,
+  className,
+  isConfigured = true,
 }: {
-  isConfigured: boolean;
+  className?: string;
+  isConfigured?: boolean;
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
@@ -260,7 +263,10 @@ export function SignInPanel({
   return (
     <section
       id="auth-panel"
-      className="surface-card w-full rounded-[2rem] p-8 shadow-[0_24px_70px_rgba(111,78,156,0.08)] sm:p-10 lg:p-12"
+      className={cn(
+        "surface-card w-full rounded-[2rem] p-8 shadow-[0_24px_70px_rgba(111,78,156,0.08)] sm:p-10 lg:p-12",
+        className,
+      )}
     >
       <div className="w-full">
         <button

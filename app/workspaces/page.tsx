@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { SignInTrigger } from "@/components/auth/sign-in-modal";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -136,9 +137,12 @@ export default async function WorkspacesPage() {
                 <p className="mt-3 text-sm leading-7 text-[var(--color-muted)]">
                   Sign in first, then come back here to create and manage workspace buckets.
                 </p>
-                <Link href="/auth/sign-in" className="material-button material-button-primary mt-5">
+                <SignInTrigger
+                  isConfigured={hasNeonAuthConfig()}
+                  className="material-button material-button-primary mt-5"
+                >
                   Open sign-in
-                </Link>
+                </SignInTrigger>
               </div>
             </div>
           </section>
