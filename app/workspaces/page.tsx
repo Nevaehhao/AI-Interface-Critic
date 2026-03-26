@@ -11,7 +11,12 @@ import { hasDatabaseConfig, hasNeonAuthConfig } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
-export default async function WorkspacesPage() {
+export default async function WorkspacesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ archive?: string }>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const [{ analyses, user: analysisUser }, { workspaces, user: workspaceUser }] =
     await Promise.all([listPersistedAnalyses(), listWorkspaces({ includeArchived: true })]);
 
@@ -21,6 +26,7 @@ export default async function WorkspacesPage() {
   const activeWorkspaces = (workspaces ?? []).filter((workspace) => !workspace.archived_at);
   const archivedWorkspaces = (workspaces ?? []).filter((workspace) => Boolean(workspace.archived_at));
   const totalAnalyses = analyses?.length ?? 0;
+  const isArchiveOpen = resolvedSearchParams?.archive === "open";
 
   for (const analysis of analyses ?? []) {
     if (!analysis.workspace_id) {
@@ -54,9 +60,21 @@ export default async function WorkspacesPage() {
               <Link href="/upload" className="material-button material-button-primary">
                 Start new analysis
               </Link>
-              <Link href="/history" className="material-button material-button-secondary">
-                Open archive
-              </Link>
+              {isArchiveOpen ? (
+                <Link
+                  href="/workspaces#project-groups"
+                  className="material-button material-button-secondary"
+                >
+                  Hide archive
+                </Link>
+              ) : (
+                <Link
+                  href="/workspaces?archive=open#archived-workspaces"
+                  className="material-button material-button-secondary"
+                >
+                  Open archive
+                </Link>
+              )}
               {user ? <SignOutButton /> : null}
             </div>
           </div>
@@ -147,7 +165,10 @@ export default async function WorkspacesPage() {
             <WorkspaceCreateForm />
 
             <section className="surface-tonal p-6 sm:p-8">
-              <div className="flex flex-wrap items-start justify-between gap-4">
+              <div
+                id="project-groups"
+                className="flex flex-wrap items-start justify-between gap-4"
+              >
                 <div>
                   <p className="eyebrow">Your workspaces</p>
                   <h2 className="mt-3 text-3xl font-bold tracking-[-0.04em]">Project groups</h2>
@@ -185,13 +206,21 @@ export default async function WorkspacesPage() {
                     </div>
                   ))}
 
-                  {archivedWorkspaces.length > 0 ? (
-                    <div className="mt-4 grid gap-4">
-                      <div className="px-1">
-                        <p className="eyebrow">Archived</p>
-                        <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
-                          Archived workspaces stay available for history and can be restored.
-                        </p>
+                  {archivedWorkspaces.length > 0 && isArchiveOpen ? (
+                    <div id="archived-workspaces" className="mt-4 grid gap-4 scroll-mt-32">
+                      <div className="flex flex-wrap items-start justify-between gap-4 px-1">
+                        <div>
+                          <p className="eyebrow">Archived</p>
+                          <p className="mt-2 text-sm leading-7 text-[var(--color-muted)]">
+                            Archived workspaces stay available for history and can be restored.
+                          </p>
+                        </div>
+                        <Link
+                          href="/workspaces#project-groups"
+                          className="material-button material-button-text px-0"
+                        >
+                          Back to project groups
+                        </Link>
                       </div>
 
                       {archivedWorkspaces.map((workspace) => (
